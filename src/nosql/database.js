@@ -6,15 +6,10 @@ module.exports = Database;
 
 // Database represents a collection of Tables. Batches, queries, sync, watch,
 // etc. all operate at the Database level.
-function Database(name, relativeName) {
+function Database(fullname, relativeName) {
   if (typeof this !== Database) {
-    return new Database(name, relativeName);
+    return new Database(fullname, relativeName);
   }
-  // TODO(aghassemi) This variable names are confusing. Database has a  public
-  // property called name which is actually the relativeName.
-  // We should refactor, in Go as well.
-  this._name = name;
-  this._relativeName = relativeName;
 
   /**
    * @property name
@@ -22,6 +17,15 @@ function Database(name, relativeName) {
    */
   Object.defineProperty(this, 'name', {
     value: relativeName,
+    writable: false
+  });
+
+  /**
+   * @property name
+   * @type {string}
+   */
+  Object.defineProperty(this, 'fullname', {
+    value: fullname,
     writable: false
   });
 }
@@ -47,6 +51,12 @@ Database.prototype.createTable = function(ctx, relativeName, perms) {};
 
 // DeleteTable deletes the specified Table.
 Database.prototype.deleteTable = function(ctx, relativeName) {};
+
+// SetPermissions replaces the current Permissions for an object.
+Database.prototype.setPermissions = function(ctx, perms, version) {};
+
+// GetPermissions returns the current Permissions for an object.
+Database.prototype.getPermissions = function(ctx) {};
 
 // BeginBatch creates a new batch. Instead of calling this function directly,
 // clients are recommended to use the RunInBatch() helper function, which
