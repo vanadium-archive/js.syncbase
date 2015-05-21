@@ -5,28 +5,30 @@
 module.exports = Row;
 
 // Row represents a single row in a Table.
-function Row(fullname, relativeName) {
+function Row(fullName, key) {
+  // TODO(aghassemi) We may need to escape the key. Align with Go implementation
+  // when that decision is made.
   if (typeof this !== Row) {
-    return new Row(fullname, relativeName);
+    return new Row(fullName, key);
   }
 
   /**
-   * The relative name of this Row.
+   * The key of this Row.
    * @property name
    * @type {string}
    */
-  Object.defineProperty(this, 'name', {
-    value: relativeName,
+  Object.defineProperty(this, 'key', {
+    value: key,
     writable: false
   });
 
   /**
    * The full name (object name) of this Row.
-   * @property fullname
+   * @property fullName
    * @type {string}
    */
-  Object.defineProperty(this, 'fullname', {
-    value: fullname,
+  Object.defineProperty(this, 'fullName', {
+    value: fullName,
     writable: false
   });
 }

@@ -6,9 +6,9 @@ module.exports = Database;
 
 // Database represents a collection of Tables. Batches, queries, sync, watch,
 // etc. all operate at the Database level.
-function Database(fullname, relativeName) {
+function Database(fullName, name) {
   if (typeof this !== Database) {
-    return new Database(fullname, relativeName);
+    return new Database(fullName, name);
   }
 
   /**
@@ -16,7 +16,7 @@ function Database(fullname, relativeName) {
    * @type {string}
    */
   Object.defineProperty(this, 'name', {
-    value: relativeName,
+    value: name,
     writable: false
   });
 
@@ -24,8 +24,8 @@ function Database(fullname, relativeName) {
    * @property name
    * @type {string}
    */
-  Object.defineProperty(this, 'fullname', {
-    value: fullname,
+  Object.defineProperty(this, 'fullName', {
+    value: fullName,
     writable: false
   });
 }

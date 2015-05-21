@@ -5,9 +5,9 @@
 module.exports = Table;
 
 // Table represents a collection of Rows.
-function Table(fullname, relativeName) {
+function Table(fullName, name) {
   if (typeof this !== Table) {
-    return new Table(fullname, relativeName);
+    return new Table(fullName, name);
   }
 
   /**
@@ -16,17 +16,17 @@ function Table(fullname, relativeName) {
    * @type {string}
    */
   Object.defineProperty(this, 'name', {
-    value: relativeName,
+    value: name,
     writable: false
   });
 
   /**
    * The full name (object name) of this Table.
-   * @property fullname
+   * @property fullName
    * @type {string}
    */
-  Object.defineProperty(this, 'fullname', {
-    value: fullname,
+  Object.defineProperty(this, 'fullName', {
+    value: fullName,
     writable: false
   });
 }
@@ -71,5 +71,5 @@ Table.prototype.setPermissions = function(ctx, prefix, perms) {};
 Table.prototype.getPermissions = function(ctx, key) {};
 
 // DeletePermissions deletes the permissions for the specified prefix. Any
-// rows covered by this prefix will use the next longest prefix's permissions
+// rows covered by this prefix will use the next longest prefix's permissions.
 Table.prototype.deletePermissions = function(ctx, prefix) {};
