@@ -6,7 +6,7 @@ module.exports = Table;
 
 // Table represents a collection of Rows.
 function Table(fullName, name) {
-  if (typeof this !== Table) {
+  if (!(this instanceof Table)) {
     return new Table(fullName, name);
   }
 

@@ -7,7 +7,7 @@ module.exports = Database;
 // Database represents a collection of Tables. Batches, queries, sync, watch,
 // etc. all operate at the Database level.
 function Database(fullName, name) {
-  if (typeof this !== Database) {
+  if (!(this instanceof Database)) {
     return new Database(fullName, name);
   }
 

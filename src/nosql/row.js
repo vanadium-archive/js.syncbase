@@ -8,7 +8,7 @@ module.exports = Row;
 function Row(fullName, key) {
   // TODO(aghassemi) We may need to escape the key. Align with Go implementation
   // when that decision is made.
-  if (typeof this !== Row) {
+  if (!(this instanceof Row)) {
     return new Row(fullName, key);
   }
 

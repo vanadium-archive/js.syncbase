@@ -21,22 +21,56 @@ module.exports = {};
 
 // Types:
 var _type1 = new vdl.Type();
+var _type2 = new vdl.Type();
+var _type3 = new vdl.Type();
+var _type4 = new vdl.Type();
 var _typeBatchOptions = new vdl.Type();
+var _typeKeyValue = new vdl.Type();
 var _typePrefixPermissions = new vdl.Type();
+var _typeSyncGroupMemberInfo = new vdl.Type();
+var _typeSyncGroupSpec = new vdl.Type();
 _type1.kind = vdl.kind.LIST;
 _type1.name = "";
-_type1.elem = _typePrefixPermissions;
+_type1.elem = vdl.types.STRING;
+_type2.kind = vdl.kind.MAP;
+_type2.name = "";
+_type2.elem = _typeSyncGroupMemberInfo;
+_type2.key = vdl.types.STRING;
+_type3.kind = vdl.kind.LIST;
+_type3.name = "";
+_type3.elem = vdl.types.BYTE;
+_type4.kind = vdl.kind.LIST;
+_type4.name = "";
+_type4.elem = _typePrefixPermissions;
 _typeBatchOptions.kind = vdl.kind.STRUCT;
 _typeBatchOptions.name = "v.io/syncbase/v23/services/syncbase/nosql.BatchOptions";
 _typeBatchOptions.fields = [{name: "Hint", type: vdl.types.STRING}, {name: "ReadOnly", type: vdl.types.BOOL}];
+_typeKeyValue.kind = vdl.kind.STRUCT;
+_typeKeyValue.name = "v.io/syncbase/v23/services/syncbase/nosql.KeyValue";
+_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type3}];
 _typePrefixPermissions.kind = vdl.kind.STRUCT;
 _typePrefixPermissions.name = "v.io/syncbase/v23/services/syncbase/nosql.PrefixPermissions";
 _typePrefixPermissions.fields = [{name: "Prefix", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}];
+_typeSyncGroupMemberInfo.kind = vdl.kind.STRUCT;
+_typeSyncGroupMemberInfo.name = "v.io/syncbase/v23/services/syncbase/nosql.SyncGroupMemberInfo";
+_typeSyncGroupMemberInfo.fields = [{name: "SyncPriority", type: vdl.types.BYTE}];
+_typeSyncGroupSpec.kind = vdl.kind.STRUCT;
+_typeSyncGroupSpec.name = "v.io/syncbase/v23/services/syncbase/nosql.SyncGroupSpec";
+_typeSyncGroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type1}, {name: "MountTables", type: _type1}, {name: "IsPrivate", type: vdl.types.BOOL}];
 _type1.freeze();
+_type2.freeze();
+_type3.freeze();
+_type4.freeze();
 _typeBatchOptions.freeze();
+_typeKeyValue.freeze();
 _typePrefixPermissions.freeze();
+_typeSyncGroupMemberInfo.freeze();
+_typeSyncGroupSpec.freeze();
 module.exports.BatchOptions = (vdl.registry.lookupOrCreateConstructor(_typeBatchOptions));
+module.exports.KeyValue = (vdl.registry.lookupOrCreateConstructor(_typeKeyValue));
 module.exports.PrefixPermissions = (vdl.registry.lookupOrCreateConstructor(_typePrefixPermissions));
+module.exports.SyncGroupMemberInfo = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupMemberInfo));
+module.exports.SyncGroupSpec = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupSpec));
 
 
 
@@ -62,6 +96,263 @@ module.exports.NotBoundToBatchError = makeError('v.io/syncbase/v23/services/sync
 
 
 // Services:
+
+  
+    
+function SyncGroupManager(){}
+module.exports.SyncGroupManager = SyncGroupManager;
+
+    
+      
+SyncGroupManager.prototype.getSyncGroupNames = function(ctx, serverCall) {
+  throw new Error('Method GetSyncGroupNames not implemented');
+};
+    
+      
+SyncGroupManager.prototype.createSyncGroup = function(ctx, serverCall, sgName, spec, myInfo) {
+  throw new Error('Method CreateSyncGroup not implemented');
+};
+    
+      
+SyncGroupManager.prototype.joinSyncGroup = function(ctx, serverCall, sgName, myInfo) {
+  throw new Error('Method JoinSyncGroup not implemented');
+};
+    
+      
+SyncGroupManager.prototype.leaveSyncGroup = function(ctx, serverCall, sgName) {
+  throw new Error('Method LeaveSyncGroup not implemented');
+};
+    
+      
+SyncGroupManager.prototype.destroySyncGroup = function(ctx, serverCall, sgName) {
+  throw new Error('Method DestroySyncGroup not implemented');
+};
+    
+      
+SyncGroupManager.prototype.ejectFromSyncGroup = function(ctx, serverCall, sgName, member) {
+  throw new Error('Method EjectFromSyncGroup not implemented');
+};
+    
+      
+SyncGroupManager.prototype.getSyncGroupSpec = function(ctx, serverCall, sgName) {
+  throw new Error('Method GetSyncGroupSpec not implemented');
+};
+    
+      
+SyncGroupManager.prototype.setSyncGroupSpec = function(ctx, serverCall, sgName, spec, version) {
+  throw new Error('Method SetSyncGroupSpec not implemented');
+};
+    
+      
+SyncGroupManager.prototype.getSyncGroupMembers = function(ctx, serverCall, sgName) {
+  throw new Error('Method GetSyncGroupMembers not implemented');
+};
+     
+
+    
+SyncGroupManager.prototype._serviceDescription = {
+  name: 'SyncGroupManager',
+  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  doc: "// SyncGroupManager is the interface for SyncGroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method.",
+  embeds: [],
+  methods: [
+    
+      
+    {
+    name: 'GetSyncGroupNames',
+    doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached\n// to this database.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _type1
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'CreateSyncGroup',
+    doc: "// CreateSyncGroup creates a new SyncGroup with the given\n// spec.\n//\n// Requires: Client must have at least Read access on the\n// Database; prefix ACL must exist at each SyncGroup prefix;\n// Client must have at least Read access on each of these\n// prefix ACLs.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    {
+      name: 'myInfo',
+      doc: "",
+      type: _typeSyncGroupMemberInfo
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'JoinSyncGroup',
+    doc: "// JoinSyncGroup joins the specified SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'myInfo',
+      doc: "",
+      type: _typeSyncGroupMemberInfo
+    },
+    ],
+    outArgs: [{
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'LeaveSyncGroup',
+    doc: "// LeaveSyncGroup leaves the SyncGroup, and synced data will\n// continue to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'DestroySyncGroup',
+    doc: "// DestroySyncGroup destroys the SyncGroup, and synced data\n// will continue to be available.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'EjectFromSyncGroup',
+    doc: "// EjectFromSyncGroup ejects a member from the\n// SyncGroup. Ejected member will not able to sync further,\n// but will retain any data previously available locally.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'member',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetSyncGroupSpec',
+    doc: "// GetSyncGroupSpec gets the SyncGroup spec. version allows\n// for atomic read-modify-write of the spec by providing\n// optimistic concurrency control.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [{
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    {
+      name: 'version',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'SetSyncGroupSpec',
+    doc: "// SetSyncGroupSpec sets the SyncGroup spec. version may be\n// either empty, or the value from a recent Get. If not empty,\n// Set will only succeed if version matches that specified in\n// Set.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    {
+      name: 'version',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetSyncGroupMembers',
+    doc: "// GetSyncGroupMembers gets the info on members who joined\n// this SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [{
+      name: 'members',
+      doc: "",
+      type: _type2
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+     
+  ]
+};
 
   
     
@@ -103,6 +394,51 @@ Database.prototype.setPermissions = function(ctx, serverCall, perms, version) {
 Database.prototype.getPermissions = function(ctx, serverCall) {
   throw new Error('Method GetPermissions not implemented');
 };
+    
+      
+Database.prototype.getSyncGroupNames = function(ctx, serverCall) {
+  throw new Error('Method GetSyncGroupNames not implemented');
+};
+    
+      
+Database.prototype.createSyncGroup = function(ctx, serverCall, sgName, spec, myInfo) {
+  throw new Error('Method CreateSyncGroup not implemented');
+};
+    
+      
+Database.prototype.joinSyncGroup = function(ctx, serverCall, sgName, myInfo) {
+  throw new Error('Method JoinSyncGroup not implemented');
+};
+    
+      
+Database.prototype.leaveSyncGroup = function(ctx, serverCall, sgName) {
+  throw new Error('Method LeaveSyncGroup not implemented');
+};
+    
+      
+Database.prototype.destroySyncGroup = function(ctx, serverCall, sgName) {
+  throw new Error('Method DestroySyncGroup not implemented');
+};
+    
+      
+Database.prototype.ejectFromSyncGroup = function(ctx, serverCall, sgName, member) {
+  throw new Error('Method EjectFromSyncGroup not implemented');
+};
+    
+      
+Database.prototype.getSyncGroupSpec = function(ctx, serverCall, sgName) {
+  throw new Error('Method GetSyncGroupSpec not implemented');
+};
+    
+      
+Database.prototype.setSyncGroupSpec = function(ctx, serverCall, sgName, spec, version) {
+  throw new Error('Method SetSyncGroupSpec not implemented');
+};
+    
+      
+Database.prototype.getSyncGroupMembers = function(ctx, serverCall, sgName) {
+  throw new Error('Method GetSyncGroupMembers not implemented');
+};
      
 
     
@@ -114,6 +450,11 @@ Database.prototype._serviceDescription = {
       name: 'Object',
       pkgPath: 'v.io/v23/services/permissions',
       doc: "// Object provides access control for Vanadium objects.\n//\n// Vanadium services implementing dynamic access control would typically embed\n// this interface and tag additional methods defined by the service with one of\n// Admin, Read, Write, Resolve etc. For example, the VDL definition of the\n// object would be:\n//\n//   package mypackage\n//\n//   import \"v.io/v23/security/access\"\n//   import \"v.io/v23/services/permissions\"\n//\n//   type MyObject interface {\n//     permissions.Object\n//     MyRead() (string, error) {access.Read}\n//     MyWrite(string) error    {access.Write}\n//   }\n//\n// If the set of pre-defined tags is insufficient, services may define their\n// own tag type and annotate all methods with this new type.\n//\n// Instead of embedding this Object interface, define SetPermissions and\n// GetPermissions in their own interface. Authorization policies will typically\n// respect annotations of a single type. For example, the VDL definition of an\n// object would be:\n//\n//  package mypackage\n//\n//  import \"v.io/v23/security/access\"\n//\n//  type MyTag string\n//\n//  const (\n//    Blue = MyTag(\"Blue\")\n//    Red  = MyTag(\"Red\")\n//  )\n//\n//  type MyObject interface {\n//    MyMethod() (string, error) {Blue}\n//\n//    // Allow clients to change access via the access.Object interface:\n//    SetPermissions(perms access.Permissions, version string) error         {Red}\n//    GetPermissions() (perms access.Permissions, version string, err error) {Blue}\n//  }"
+    },
+    {
+      name: 'SyncGroupManager',
+      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      doc: "// SyncGroupManager is the interface for SyncGroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method."
     },
     ],
   methods: [
@@ -229,6 +570,200 @@ Database.prototype._serviceDescription = {
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
   },
+    
+      
+    {
+    name: 'GetSyncGroupNames',
+    doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached\n// to this database.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _type1
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'CreateSyncGroup',
+    doc: "// CreateSyncGroup creates a new SyncGroup with the given\n// spec.\n//\n// Requires: Client must have at least Read access on the\n// Database; prefix ACL must exist at each SyncGroup prefix;\n// Client must have at least Read access on each of these\n// prefix ACLs.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    {
+      name: 'myInfo',
+      doc: "",
+      type: _typeSyncGroupMemberInfo
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'JoinSyncGroup',
+    doc: "// JoinSyncGroup joins the specified SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'myInfo',
+      doc: "",
+      type: _typeSyncGroupMemberInfo
+    },
+    ],
+    outArgs: [{
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'LeaveSyncGroup',
+    doc: "// LeaveSyncGroup leaves the SyncGroup, and synced data will\n// continue to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'DestroySyncGroup',
+    doc: "// DestroySyncGroup destroys the SyncGroup, and synced data\n// will continue to be available.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'EjectFromSyncGroup',
+    doc: "// EjectFromSyncGroup ejects a member from the\n// SyncGroup. Ejected member will not able to sync further,\n// but will retain any data previously available locally.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'member',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetSyncGroupSpec',
+    doc: "// GetSyncGroupSpec gets the SyncGroup spec. version allows\n// for atomic read-modify-write of the spec by providing\n// optimistic concurrency control.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [{
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    {
+      name: 'version',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'SetSyncGroupSpec',
+    doc: "// SetSyncGroupSpec sets the SyncGroup spec. version may be\n// either empty, or the value from a recent Get. If not empty,\n// Set will only succeed if version matches that specified in\n// Set.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'spec',
+      doc: "",
+      type: _typeSyncGroupSpec
+    },
+    {
+      name: 'version',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetSyncGroupMembers',
+    doc: "// GetSyncGroupMembers gets the info on members who joined\n// this SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    inArgs: [{
+      name: 'sgName',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [{
+      name: 'members',
+      doc: "",
+      type: _type2
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
      
   ]
 };
@@ -252,6 +787,11 @@ Table.prototype.delete = function(ctx, serverCall) {
       
 Table.prototype.deleteRowRange = function(ctx, serverCall, start, limit) {
   throw new Error('Method DeleteRowRange not implemented');
+};
+    
+      
+Table.prototype.scan = function(ctx, serverCall, start, limit) {
+  throw new Error('Method Scan not implemented');
 };
     
       
@@ -308,7 +848,7 @@ Table.prototype._serviceDescription = {
       
     {
     name: 'DeleteRowRange',
-    doc: "// DeleteRowRange deletes all rows in the given range. If the last row that is\n// covered by a prefix from SetPermissions is deleted, that (prefix, perms)\n// pair is removed.\n// TODO(sadovsky): Automatic GC does not interact well with sync. This API\n// needs to be revisited.",
+    doc: "// DeleteRowRange deletes all rows in the given range. If the last row that is\n// covered by a prefix from SetPermissions is deleted, that (prefix, perms)\n// pair is removed. If limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Automatic GC interacts poorly with sync. Revisit this API.",
     inArgs: [{
       name: 'start',
       doc: "",
@@ -324,6 +864,31 @@ Table.prototype._serviceDescription = {
     inStream: null,
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'Scan',
+    doc: "// Scan returns all rows in the given range. The returned stream reads from a\n// consistent snapshot taken at the time of the Scan RPC. If limit is \"\", all\n// rows with keys >= start are included.",
+    inArgs: [{
+      name: 'start',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'limit',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeKeyValue
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
     
       
@@ -360,7 +925,7 @@ Table.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type1
+      type: _type4
     },
     ],
     inStream: null,
@@ -413,7 +978,7 @@ Row.prototype.delete = function(ctx, serverCall) {
 Row.prototype._serviceDescription = {
   name: 'Row',
   pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
-  doc: "// Row represents a single row in a Table.\n// All access checks are performed against the most specific matching prefix\n// permissions in the Table.",
+  doc: "// Row represents a single row in a Table.\n// All access checks are performed against the most specific matching prefix\n// permissions in the Table.\n// NOTE(sadovsky): Currently we send []byte values over the wire for Get, Put,\n// and Scan. If there's a way to avoid encoding/decoding on the server side, we\n// can use vdl.Value everywhere without sacrificing performance.",
   embeds: [],
   methods: [
     
@@ -425,7 +990,7 @@ Row.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: vdl.types.ANY
+      type: _type3
     },
     ],
     inStream: null,
@@ -440,7 +1005,7 @@ Row.prototype._serviceDescription = {
     inArgs: [{
       name: 'value',
       doc: "",
-      type: vdl.types.ANY
+      type: _type3
     },
     ],
     outArgs: [],

@@ -2,20 +2,79 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+var vanadium = require('vanadium');
+
+var App = require('./app');
+var vdl = require('./gen-vdl/v.io/syncbase/v23/services/syncbase');
+
+// TODO(aghassemi): This looks clunky,
+// https://github.com/vanadium/issues/issues/499 to deal with it.
+var wireSignature = vdl.Service.prototype._serviceDescription;
+
 module.exports = Service;
 
-function Service() {
-  if (typeof this !== Service) {
-    return new Service();
+function Service(fullName) {
+  if (!(this instanceof Service)) {
+    return new Service(fullName);
   }
+
+  /**
+   * @property name
+   * @type {string}
+   */
+  Object.defineProperty(this, 'fullName', {
+    value: fullName,
+    writable: false,
+    enumerable: true
+  });
+
+  this._wireObj = null;
 }
 
 // app returns the app with the given name. relativeName should not contain
 // slashes.
-Service.prototype.app = function(ctx, relativeName) {};
+Service.prototype.app = function(relativeName) {
+  var fullName = vanadium.naming.join(this.fullName, relativeName);
+  return new App(fullName, relativeName);
+};
 
 // listApps returns a list of all app names.
-Service.prototype.listApps = function(ctx) {};
+Service.prototype.listApps = function(ctx, cb) {
+  var rt = vanadium.runtimeForContext(ctx);
+  var namespace = rt.namespace();
+  var appNames = [];
 
-Service.prototype.getPermissions = function(ctx) {};
-Service.prototype.setPermissions = function(ctx) {};
+  //TODO(nlacasse): Refactor the glob->list into a common util
+  var stream = namespace.glob(ctx, vanadium.naming.join(this.fullName, '*'),
+    function(err) {
+      if (err) {
+        return cb(err);
+      }
+
+      cb(null, appNames);
+    }).stream;
+
+  stream.on('data', function(globResult) {
+    var fullName = globResult.name;
+    var name = vanadium.naming.basename(fullName);
+    appNames.push(name);
+  });
+};
+
+Service.prototype.getPermissions = function(ctx, cb) {
+  this._wire(ctx).getPermissions(ctx, cb);
+};
+
+Service.prototype.setPermissions = function(ctx, perms, version, cb) {
+  this._wire(ctx).setPermissions(ctx, perms, version, cb);
+};
+
+Service.prototype._wire = function(ctx, cb) {
+  if (!this._wireObj) {
+    var rt = vanadium.runtimeForContext(ctx);
+    var client = rt.newClient();
+    this._wireObj = client.bindWithSignature(this.fullName, [wireSignature]);
+  }
+
+  return this._wireObj;
+};

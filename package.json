@@ -2,7 +2,7 @@
   "name": "syncbase",
   "version": "0.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/syncbase.js",
   "dependencies": {
     "debug": "~2.2.0"
   },
@@ -12,7 +12,8 @@
     "mkdirp": "~0.5.1",
     "run-parallel": "~1.1.1",
     "which": "~1.1.1",
-    "minimist": "~1.1.1"
+    "minimist": "~1.1.1",
+    "async": "~1.0.0"
   },
   "repository": {
     "type": "git",
