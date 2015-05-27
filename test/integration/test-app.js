@@ -6,9 +6,11 @@ var async = require('async');
 var test = require('prova');
 var vanadium = require('vanadium');
 
-var getUniqueAppName = require('./app-name');
-var SERVICE_NAME = require('./service-name');
 var syncbase = require('../..');
+
+var testUtils = require('./utils');
+var setup = testUtils.setupService;
+var uniqueName = testUtils.uniqueName;
 
 var DEFAULT_PERMISSIONS = new Map([
   ['Read', {
@@ -32,15 +34,11 @@ var DEFAULT_PERMISSIONS = new Map([
  */
 
 test('Creating a service and checking its full name', function(t) {
-  setup(t, function(err, o) {
-    if (err) {
-      return t.end(err);
-    }
+  var mockServiceName = 'foo/bar/baz';
 
-    var service = syncbase.newService(SERVICE_NAME);
-    t.equals(service.fullName, SERVICE_NAME, 'Service name matches');
-    o.teardown(t.end);
-  });
+  var service = syncbase.newService(mockServiceName);
+  t.equals(service.fullName, mockServiceName, 'Service name matches');
+  t.end();
 });
 
 test('Getting a handle to an app', function(t) {
@@ -49,13 +47,12 @@ test('Getting a handle to an app', function(t) {
       return t.end(err, 'Failed to setup');
     }
 
-    var APP_NAME = getUniqueAppName();
+    var appName = uniqueName('app');
 
-    var service = syncbase.newService(SERVICE_NAME);
-    var app = service.app(APP_NAME);
+    var app = o.service.app(appName);
 
-    t.equals(app.name, APP_NAME, 'App name matches');
-    t.equals(app.fullName, vanadium.naming.join(SERVICE_NAME, APP_NAME),
+    t.equals(app.name, appName, 'App name matches');
+    t.equals(app.fullName, vanadium.naming.join(o.service.fullName, appName),
       'App full name matches');
 
     o.teardown(t.end);
@@ -68,16 +65,14 @@ test('Creating and listing apps', function(t) {
       return t.end(err, 'Failed to setup');
     }
 
-    var service = syncbase.newService(SERVICE_NAME);
-
     // Create multiple apps
     var expectedAppNames = [
-      getUniqueAppName(),
-      getUniqueAppName(),
-      getUniqueAppName()
+      uniqueName('app'),
+      uniqueName('app'),
+      uniqueName('app')
     ];
 
-    createAppsAndVerifyExistance(t, service, o.ctx, expectedAppNames,
+    createAppsAndVerifyExistance(t, o.service, o.ctx, expectedAppNames,
       function() {
         o.teardown(t.end);
       }
@@ -91,13 +86,12 @@ test('Deleting an app', function(t) {
       return t.end(err);
     }
 
-    var service = syncbase.newService(SERVICE_NAME);
-    var appName = getUniqueAppName();
+    var appName = uniqueName('app');
 
-    createAppsAndVerifyExistance(t, service, o.ctx, [appName], deleteApp);
+    createAppsAndVerifyExistance(t, o.service, o.ctx, [appName], deleteApp);
 
     function deleteApp() {
-      service.app(appName).delete(o.ctx, verifyItNoLongerExists);
+      o.service.app(appName).delete(o.ctx, verifyItNoLongerExists);
     }
 
     function verifyItNoLongerExists(err) {
@@ -106,7 +100,7 @@ test('Deleting an app', function(t) {
         return o.teardown(t.end);
       }
 
-      service.listApps(o.ctx, function(err, apps) {
+      o.service.listApps(o.ctx, function(err, apps) {
         if (err) {
           t.fail(err, 'Failed to list apps');
           return o.teardown(t.end);
@@ -125,13 +119,13 @@ test('Getting permissions of an app', function(t) {
       return t.end(err);
     }
 
-    var service = syncbase.newService(SERVICE_NAME);
-    var appName = getUniqueAppName();
+    var appName = uniqueName('app');
 
-    createAppsAndVerifyExistance(t, service, o.ctx, [appName], getPermissions);
+    createAppsAndVerifyExistance(t, o.service, o.ctx, [appName],
+                                 getPermissions);
 
     function getPermissions() {
-      service.app(appName).getPermissions(o.ctx, verifyPermissions);
+      o.service.app(appName).getPermissions(o.ctx, verifyPermissions);
     }
 
     function verifyPermissions(err, perms, version) {
@@ -158,8 +152,7 @@ test('Setting permissions of an app', function(t) {
       return t.end(err);
     }
 
-    var service = syncbase.newService(SERVICE_NAME);
-    var appName = getUniqueAppName();
+    var appName = uniqueName('app');
     var NEW_PERMS = new Map([
       ['Read', {
         'in': ['...', 'canRead'],
@@ -175,10 +168,11 @@ test('Setting permissions of an app', function(t) {
       }]
     ]);
 
-    createAppsAndVerifyExistance(t, service, o.ctx, [appName], setPermissions);
+    createAppsAndVerifyExistance(t, o.service, o.ctx, [appName],
+                                 setPermissions);
 
     function setPermissions() {
-      service.app(appName)
+      o.service.app(appName)
         .setPermissions(o.ctx, NEW_PERMS, '0', getPermissions);
     }
 
@@ -187,7 +181,7 @@ test('Setting permissions of an app', function(t) {
         t.fail(err, 'Failed to set permissions for app');
         return o.teardown(t.end);
       }
-      service.app(appName).getPermissions(o.ctx, verifyPermissions);
+      o.service.app(appName).getPermissions(o.ctx, verifyPermissions);
     }
 
     function verifyPermissions(err, perms, version) {
@@ -257,33 +251,4 @@ function createAppsAndVerifyExistance(t, service, ctx, appNames, cb) {
       }
     }
   }
-}
-
-// Helper function to create a Vanadium runtime and context.
-function setup(t, cb) {
-  vanadium.init(function(err, rt) {
-    if (err) {
-      return cb(err);
-    }
-
-    var ctx = rt.getContext();
-    var runtime = runtime;
-
-    function teardown(cb) {
-      rt.close(function(err) {
-        if (err) {
-          t.fail('Failed to close the runtime');
-          return cb(err);
-        }
-
-        return cb();
-      });
-    }
-
-    cb(null, {
-      ctx: ctx,
-      runtime: runtime,
-      teardown: teardown
-    });
-  });
 }

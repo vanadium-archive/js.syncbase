@@ -4,31 +4,15 @@
 
 module.exports = Table;
 
+var utils = require('../utils');
+
 // Table represents a collection of Rows.
-function Table(fullName, name) {
+function Table(parentFullName, relativeName) {
   if (!(this instanceof Table)) {
-    return new Table(fullName, name);
+    return new Table(parentFullName, relativeName);
   }
 
-  /**
-   * The relative name of this Table.
-   * @property name
-   * @type {string}
-   */
-  Object.defineProperty(this, 'name', {
-    value: name,
-    writable: false
-  });
-
-  /**
-   * The full name (object name) of this Table.
-   * @property fullName
-   * @type {string}
-   */
-  Object.defineProperty(this, 'fullName', {
-    value: fullName,
-    writable: false
-  });
+  utils.addNameProperties(this, parentFullName, relativeName);
 }
 
 // Row returns the Row with the given primary key.

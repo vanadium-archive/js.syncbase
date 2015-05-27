@@ -80,7 +80,7 @@ test: test-integration
 
 .NOTPARALLEL: test-integration
 .PHONY: test-integration
-test: test-integration-browser test-integration-node
+test-integration: test-integration-browser test-integration-node
 
 .PHONY: test-integration-node
 test-integration-node: export PATH := ./test:$(PATH)

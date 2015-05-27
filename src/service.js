@@ -19,7 +19,7 @@ function Service(fullName) {
   }
 
   /**
-   * @property name
+   * @property fullName
    * @type {string}
    */
   Object.defineProperty(this, 'fullName', {
@@ -28,14 +28,21 @@ function Service(fullName) {
     enumerable: true
   });
 
-  this._wireObj = null;
+  /**
+   * Caches the database wire object.
+   * @private
+   */
+  Object.defineProperty(this, '_wireObj', {
+    enumerable: false,
+    value: null,
+    writable: true
+  });
 }
 
 // app returns the app with the given name. relativeName should not contain
 // slashes.
 Service.prototype.app = function(relativeName) {
-  var fullName = vanadium.naming.join(this.fullName, relativeName);
-  return new App(fullName, relativeName);
+  return new App(this.fullName, relativeName);
 };
 
 // listApps returns a list of all app names.

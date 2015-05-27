@@ -2,105 +2,248 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-module.exports = Database;
+var vanadium = require('vanadium');
 
-// Database represents a collection of Tables. Batches, queries, sync, watch,
-// etc. all operate at the Database level.
-function Database(fullName, name) {
+var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var Table = require('./table');
+var utils = require('../utils');
+
+/**
+ * Database represents a collection of Tables. Batches, queries, sync, watch,
+ * etc. all operate at the Database level.
+ * @constructor
+ * @param {string} parentFullName Full name of App which contains this
+ * Database.
+ * @param {string} relativeName Relative name of this Database.  Must not
+ * contain slashes.
+ */
+function Database(parentFullName, relativeName) {
   if (!(this instanceof Database)) {
-    return new Database(fullName, name);
+    return new Database(parentFullName, relativeName);
   }
 
-  /**
-   * @property name
-   * @type {string}
-   */
-  Object.defineProperty(this, 'name', {
-    value: name,
-    writable: false
-  });
+  utils.addNameProperties(this, parentFullName, relativeName);
 
   /**
-   * @property name
-   * @type {string}
+   * Caches the database wire object.
+   * @private
    */
-  Object.defineProperty(this, 'fullName', {
-    value: fullName,
-    writable: false
+  Object.defineProperty(this, '_wireObj', {
+    enumerable: false,
+    value: null,
+    writable: true
   });
 }
 
-// Table returns the Table with the given name.
-// relativeName must not contain slashes.
-Database.prototype.table = function(relativeName) {};
+/**
+ * @private
+ */
+Database.prototype._wire = function(ctx) {
+  if (this._wireObj) {
+    return this._wireObj;
+  }
+  var client = vanadium.runtimeForContext(ctx).newClient();
+  var signature = [nosqlVdl.Database.prototype._serviceDescription];
 
-// ListTables returns a list of all Table names.
-Database.prototype.listTables = function(ctx) {};
+  this._wireObj = client.bindWithSignature(this.fullName, signature);
+  return this._wireObj;
+};
 
-// Create creates this Database.
-// If perms is nil, we inherit (copy) the App perms.
-Database.prototype.create = function(ctx, perms) {};
+/**
+ * Creates this Database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {module:vanadium.security.access.Permissions} perms Permissions for
+ * the new database.  If perms is null, we inherit (copy) the App perms.
+ * @param {function} cb Callback.
+ */
+Database.prototype.create = function(ctx, perms, cb) {
+  this._wire(ctx).create(ctx, perms, cb);
+};
 
-// Delete deletes this Database.
-Database.prototype.delete = function(ctx) {};
+/**
+ * Deletes this Database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.delete = function(ctx, cb) {
+  this._wire(ctx).delete(ctx, cb);
+};
 
-// Create creates the specified Table.
-// If perms is nil, we inherit (copy) the Database perms.
-// relativeName must not contain slashes.
-Database.prototype.createTable = function(ctx, relativeName, perms) {};
+/**
+ * Returns the Table with the given name.
+ * @param {string} relativeName Table name.  Must not contain slashes.
+ * @return {module:syncbase.table.Table} Table object.
+ */
+Database.prototype.table = function(relativeName) {
+  return new Table(this.fullName, relativeName);
+};
 
-// DeleteTable deletes the specified Table.
-Database.prototype.deleteTable = function(ctx, relativeName) {};
+/**
+ * Returns a list of all Table names.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.listTables = function(ctx, cb) {
+  return cb(new Error('not implemented'));
+};
 
-// SetPermissions replaces the current Permissions for an object.
-Database.prototype.setPermissions = function(ctx, perms, version) {};
+/**
+ * @private
+ */
+Database.prototype._tableWire = function(ctx, relativeName) {
+  if (relativeName.indexOf('/') >= 0) {
+    throw new Error('relativeName must not contain slashes.');
+  }
 
-// GetPermissions returns the current Permissions for an object.
-Database.prototype.getPermissions = function(ctx) {};
+  var client = vanadium.runtimeForContext(ctx).newClient();
+  var signature = [nosqlVdl.Table.prototype._serviceDescription];
 
-// BeginBatch creates a new batch. Instead of calling this function directly,
-// clients are recommended to use the RunInBatch() helper function, which
-// detects "concurrent batch" errors and handles retries internally.
-//
-// Default concurrency semantics:
-// - Reads inside a batch see a consistent snapshot, taken during
-//   BeginBatch(), and will not see the effect of writes inside the batch.
-// - Commit() may fail with ErrConcurrentBatch, indicating that after
-//   BeginBatch() but before Commit(), some concurrent routine wrote to a key
-//   that matches a key or row-range read inside this batch. (Writes inside a
-//   batch cannot cause that batch's Commit() to fail.)
-// - Other methods (e.g. Get) will never fail with error ErrConcurrentBatch,
-//   even if it is known that Commit() will fail with this error.
-//
-// Concurrency semantics can be configured using BatchOptions.
-Database.prototype.beginBatch = function(ctx, opts) {};
+  var fullTableName = vanadium.naming.join(this.fullName, relativeName);
+  return client.bindWithSignature(fullTableName, signature);
+};
 
-// BatchDatabase is a handle to a set of reads and writes to the database that
-// should be considered an atomic unit. See BeginBatch() for concurrency
-// semantics.
+// TODO(nlacasse): It's strange that we create a Database with:
+//   var db = new Database();
+//   db.create();
+// But we create a Table with:
+//   db.createTable();
+// The .delete method is similarly confusing.  db.delete deletes a database,
+// but table.delete deletes a row (or row range).
+// Consider puting all 'create' and 'delete' methods on the parent class for
+// consistency.
+/**
+ * Creates the specified Table.
+ * If perms is nil, we inherit (copy) the Database perms.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {string} relativeName Table name.  Must not contain slashes.
+ * @param {module:vanadium.security.access.Permissions} perms Permissions for
+ * the new database.  If perms is null, we inherit (copy) the Database perms.
+ * @param {function} cb Callback.
+ */
+Database.prototype.createTable = function(ctx, relativeName, perms, cb) {
+  this._tableWire(ctx, relativeName).create(ctx, perms, cb);
+};
+
+/**
+ * Deletes the specified Table.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {string} relativeName Relative name of Table to delete.  Must not
+ * contain slashes.
+ * @param {function} cb Callback.
+ */
+Database.prototype.deleteTable = function(ctx, relativeName, cb) {
+  this._tableWire(ctx, relativeName).delete(ctx, cb);
+};
+
+/**
+ * Replaces the current Permissions for the Database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {module:vanadium.security.access.Permissions} perms Permissions for
+ * the database.
+ * @param {string} version Version of the current Permissions object which will
+ * be over-written.  If empty, SetPermissions will perform an unconditional
+ * update.
+ * @param {function} cb Callback.
+ */
+Database.prototype.setPermissions = function(ctx, perms, version, cb) {
+  this._wire(ctx).setPermissions(ctx, perms, version, cb);
+};
+
+/**
+ * Returns the current Permissions for the Database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.getPermissions = function(ctx, cb) {
+  this._wire(ctx).getPermissions(ctx, cb);
+};
+
+/**
+ * Configuration options for Batches.
+ * @constructor
+ */
+var BatchOptions = nosqlVdl.BatchOptions;
+
+/**
+ * Creates a new batch. Instead of calling this function directly, clients are
+ * recommended to use the RunInBatch() helper function, which detects
+ * "concurrent batch" errors and handles retries internally.
+ *
+ * Default concurrency semantics:
+ * - Reads inside a batch see a consistent snapshot, taken during
+ *   beginBatch(), and will not see the effect of writes inside the batch.
+ * - commit() may fail with errConcurrentBatch, indicating that after
+ *   beginBatch() but before commit(), some concurrent routine wrote to a key
+ *   that matches a key or row-range read inside this batch. (Writes inside a
+ *   batch cannot cause that batch's commit() to fail.)
+ * - Other methods (e.g. get) will never fail with error errConcurrentBatch,
+ *   even if it is known that commit() will fail with this error.
+ *
+ * Concurrency semantics can be configured using BatchOptions.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {module:vanadium.syncbase.database.BatchOptions} opts BatchOptions.
+ * @param {function} cb Callback.
+ */
+Database.prototype.beginBatch = function(ctx, opts, cb) {
+  cb(new Error('not implemented'));
+};
+
+/*
+ * A handle to a set of reads and writes to the database that should be
+ * considered an atomic unit. See beginBatch() for concurrency semantics.
+ * @constructor
+ * @param {module:vanadium.syncbase.database.Database} db Database.
+ */
 function BatchDatabase(db) {
-  if (typeof this !== BatchDatabase) {
+  if (!(this instanceof BatchDatabase)) {
     return new BatchDatabase(db);
   }
 
   this._db = db;
+
+  throw new Error('not implemented');
 }
 
-// Table returns the Table with the given name.
-// relativeName must not contain slashes.
-BatchDatabase.prototype.table = function(relativeName) {
-  return this._db.table(relativeName);
+/**
+ * Returns the Table with the given name.
+ * @param {string} relativeName Table name.  Must not contain slashes.
+ * @return {module:syncbase.table.Table} Table object.
+ */
+BatchDatabase.prototype.table = function(ctx, relativeName, cb) {
+  return this._db.table(ctx, relativeName, cb);
 };
 
-// ListTables returns a list of all Table names.
-BatchDatabase.prototype.listTables = function(ctx) {
-  return this._db.listTables(ctx);
+/**
+ * Returns a list of all Table names.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+BatchDatabase.prototype.listTables = function(ctx, cb) {
+  return this._db.listTables(ctx, cb);
 };
 
-// Commit persists the pending changes to the database.
-BatchDatabase.prototype.commit = function(relativeName) {};
+/**
+ * Persists the pending changes to the database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+BatchDatabase.prototype.commit = function(ctx, cb) {
+  cb(new Error('not implemented'));
+};
 
-// Abort notifies the server that any pending changes can be discarded.
-// It is not strictly required, but it may allow the server to release locks
-// or other resources sooner than if it was not called.
-BatchDatabase.prototype.abort = function(ctx) {};
+/**
+ * Notifies the server that any pending changes can be discarded.  It is not
+ * strictly required, but it may allow the server to release locks or other
+ * resources sooner than if it was not called.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+BatchDatabase.prototype.abort = function(ctx, cb) {
+  cb(new Error('not implemented'));
+};
+
+module.exports = {
+  BatchDatabase: BatchDatabase,
+  BatchOptions: BatchOptions,
+  Database: Database
+};

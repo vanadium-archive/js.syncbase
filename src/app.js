@@ -4,43 +4,37 @@
 
 var vanadium = require('vanadium');
 
+var Database = require('./nosql/database').Database;
+var utils = require('./utils');
 var vdl = require('./gen-vdl/v.io/syncbase/v23/services/syncbase');
 
 var wireSignature = vdl.App.prototype._serviceDescription;
 
 module.exports = App;
 
-function App(fullName, name) {
+function App(parentFullName, relativeName) {
   if (!(this instanceof App)) {
-    return new App(fullName, name);
+    return new App(parentFullName, relativeName);
   }
 
-  /**
-   * @property name
-   * @type {string}
-   */
-  Object.defineProperty(this, 'name', {
-    value: name,
-    writable: false,
-    enumerable: true
-  });
+  utils.addNameProperties(this, parentFullName, relativeName);
 
   /**
-   * @property name
-   * @type {string}
+   * Caches the database wire object.
+   * @private
    */
-  Object.defineProperty(this, 'fullName', {
-    value: fullName,
-    writable: false,
-    enumerable: true
+  Object.defineProperty(this, '_wireObj', {
+    enumerable: false,
+    value: null,
+    writable: true
   });
-
-  this._wireObj = null;
 }
 
 // noSqlDatabase returns the noSqlDatabase with the given name. relativeName
 // must not contain slashes.
-App.prototype.noSqlDatabase = function(ctx, relativeName) {};
+App.prototype.noSqlDatabase = function(relativeName) {
+  return new Database(this.fullName, relativeName);
+};
 
 // listDatabases returns of all database names.
 App.prototype.listDatabases = function(ctx) {};
