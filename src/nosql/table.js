@@ -4,7 +4,7 @@
 
 module.exports = Table;
 
-var utils = require('../utils');
+var util = require('../util');
 
 // Table represents a collection of Rows.
 function Table(parentFullName, relativeName) {
@@ -12,7 +12,7 @@ function Table(parentFullName, relativeName) {
     return new Table(parentFullName, relativeName);
   }
 
-  utils.addNameProperties(this, parentFullName, relativeName);
+  util.addNameProperties(this, parentFullName, relativeName);
 }
 
 // Row returns the Row with the given primary key.

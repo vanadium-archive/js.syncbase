@@ -4,8 +4,8 @@
 
 var vanadium = require('vanadium');
 
-var Database = require('./nosql/database').Database;
-var utils = require('./utils');
+var Database = require('./nosql/database');
+var util = require('./util');
 var vdl = require('./gen-vdl/v.io/syncbase/v23/services/syncbase');
 
 var wireSignature = vdl.App.prototype._serviceDescription;
@@ -17,7 +17,7 @@ function App(parentFullName, relativeName) {
     return new App(parentFullName, relativeName);
   }
 
-  utils.addNameProperties(this, parentFullName, relativeName);
+  util.addNameProperties(this, parentFullName, relativeName);
 
   /**
    * Caches the database wire object.
@@ -37,7 +37,9 @@ App.prototype.noSqlDatabase = function(relativeName) {
 };
 
 // listDatabases returns of all database names.
-App.prototype.listDatabases = function(ctx) {};
+App.prototype.listDatabases = function(ctx, cb) {
+  util.getChildNames(ctx, this.fullName, cb);
+};
 
 // create creates this app.  If perms is empty, we inherit (copy) the Service
 // perms.

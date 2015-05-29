@@ -7,6 +7,7 @@ var vanadium = require('vanadium');
 
 module.exports = {
   addNameProperties: addNameProperties,
+  getChildNames: getChildNames,
   InvalidNameError: InvalidNameError
 };
 
@@ -49,3 +50,32 @@ function InvalidNameError(name) {
 }
 inherits(InvalidNameError, Error);
 
+/**
+ * getChildNames returns all names that are children of the parentFullName.
+ * @private
+ */
+function getChildNames(ctx, parentFullName, cb) {
+  var rt = vanadium.runtimeForContext(ctx);
+  var namespace = rt.namespace();
+  var childNames = [];
+
+  var globPattern = vanadium.naming.join(parentFullName, '*');
+
+  var stream = namespace.glob(ctx, globPattern, function(err) {
+    if (err) {
+      return cb(err);
+    }
+
+    cb(null, childNames);
+  }).stream;
+
+  stream.on('data', function(globResult) {
+    var fullName = globResult.name;
+    var name = vanadium.naming.basename(fullName);
+    childNames.push(name);
+  });
+
+  stream.on('error', function(err) {
+    console.error('Stream error: ' + JSON.stringify(err));
+  });
+}

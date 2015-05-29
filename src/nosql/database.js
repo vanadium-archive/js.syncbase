@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+module.exports = Database;
+
 var vanadium = require('vanadium');
 
 var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 var Table = require('./table');
-var utils = require('../utils');
+var util = require('../util');
 
 /**
  * Database represents a collection of Tables. Batches, queries, sync, watch,
@@ -22,7 +24,7 @@ function Database(parentFullName, relativeName) {
     return new Database(parentFullName, relativeName);
   }
 
-  utils.addNameProperties(this, parentFullName, relativeName);
+  util.addNameProperties(this, parentFullName, relativeName);
 
   /**
    * Caches the database wire object.
@@ -84,7 +86,7 @@ Database.prototype.table = function(relativeName) {
  * @param {function} cb Callback.
  */
 Database.prototype.listTables = function(ctx, cb) {
-  return cb(new Error('not implemented'));
+  util.getChildNames(ctx, this.fullName, cb);
 };
 
 /**
@@ -162,7 +164,7 @@ Database.prototype.getPermissions = function(ctx, cb) {
  * Configuration options for Batches.
  * @constructor
  */
-var BatchOptions = nosqlVdl.BatchOptions;
+Database.BatchOptions = nosqlVdl.BatchOptions;
 
 /**
  * Creates a new batch. Instead of calling this function directly, clients are
@@ -181,69 +183,9 @@ var BatchOptions = nosqlVdl.BatchOptions;
  *
  * Concurrency semantics can be configured using BatchOptions.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:vanadium.syncbase.database.BatchOptions} opts BatchOptions.
+ * @param {module:vanadium.syncbase.Database.BatchOptions} opts BatchOptions.
  * @param {function} cb Callback.
  */
 Database.prototype.beginBatch = function(ctx, opts, cb) {
   cb(new Error('not implemented'));
-};
-
-/*
- * A handle to a set of reads and writes to the database that should be
- * considered an atomic unit. See beginBatch() for concurrency semantics.
- * @constructor
- * @param {module:vanadium.syncbase.database.Database} db Database.
- */
-function BatchDatabase(db) {
-  if (!(this instanceof BatchDatabase)) {
-    return new BatchDatabase(db);
-  }
-
-  this._db = db;
-
-  throw new Error('not implemented');
-}
-
-/**
- * Returns the Table with the given name.
- * @param {string} relativeName Table name.  Must not contain slashes.
- * @return {module:syncbase.table.Table} Table object.
- */
-BatchDatabase.prototype.table = function(ctx, relativeName, cb) {
-  return this._db.table(ctx, relativeName, cb);
-};
-
-/**
- * Returns a list of all Table names.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {function} cb Callback.
- */
-BatchDatabase.prototype.listTables = function(ctx, cb) {
-  return this._db.listTables(ctx, cb);
-};
-
-/**
- * Persists the pending changes to the database.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {function} cb Callback.
- */
-BatchDatabase.prototype.commit = function(ctx, cb) {
-  cb(new Error('not implemented'));
-};
-
-/**
- * Notifies the server that any pending changes can be discarded.  It is not
- * strictly required, but it may allow the server to release locks or other
- * resources sooner than if it was not called.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {function} cb Callback.
- */
-BatchDatabase.prototype.abort = function(ctx, cb) {
-  cb(new Error('not implemented'));
-};
-
-module.exports = {
-  BatchDatabase: BatchDatabase,
-  BatchOptions: BatchOptions,
-  Database: Database
 };

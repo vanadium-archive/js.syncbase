@@ -5,6 +5,7 @@
 var vanadium = require('vanadium');
 
 var App = require('./app');
+var util = require('./util');
 var vdl = require('./gen-vdl/v.io/syncbase/v23/services/syncbase');
 
 // TODO(aghassemi): This looks clunky,
@@ -47,25 +48,7 @@ Service.prototype.app = function(relativeName) {
 
 // listApps returns a list of all app names.
 Service.prototype.listApps = function(ctx, cb) {
-  var rt = vanadium.runtimeForContext(ctx);
-  var namespace = rt.namespace();
-  var appNames = [];
-
-  //TODO(nlacasse): Refactor the glob->list into a common util
-  var stream = namespace.glob(ctx, vanadium.naming.join(this.fullName, '*'),
-    function(err) {
-      if (err) {
-        return cb(err);
-      }
-
-      cb(null, appNames);
-    }).stream;
-
-  stream.on('data', function(globResult) {
-    var fullName = globResult.name;
-    var name = vanadium.naming.basename(fullName);
-    appNames.push(name);
-  });
+  util.getChildNames(ctx, this.fullName, cb);
 };
 
 Service.prototype.getPermissions = function(ctx, cb) {

@@ -8,30 +8,11 @@ var vanadium = require('vanadium');
 
 var syncbase = require('../..');
 
-var testUtils = require('./utils');
-var setup = testUtils.setupService;
-var uniqueName = testUtils.uniqueName;
-
-var DEFAULT_PERMISSIONS = new Map([
-  ['Read', {
-    'in': ['...'],
-    'notIn': []
-  }],
-  ['Write', {
-    'in': ['...'],
-    'notIn': []
-  }],
-  ['Admin', {
-    'in': ['...'],
-    'notIn': []
-  }]
-]);
-
-/*
- * TODO(aghassemi) We should refactor some of the testing functionality,
- * specially around verifying children and setting/getting permissions, into a
- * common util as these types of test will be common across different layers.
- */
+var testUtil = require('./util');
+var appExists = testUtil.appExists;
+var setupApp = testUtil.setupApp;
+var setupService = testUtil.setupService;
+var uniqueName = testUtil.uniqueName;
 
 test('Creating a service and checking its full name', function(t) {
   var mockServiceName = 'foo/bar/baz';
@@ -42,7 +23,7 @@ test('Creating a service and checking its full name', function(t) {
 });
 
 test('Getting a handle to an app', function(t) {
-  setup(t, function(err, o) {
+  setupService(t, function(err, o) {
     if (err) {
       return t.end(err, 'Failed to setup');
     }
@@ -60,195 +41,67 @@ test('Getting a handle to an app', function(t) {
 });
 
 test('Creating and listing apps', function(t) {
-  setup(t, function(err, o) {
+  setupService(t, function(err, o) {
     if (err) {
       return t.end(err, 'Failed to setup');
     }
 
-    // Create multiple apps
-    var expectedAppNames = [
+    // Create multiple apps.
+    var appNames = [
       uniqueName('app'),
       uniqueName('app'),
       uniqueName('app')
     ];
-
-    createAppsAndVerifyExistance(t, o.service, o.ctx, expectedAppNames,
-      function() {
-        o.teardown(t.end);
+    async.forEach(appNames, function(appName, cb) {
+      o.service.app(appName).create(o.ctx, {}, cb);
+    }, function(err) {
+      if (err) {
+        t.error(err);
+        return o.teardown(t.end);
       }
-    );
+
+      // Verify each app exists.
+      async.map(appNames, function(appName, cb) {
+        appExists(o.ctx, o.service, appName, cb);
+      }, function(err, existsArray) {
+        t.error(err);
+        t.deepEqual(existsArray, [true, true, true], 'all apps exist');
+        o.teardown(t.end);
+      });
+    });
   });
 });
 
 test('Deleting an app', function(t) {
-  setup(t, function(err, o) {
+  setupApp(t, function(err, o) {
     if (err) {
       return t.end(err);
     }
 
-    var appName = uniqueName('app');
-
-    createAppsAndVerifyExistance(t, o.service, o.ctx, [appName], deleteApp);
-
-    function deleteApp() {
-      o.service.app(appName).delete(o.ctx, verifyItNoLongerExists);
-    }
-
-    function verifyItNoLongerExists(err) {
+    o.app.delete(o.ctx, function(err) {
       if (err) {
-        t.fail(err, 'Failed to delete app');
+        t.error(err);
         return o.teardown(t.end);
       }
 
-      o.service.listApps(o.ctx, function(err, apps) {
-        if (err) {
-          t.fail(err, 'Failed to list apps');
-          return o.teardown(t.end);
-        }
-
-        t.ok(apps.indexOf(appName) < 0, 'App is no longer listed');
-        return o.teardown(t.end);
+      appExists(o.ctx, o.service, o.app.name, function(err, exists) {
+        t.error(err);
+        t.notok(exists, 'app no longer exists');
+        o.teardown(t.end);
       });
-    }
-  });
-});
-
-test('Getting permissions of an app', function(t) {
-  setup(t, function(err, o) {
-    if (err) {
-      return t.end(err);
-    }
-
-    var appName = uniqueName('app');
-
-    createAppsAndVerifyExistance(t, o.service, o.ctx, [appName],
-                                 getPermissions);
-
-    function getPermissions() {
-      o.service.app(appName).getPermissions(o.ctx, verifyPermissions);
-    }
-
-    function verifyPermissions(err, perms, version) {
-      if (err) {
-        t.fail(err, 'Failed to get permissions for app');
-        return o.teardown(t.end);
-      }
-
-      t.equal(perms.size, DEFAULT_PERMISSIONS.size,
-        'Permissions size matches');
-      DEFAULT_PERMISSIONS.forEach(function(value, key) {
-        t.deepEqual(perms.get(key), value, 'Permission value matches');
-      });
-      t.equal(version, '0', 'Version matches');
-
-      return o.teardown(t.end);
-    }
-  });
-});
-
-test('Setting permissions of an app', function(t) {
-  setup(t, function(err, o) {
-    if (err) {
-      return t.end(err);
-    }
-
-    var appName = uniqueName('app');
-    var NEW_PERMS = new Map([
-      ['Read', {
-        'in': ['...', 'canRead'],
-        'notIn': ['cantRead']
-      }],
-      ['Write', {
-        'in': ['...', 'canWrite'],
-        'notIn': ['cantWrite']
-      }],
-      ['Admin', {
-        'in': ['...', 'canAdmin'],
-        'notIn': ['cantAdmin']
-      }]
-    ]);
-
-    createAppsAndVerifyExistance(t, o.service, o.ctx, [appName],
-                                 setPermissions);
-
-    function setPermissions() {
-      o.service.app(appName)
-        .setPermissions(o.ctx, NEW_PERMS, '0', getPermissions);
-    }
-
-    function getPermissions(err) {
-      if (err) {
-        t.fail(err, 'Failed to set permissions for app');
-        return o.teardown(t.end);
-      }
-      o.service.app(appName).getPermissions(o.ctx, verifyPermissions);
-    }
-
-    function verifyPermissions(err, perms, version) {
-      if (err) {
-        t.fail(err, 'Failed to get permissions for app');
-        return o.teardown(t.end);
-      }
-
-      t.equal(perms.size, NEW_PERMS.size,
-        'Permissions size matches');
-      NEW_PERMS.forEach(function(value, key) {
-        t.deepEqual(perms.get(key), value, 'Permission value matches');
-      });
-      // Version should have been incremented after setPermission call
-      t.equal(version, '1', 'Version matches');
-
-      return o.teardown(t.end);
-    }
-  });
-});
-
-// Helper function that creates bunch apps in parallel and calls the callback
-// when all are created.
-function createAppsAndVerifyExistance(t, service, ctx, appNames, cb) {
-  async.parallel(create(), verify);
-
-  // Returns an array of functions that create apps for the given appNames.
-  function create() {
-    return appNames.map(function(appName) {
-      return function(callback) {
-        service.app(appName).create(ctx, DEFAULT_PERMISSIONS, callback);
-      };
     });
-  }
+  });
+});
 
-  function verify(err) {
+test('Getting/Setting permissions of an app', function(t) {
+  setupApp(t, function(err, o) {
     if (err) {
-      t.fail('Failed to create apps');
-      return cb(err);
+      return t.end(err);
     }
 
-    service.listApps(ctx, verifyResults);
-
-    function verifyResults(err, apps) {
-      if (err) {
-        t.fail(err, 'Failed to list apps');
-        return cb(err);
-      }
-
-      var matchCounter = 0;
-      appNames.forEach(function(appName) {
-        if (apps.indexOf(appName) >= 0) {
-          matchCounter++;
-        }
-      });
-
-      var diff = appNames.length - matchCounter;
-      if (diff === 0) {
-        t.pass('All ' + matchCounter + ' expected app name(s) were listed');
-        return cb();
-      } else {
-        var failedErr = new Error(
-          'Some (' + diff + ') expected app name(s) were not listed'
-        );
-        t.fail(failedErr);
-        return cb(failedErr);
-      }
-    }
-  }
-}
+    testUtil.testGetSetPermissions(t, o.ctx, o.app, function(err) {
+      t.error(err);
+      return o.teardown(t.end);
+    });
+  });
+});

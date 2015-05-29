@@ -6,13 +6,15 @@ var naming = require('vanadium').naming;
 var test = require('prova');
 var vanadium = require('vanadium');
 
-var Database = require('../../src/nosql/database').Database;
+var Database = require('../../src/nosql/database');
 var Table = require('../../src/nosql/table');
 
-var testUtils = require('./utils');
-var uniqueName = testUtils.uniqueName;
-var setupApp = testUtils.setupApp;
-var setupDatabase = testUtils.setupDatabase;
+var testUtil = require('./util');
+var databaseExists = testUtil.databaseExists;
+var tableExists = testUtil.tableExists;
+var setupApp = testUtil.setupApp;
+var setupDatabase = testUtil.setupDatabase;
+var uniqueName = testUtil.uniqueName;
 
 test('app.noSqlDatabase() returns a database', function(t) {
   setupApp(t, function(err, o) {
@@ -64,12 +66,16 @@ test('db.create() creates a database', function(t) {
     var db = o.app.noSqlDatabase(uniqueName('db'));
 
     db.create(o.ctx, {}, function(err) {
-      t.error(err);
+      if (err) {
+        t.error(err);
+        return o.teardown(t.end);
+      }
 
-      // TODO(nlacasse): Verify that the database exists using
-      // app.listDatabases(), once that function has been implemented.
-
-      o.teardown(t.end);
+      databaseExists(o.ctx, o.app, db.name, function(err, exists) {
+        t.error(err);
+        t.ok(exists, 'database exists');
+        o.teardown(t.end);
+      });
     });
   });
 });
@@ -113,12 +119,16 @@ test('db.delete() deletes a database', function(t) {
       }
 
       db.delete(o.ctx, function(err) {
-        t.error(err);
+        if (err) {
+          t.error(err);
+          return o.teardown(t.end);
+        }
 
-        // TODO(nlacasse): Verify that the database no longer exists using
-        // app.listDatabases(), once that function has been implemented.
-
-        o.teardown(t.end);
+        databaseExists(o.ctx, o.app, db.name, function(err, exists) {
+          t.error(err);
+          t.notok(exists, 'database does not exist');
+          o.teardown(t.end);
+        });
       });
     });
   });
@@ -169,12 +179,16 @@ test('db.createTable() creates a table', function(t) {
 
     var tableName = uniqueName('table');
     db.createTable(o.ctx, tableName, {}, function(err) {
-      t.error(err);
+      if (err) {
+        t.error(err);
+        return o.teardown(t.end);
+      }
 
-      // TODO(nlacasse): Verify that the table exists using db.listTables(),
-      // once that function has been implemented.
-
-      o.teardown(t.end);
+      tableExists(o.ctx, db, tableName, function(err, exists) {
+        t.error(err);
+        t.ok(exists, 'table exists');
+        o.teardown(t.end);
+      });
     });
   });
 });
@@ -195,12 +209,16 @@ test('db.deleteTable() deletes a table', function(t) {
       }
 
       db.deleteTable(o.ctx, tableName, function(err) {
-        t.error(err);
+        if (err) {
+          t.error(err);
+          return o.teardown(t.end);
+        }
 
-        // TODO(nlacasse): Verify that the table no longer exists using
-        // db.listTables(), once that function has been implemented.
-
-        o.teardown(t.end);
+        tableExists(o.ctx, db, tableName, function(err, exists) {
+          t.error(err);
+          t.notok(exists, 'table does not exist');
+          o.teardown(t.end);
+        });
       });
     });
   });
@@ -218,6 +236,19 @@ test('deleting a table that does not exist should error', function(t) {
     db.deleteTable(o.ctx, tableName, function(err) {
       t.ok(err, 'should error.');
       o.teardown(t.end);
+    });
+  });
+});
+
+test('Getting/Setting permissions of a database', function(t) {
+  setupDatabase(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    testUtil.testGetSetPermissions(t, o.ctx, o.database, function(err) {
+      t.error(err);
+      return o.teardown(t.end);
     });
   });
 });
