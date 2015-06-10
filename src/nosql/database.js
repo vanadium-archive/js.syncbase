@@ -113,6 +113,8 @@ Database.prototype._tableWire = function(ctx, relativeName) {
 // but table.delete deletes a row (or row range).
 // Consider puting all 'create' and 'delete' methods on the parent class for
 // consistency.
+// TODO(aghassemi): If we keep this, it should return "table" in the CB instead
+// of being void.
 /**
  * Creates the specified Table.
  * If perms is nil, we inherit (copy) the Database perms.

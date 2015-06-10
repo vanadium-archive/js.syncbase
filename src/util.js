@@ -8,7 +8,9 @@ var vanadium = require('vanadium');
 module.exports = {
   addNameProperties: addNameProperties,
   getChildNames: getChildNames,
-  InvalidNameError: InvalidNameError
+  prefixRangeLimit: prefixRangeLimit,
+  InvalidNameError: InvalidNameError,
+  stringToUTF8Bytes: stringToUTF8Bytes
 };
 
 /**
@@ -46,7 +48,7 @@ function addNameProperties(self, parentFullName, relativeName) {
 function InvalidNameError(name) {
   Error.call(this);
   this.message = 'Invalid name "' + name + '". ' +
-  ' Use vanadium.naming.encodeAsNamePart() to escape.';
+    ' Use vanadium.naming.encodeAsNamePart() to escape.';
 }
 inherits(InvalidNameError, Error);
 
@@ -78,4 +80,44 @@ function getChildNames(ctx, parentFullName, cb) {
   stream.on('error', function(err) {
     console.error('Stream error: ' + JSON.stringify(err));
   });
+}
+
+/**
+ * PrefixRangeLimit returns the limit of the row range for the given prefix.
+ * @private
+ * @param {Uint8Array} bytes Integer ArrayBuffer to modify.
+ */
+function prefixRangeLimit(bytes) {
+  // For a given Uint8Array,
+  // The code below effectively adds 1 to it, then chops off any
+  // trailing \x00 bytes.
+  // If the input string consists entirely of \xff bytes, we would empty out the
+  // buffer
+  while (bytes.length > 0) {
+    var last = bytes.length - 1;
+    if (bytes[last] === 255) {
+      bytes = bytes.slice(0, last); // remove trailing \x00
+    } else {
+      bytes[last] += 1; // add 1
+      return; // no carry
+    }
+  }
+}
+
+/**
+ * stringToUTF8Bytes converts a JavaScript string to a array of bytes
+ * representing the string in UTF8 format.
+ * @private
+ * @param {string} str String to convert to UTF8 bytes.
+ * @return {Uint8Array} UTF8 bytes.
+ */
+function stringToUTF8Bytes(str) {
+  var utf8String = unescape(encodeURIComponent(str)); //jshint ignore:line
+  var bytes = new Uint8Array(utf8String.length);
+
+  for (var i = 0; i < utf8String.length; i++) {
+    bytes[i] = utf8String.charCodeAt(i);
+  }
+
+  return bytes;
 }

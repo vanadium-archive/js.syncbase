@@ -10,6 +10,7 @@ module.exports = {
   setupApp: setupApp,
   setupDatabase: setupDatabase,
   setupService: setupService,
+  setupTable: setupTable,
 
   uniqueName: uniqueName,
 
@@ -25,6 +26,7 @@ var SERVICE_NAME = require('./service-name');
 
 // Helper function to generate unique names.
 var nameCounter = 0;
+
 function uniqueName(prefix) {
   prefix = prefix || 'name';
   return prefix + '_' + nameCounter++;
@@ -71,7 +73,7 @@ function setupApp(t, cb) {
       }
 
       return cb(null, extend(o, {
-        app:app
+        app: app
       }));
     });
   });
@@ -80,6 +82,9 @@ function setupApp(t, cb) {
 // Initializes Vanadium runtime and creates an App and a Database.
 function setupDatabase(t, cb) {
   setupApp(t, function(err, o) {
+    if (err) {
+      return cb(err);
+    }
 
     var db = o.app.noSqlDatabase(uniqueName('db'));
 
@@ -96,6 +101,28 @@ function setupDatabase(t, cb) {
   });
 }
 
+// Initializes Vanadium runtime and creates an App, a Database and a Table.
+function setupTable(t, cb) {
+  setupDatabase(t, function(err, o) {
+    if (err) {
+      return cb(err);
+    }
+    var db = o.database;
+
+    var tableName = uniqueName('table');
+    db.createTable(o.ctx, tableName, {}, function(err) {
+      if (err) {
+        o.rt.close(t.error);
+        return cb(err);
+      }
+
+      return cb(null, extend(o, {
+        table: db.table(tableName)
+      }));
+    });
+  });
+}
+
 // Assert that two permissions objects are equal.
 function assertPermissionsEqual(t, got, want) {
   t.equal(got.size, want.size, 'Permissions size matches');
@@ -106,7 +133,7 @@ function assertPermissionsEqual(t, got, want) {
 
 // For any object that implements get/setPermissions, test that getting and
 // setting permissions behaves as it should.
-function testGetSetPermissions(t, ctx, obj, cb){
+function testGetSetPermissions(t, ctx, obj, cb) {
   obj.getPermissions(ctx, function(err, perms, version) {
     if (err) {
       t.error('error getting permissions ' + err);

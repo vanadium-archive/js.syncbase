@@ -93,6 +93,12 @@ module.exports.NotBoundToBatchError = makeError('v.io/syncbase/v23/services/sync
 ]);
 
 
+module.exports.ReadOnlyBatchError = makeError('v.io/syncbase/v23/services/syncbase/nosql.ReadOnlyBatch', actions.NO_RETRY, {
+  'en': '{1:}{2:} batch is read-only',
+}, [
+]);
+
+
 
 
 // Services:
@@ -160,7 +166,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'GetSyncGroupNames',
-    doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached\n// to this database.",
+    doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached to\n// this database.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -176,7 +182,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'CreateSyncGroup',
-    doc: "// CreateSyncGroup creates a new SyncGroup with the given\n// spec.\n//\n// Requires: Client must have at least Read access on the\n// Database; prefix ACL must exist at each SyncGroup prefix;\n// Client must have at least Read access on each of these\n// prefix ACLs.",
+    doc: "// CreateSyncGroup creates a new SyncGroup with the given spec.\n//\n// Requires: Client must have at least Read access on the Database; prefix ACL\n// must exist at each SyncGroup prefix; Client must have at least Read access\n// on each of these prefix ACLs.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -202,7 +208,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'JoinSyncGroup',
-    doc: "// JoinSyncGroup joins the specified SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    doc: "// JoinSyncGroup joins the SyncGroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -228,7 +234,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'LeaveSyncGroup',
-    doc: "// LeaveSyncGroup leaves the SyncGroup, and synced data will\n// continue to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
+    doc: "// LeaveSyncGroup leaves the SyncGroup. Previously synced data will continue\n// to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -244,7 +250,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'DestroySyncGroup',
-    doc: "// DestroySyncGroup destroys the SyncGroup, and synced data\n// will continue to be available.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    doc: "// DestroySyncGroup destroys the SyncGroup. Previously synced data will\n// continue to be available to all members.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -260,7 +266,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'EjectFromSyncGroup',
-    doc: "// EjectFromSyncGroup ejects a member from the\n// SyncGroup. Ejected member will not able to sync further,\n// but will retain any data previously available locally.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    doc: "// EjectFromSyncGroup ejects a member from the SyncGroup. The ejected member\n// will not be able to sync further, but will retain any data it has already\n// synced.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -281,7 +287,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'GetSyncGroupSpec',
-    doc: "// GetSyncGroupSpec gets the SyncGroup spec. version allows\n// for atomic read-modify-write of the spec by providing\n// optimistic concurrency control.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    doc: "// GetSyncGroupSpec gets the SyncGroup spec. version allows for atomic\n// read-modify-write of the spec - see comment for SetSyncGroupSpec.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -307,7 +313,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'SetSyncGroupSpec',
-    doc: "// SetSyncGroupSpec sets the SyncGroup spec. version may be\n// either empty, or the value from a recent Get. If not empty,\n// Set will only succeed if version matches that specified in\n// Set.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    doc: "// SetSyncGroupSpec sets the SyncGroup spec. version may be either empty or\n// the value from a previous Get. If not empty, Set will only succeed if the\n// current version matches the specified one.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -333,7 +339,7 @@ SyncGroupManager.prototype._serviceDescription = {
       
     {
     name: 'GetSyncGroupMembers',
-    doc: "// GetSyncGroupMembers gets the info on members who joined\n// this SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    doc: "// GetSyncGroupMembers gets the info objects for members of the SyncGroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -574,7 +580,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'GetSyncGroupNames',
-    doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached\n// to this database.",
+    doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached to\n// this database.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -590,7 +596,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'CreateSyncGroup',
-    doc: "// CreateSyncGroup creates a new SyncGroup with the given\n// spec.\n//\n// Requires: Client must have at least Read access on the\n// Database; prefix ACL must exist at each SyncGroup prefix;\n// Client must have at least Read access on each of these\n// prefix ACLs.",
+    doc: "// CreateSyncGroup creates a new SyncGroup with the given spec.\n//\n// Requires: Client must have at least Read access on the Database; prefix ACL\n// must exist at each SyncGroup prefix; Client must have at least Read access\n// on each of these prefix ACLs.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -616,7 +622,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'JoinSyncGroup',
-    doc: "// JoinSyncGroup joins the specified SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    doc: "// JoinSyncGroup joins the SyncGroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -642,7 +648,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'LeaveSyncGroup',
-    doc: "// LeaveSyncGroup leaves the SyncGroup, and synced data will\n// continue to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
+    doc: "// LeaveSyncGroup leaves the SyncGroup. Previously synced data will continue\n// to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -658,7 +664,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'DestroySyncGroup',
-    doc: "// DestroySyncGroup destroys the SyncGroup, and synced data\n// will continue to be available.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    doc: "// DestroySyncGroup destroys the SyncGroup. Previously synced data will\n// continue to be available to all members.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -674,7 +680,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'EjectFromSyncGroup',
-    doc: "// EjectFromSyncGroup ejects a member from the\n// SyncGroup. Ejected member will not able to sync further,\n// but will retain any data previously available locally.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    doc: "// EjectFromSyncGroup ejects a member from the SyncGroup. The ejected member\n// will not be able to sync further, but will retain any data it has already\n// synced.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -695,7 +701,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'GetSyncGroupSpec',
-    doc: "// GetSyncGroupSpec gets the SyncGroup spec. version allows\n// for atomic read-modify-write of the spec by providing\n// optimistic concurrency control.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    doc: "// GetSyncGroupSpec gets the SyncGroup spec. version allows for atomic\n// read-modify-write of the spec - see comment for SetSyncGroupSpec.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -721,7 +727,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'SetSyncGroupSpec',
-    doc: "// SetSyncGroupSpec sets the SyncGroup spec. version may be\n// either empty, or the value from a recent Get. If not empty,\n// Set will only succeed if version matches that specified in\n// Set.\n//\n// Requires: Client must have at least Read access on the\n// Database, and must have Admin access on the SyncGroup ACL.",
+    doc: "// SetSyncGroupSpec sets the SyncGroup spec. version may be either empty or\n// the value from a previous Get. If not empty, Set will only succeed if the\n// current version matches the specified one.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -747,7 +753,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'GetSyncGroupMembers',
-    doc: "// GetSyncGroupMembers gets the info on members who joined\n// this SyncGroup.\n//\n// Requires: Client must have at least Read access on the\n// Database, and on the SyncGroup ACL.",
+    doc: "// GetSyncGroupMembers gets the info objects for members of the SyncGroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// SyncGroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -848,16 +854,16 @@ Table.prototype._serviceDescription = {
       
     {
     name: 'DeleteRowRange',
-    doc: "// DeleteRowRange deletes all rows in the given range. If the last row that is\n// covered by a prefix from SetPermissions is deleted, that (prefix, perms)\n// pair is removed. If limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Automatic GC interacts poorly with sync. Revisit this API.",
+    doc: "// Delete deletes all rows in the given half-open range [start, limit). If\n// limit is \"\", all rows with keys >= start are included. If the last row that\n// is covered by a prefix from SetPermissions is deleted, that (prefix, perms)\n// pair is removed.\n// TODO(sadovsky): Automatic GC interacts poorly with sync. Revisit this API.",
     inArgs: [{
       name: 'start',
       doc: "",
-      type: vdl.types.STRING
+      type: _type3
     },
     {
       name: 'limit',
       doc: "",
-      type: vdl.types.STRING
+      type: _type3
     },
     ],
     outArgs: [],
@@ -869,16 +875,16 @@ Table.prototype._serviceDescription = {
       
     {
     name: 'Scan',
-    doc: "// Scan returns all rows in the given range. The returned stream reads from a\n// consistent snapshot taken at the time of the Scan RPC. If limit is \"\", all\n// rows with keys >= start are included.",
+    doc: "// Scan returns all rows in the given half-open range [start, limit). If limit\n// is \"\", all rows with keys >= start are included. The returned stream reads\n// from a consistent snapshot taken at the time of the Scan RPC.",
     inArgs: [{
       name: 'start',
       doc: "",
-      type: vdl.types.STRING
+      type: _type3
     },
     {
       name: 'limit',
       doc: "",
-      type: vdl.types.STRING
+      type: _type3
     },
     ],
     outArgs: [],

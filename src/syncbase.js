@@ -3,9 +3,11 @@
 // license that can be found in the LICENSE file.
 
 var Service = require('./service');
+var nosql = require('./nosql');
 
 module.exports = {
-  newService: newService
+  newService: newService,
+  nosql: nosql
 };
 
 function newService(fullName) {
