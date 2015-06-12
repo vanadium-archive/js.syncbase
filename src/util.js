@@ -25,6 +25,17 @@ function addNameProperties(self, parentFullName, relativeName) {
   var fullName = vanadium.naming.join(parentFullName, relativeName);
 
   /**
+   * @property _parentFullName
+   * @private
+   * @type {string}
+   */
+  Object.defineProperty(self, '_parentFullName', {
+    value: parentFullName,
+    writable: false,
+    enumerable: false
+  });
+
+  /**
    * @property name
    * @type {string}
    */
@@ -35,7 +46,7 @@ function addNameProperties(self, parentFullName, relativeName) {
   });
 
   /**
-   * @property name
+   * @property fullName
    * @type {string}
    */
   Object.defineProperty(self, 'fullName', {

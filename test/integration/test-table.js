@@ -3,12 +3,12 @@
 // license that can be found in the LICENSE file.
 
 var async = require('async');
-var streamToArray = require('stream-to-array');
 var test = require('prova');
 
-var testUtil = require('./util');
 var syncbase = require('../..');
 
+var testUtil = require('./util');
+var assertScanRows = testUtil.assertScanRows;
 var setupTable = testUtil.setupTable;
 var uniqueName = testUtil.uniqueName;
 
@@ -84,24 +84,13 @@ test('Scanning table by single row', function(t) {
         return o.teardown(t.end);
       }
 
+      var wantRows = [{
+        key: key,
+        value: value
+      }];
       var range = syncbase.nosql.rowrange.singleRow(key);
-      var stream = table.scan(o.ctx, range, function(err) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
-      });
-
-      streamToArray(stream, function(err, values) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
-
-        var row = values[0];
-        t.ok(row, 'row exists');
-        t.deepEquals(row.key, key, 'got expected key from scan');
-        t.deepEquals(row.value, value, 'got expected value from scan');
+      assertScanRows(o.ctx, table, range, wantRows, function(err) {
+        t.error(err);
         o.teardown(t.end);
       });
     }
@@ -143,22 +132,8 @@ test('Scanning table by a prefix range', function(t) {
       }
 
       var range = syncbase.nosql.rowrange.prefix(ROW_KEY);
-      var stream = table.scan(o.ctx, range, function(err) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
-      });
-
-      streamToArray(stream, function(err, rows) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
-
-        t.ok(rows, 'got some rows');
-        t.deepEquals(rows.sort(), prefixedRows.sort(),
-          'got expected results from scan');
+      assertScanRows(o.ctx, table, range, prefixedRows, function(err) {
+        t.error(err);
         o.teardown(t.end);
       });
     }
@@ -202,20 +177,9 @@ test('Deleting rows by a prefix range', function(t) {
         return o.teardown(t.end);
       }
 
-      var stream = table.scan(o.ctx, range, function(err) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
-      });
-
-      streamToArray(stream, function(err, rows) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
-
-        t.deepEquals(rows, [], 'Rows were deleted successfully');
+      var wantRows = [];
+      assertScanRows(o.ctx, table, range, wantRows, function(err) {
+        t.error(err);
         o.teardown(t.end);
       });
     }

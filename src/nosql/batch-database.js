@@ -7,17 +7,24 @@ module.exports = BatchDatabase;
 /*
  * A handle to a set of reads and writes to the database that should be
  * considered an atomic unit. See beginBatch() for concurrency semantics.
+ *
+ * This constructor is private.  Use [database.beginBatch]{@link
+ * module:syncbase.nosql.Database.beginBatch} or [nosql.runInBatch]{@link
+ * module:syncbase.nosql~runInBatch} instead.
  * @constructor
- * @param {module:vanadium.syncbase.database.Database} db Database.
+ * @inner
+ * @param {module:syncbase.database.Database} db Database.
  */
 function BatchDatabase(db) {
   if (!(this instanceof BatchDatabase)) {
     return new BatchDatabase(db);
   }
 
-  this._db = db;
-
-  throw new Error('not implemented');
+  Object.defineProperty(this, '_db', {
+    enumerable: false,
+    value: db,
+    writeable: false
+  });
 }
 
 /**
@@ -25,8 +32,8 @@ function BatchDatabase(db) {
  * @param {string} relativeName Table name.  Must not contain slashes.
  * @return {module:syncbase.table.Table} Table object.
  */
-BatchDatabase.prototype.table = function(ctx, relativeName, cb) {
-  return this._db.table(ctx, relativeName, cb);
+BatchDatabase.prototype.table = function(relativeName) {
+  return this._db.table(relativeName);
 };
 
 /**
@@ -35,7 +42,7 @@ BatchDatabase.prototype.table = function(ctx, relativeName, cb) {
  * @param {function} cb Callback.
  */
 BatchDatabase.prototype.listTables = function(ctx, cb) {
-  return this._db.listTables(ctx, cb);
+  this._db.listTables(ctx, cb);
 };
 
 /**
@@ -44,7 +51,7 @@ BatchDatabase.prototype.listTables = function(ctx, cb) {
  * @param {function} cb Callback.
  */
 BatchDatabase.prototype.commit = function(ctx, cb) {
-  cb(new Error('not implemented'));
+  this._db._wire(ctx).commit(ctx, cb);
 };
 
 /**
@@ -55,5 +62,5 @@ BatchDatabase.prototype.commit = function(ctx, cb) {
  * @param {function} cb Callback.
  */
 BatchDatabase.prototype.abort = function(ctx, cb) {
-  cb(new Error('not implemented'));
+  this._db._wire(ctx).abort(ctx, cb);
 };

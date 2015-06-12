@@ -120,8 +120,14 @@ Table.prototype.scan = function(ctx, range, cb) {
       cb(null, row);
     });
   });
+
   var stream = this._wire(ctx).scan(ctx, range.start, range.limit, cb).stream;
-  return stream.pipe(vomStreamDecoder);
+  var decodedStream = stream.pipe(vomStreamDecoder);
+  stream.on('error', function(err) {
+    decodedStream.emit('error', err);
+  });
+
+  return decodedStream;
 };
 
 /**

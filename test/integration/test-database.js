@@ -134,9 +134,7 @@ test('db.delete() deletes a database', function(t) {
   });
 });
 
-//TODO(aghassemi) This does not seem to be the case anymore, did something in Go
-//change? (also we need CI and presubmit for these tests now to prevent this)
-test.skip('deleting a db that has not been created should error', function(t) {
+test('deleting a db that has not been created should not error', function(t) {
   setupApp(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -145,7 +143,7 @@ test.skip('deleting a db that has not been created should error', function(t) {
     var db = o.app.noSqlDatabase(uniqueName('db'));
 
     db.delete(o.ctx, function(err) {
-      t.ok(err, 'should error');
+      t.error(err);
       o.teardown(t.end);
     });
   });
@@ -226,9 +224,7 @@ test('db.deleteTable() deletes a table', function(t) {
   });
 });
 
-//TODO(aghassemi) This does not seem to be the case anymore, did something in Go
-//change? (also we need CI and presubmit for these tests now to prevent this)
-test.skip('deleting a table that does not exist should error', function(t) {
+test('deleting a table that does not exist should error', function(t) {
   setupDatabase(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -238,7 +234,7 @@ test.skip('deleting a table that does not exist should error', function(t) {
     var tableName = uniqueName('table');
 
     db.deleteTable(o.ctx, tableName, function(err) {
-      t.ok(err, 'should error.');
+      t.error(err);
       o.teardown(t.end);
     });
   });

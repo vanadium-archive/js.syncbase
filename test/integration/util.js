@@ -12,13 +12,15 @@ module.exports = {
   setupService: setupService,
   setupTable: setupTable,
 
-  uniqueName: uniqueName,
-
-  testGetSetPermissions: testGetSetPermissions
+  assertScanRows: assertScanRows,
+  testGetSetPermissions: testGetSetPermissions,
+  uniqueName: uniqueName
 };
 
-var vanadium = require('vanadium');
+var deepEqual = require('deep-equal');
 var extend = require('xtend');
+var streamToArray = require('stream-to-array');
+var vanadium = require('vanadium');
 
 var syncbase = require('../..');
 
@@ -208,5 +210,48 @@ function tableExists(ctx, db, name, cb) {
     }
 
     cb(null, names.indexOf(name) >= 0);
+  });
+}
+
+function compareRows(r1, r2) {
+  if (r1.key > r2.key) {
+    return 1;
+  }
+  if (r1.key < r2.key) {
+    return -1;
+  }
+  if (r1.value > r2.value) {
+    return 1;
+  }
+  if (r1.value < r2.value) {
+    return -1;
+  }
+  return 0;
+}
+
+function assertScanRows(ctx, table, range, wantRows, cb) {
+  var stream = table.scan(ctx, range, function(err) {
+    if (err) {
+      return cb(err);
+    }
+  });
+
+  streamToArray(stream, function(err, rows) {
+    if (err) {
+      return cb(err);
+    }
+
+    rows = rows || [];
+
+    rows.sort(compareRows);
+    wantRows.sort(compareRows);
+
+    if (!deepEqual(rows, wantRows)) {
+      var error = new Error('Expected rows to be ' + JSON.stringify(wantRows) +
+                        ' but got ' + JSON.stringify(rows));
+      return cb(error);
+    }
+
+    cb(null);
   });
 }

@@ -6,6 +6,7 @@ module.exports = Database;
 
 var vanadium = require('vanadium');
 
+var BatchDatabase = require('./batch-database');
 var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 var Table = require('./table');
 var util = require('../util');
@@ -163,12 +164,6 @@ Database.prototype.getPermissions = function(ctx, cb) {
 };
 
 /**
- * Configuration options for Batches.
- * @constructor
- */
-Database.BatchOptions = nosqlVdl.BatchOptions;
-
-/**
  * Creates a new batch. Instead of calling this function directly, clients are
  * recommended to use the RunInBatch() helper function, which detects
  * "concurrent batch" errors and handles retries internally.
@@ -185,9 +180,21 @@ Database.BatchOptions = nosqlVdl.BatchOptions;
  *
  * Concurrency semantics can be configured using BatchOptions.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:vanadium.syncbase.Database.BatchOptions} opts BatchOptions.
+ * @param {module:vanadium.syncbase.nosql.BatchOptions} opts BatchOptions.
  * @param {function} cb Callback.
  */
 Database.prototype.beginBatch = function(ctx, opts, cb) {
-  cb(new Error('not implemented'));
+  var self = this;
+  this._wire(ctx).beginBatch(ctx, opts, function(err, relativeName) {
+    if (err) {
+      return cb(err);
+    }
+
+    // The relativeName returned from the beginBatch() call above is different
+    // than the relativeName of the current database. We must create a new
+    // Database with this new relativeName, and then create a BatchDatabase
+    // from that new Database.
+    var db = new Database(self._parentFullName, relativeName);
+    return cb(null, new BatchDatabase(db));
+  });
 };

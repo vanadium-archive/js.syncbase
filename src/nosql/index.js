@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var runInBatch = require('./batch');
 var rowrange = require('./rowrange');
+var runInBatch = require('./batch');
+var vdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 
 /**
  * @summary
@@ -13,6 +14,8 @@ var rowrange = require('./rowrange');
  * @memberof module:syncbase
  */
 module.exports = {
+  BatchOptions: vdl.BatchOptions,
+  ReadOnlyBatchError: vdl.ReadOnlyBatchError,
   rowrange: rowrange,
   runInBatch: runInBatch
 };
