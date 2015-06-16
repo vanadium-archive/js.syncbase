@@ -331,6 +331,9 @@ test('new batch operations fail after successful batch commit', function(t) {
 
 test('new batch operations fail after unsuccessful batch commit', function(t) {
   setupTable(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
 
     var ctx = o.ctx;
     var db = o.database;
