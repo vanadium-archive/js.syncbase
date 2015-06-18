@@ -8,6 +8,7 @@ var vanadium = require('vanadium');
 
 var BatchDatabase = require('./batch-database');
 var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var SyncGroup = require('./syncgroup');
 var Table = require('./table');
 var util = require('../util');
 
@@ -197,4 +198,22 @@ Database.prototype.beginBatch = function(ctx, opts, cb) {
     var db = new Database(self._parentFullName, relativeName);
     return cb(null, new BatchDatabase(db));
   });
+};
+
+/**
+ * Gets a handle to the SyncGroup with the given name.
+ *
+ * @param {string} name SyncGroup name.
+ */
+Database.prototype.syncGroup = function(name) {
+  return new SyncGroup(this, name);
+};
+
+/**
+ * Gets the global names of all SyncGroups attached to this database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.getSyncGroupNames = function(ctx, cb) {
+  this._wire(ctx).getSyncGroupNames(ctx, cb);
 };

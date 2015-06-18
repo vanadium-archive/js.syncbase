@@ -10,4 +10,4 @@
 # fix service-runner to allow flags/arguments, and then have it start syncbased
 # directly with the appropriate flags.  Then we can delete this file.
 
-syncbased -v=3 --name test/syncbased --engine memstore
+syncbased -v=1 --name test/syncbased --engine memstore

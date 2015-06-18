@@ -10,6 +10,7 @@ module.exports = {
   setupApp: setupApp,
   setupDatabase: setupDatabase,
   setupService: setupService,
+  setupSyncGroup: setupSyncGroup,
   setupTable: setupTable,
 
   assertScanRows: assertScanRows,
@@ -27,7 +28,7 @@ var syncbase = require('../..');
 var SERVICE_NAME = require('./service-name');
 
 // Helper function to generate unique names.
-var nameCounter = 0;
+var nameCounter = Date.now();
 
 function uniqueName(prefix) {
   prefix = prefix || 'name';
@@ -98,6 +99,42 @@ function setupDatabase(t, cb) {
 
       return cb(null, extend(o, {
         database: db
+      }));
+    });
+  });
+}
+
+// Initializes Vanadium runtime and creats an App, Database and SyncGroup.
+function setupSyncGroup(t, perms, prefixes, cb) {
+  setupDatabase(t, function(err, o) {
+    if (err) {
+      return cb(err);
+    }
+
+    var sgName = uniqueName('syncgroup');
+    var fullSgName = vanadium.naming.join(o.service.fullName, sgName);
+
+    // TODO(nlacasse): Where does this magic number 8 come from? It's in
+    // syncgroup_test.go.
+    var myInfo = new syncbase.nosql.SyncGroupMemberInfo({
+      syncPriority: 8
+    });
+
+    var spec = new syncbase.nosql.SyncGroupSpec({
+      description: 'test syncgroup ' + fullSgName,
+      perms: perms,
+      prefixes: prefixes
+    });
+
+    var sg = o.database.syncGroup(fullSgName);
+    sg.create(o.ctx, spec, myInfo, function(err) {
+      if (err) {
+        o.rt.close(t.error);
+        return cb(err);
+      }
+
+      return cb(null, extend(o, {
+        syncgroup: sg
       }));
     });
   });

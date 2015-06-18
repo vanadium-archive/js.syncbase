@@ -17,5 +17,7 @@ module.exports = {
   BatchOptions: vdl.BatchOptions,
   ReadOnlyBatchError: vdl.ReadOnlyBatchError,
   rowrange: rowrange,
-  runInBatch: runInBatch
+  runInBatch: runInBatch,
+  SyncGroupMemberInfo: vdl.SyncGroupMemberInfo,
+  SyncGroupSpec: vdl.SyncGroupSpec
 };
