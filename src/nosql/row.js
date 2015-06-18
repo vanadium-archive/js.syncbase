@@ -92,14 +92,20 @@ Row.prototype.get = function(ctx, cb) {
  * Writes the given value for this Row.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {*} value Value to write.
+ * @param {module:vanadium.vdl.Type} [type] Type of value.
  * @param {function} cb Callback.
  */
-Row.prototype.put = function(ctx, value, cb) {
+Row.prototype.put = function(ctx, value, type, cb) {
+  if (typeof cb === 'undefined' && typeof type === 'function') {
+    cb = type;
+    type = undefined;
+  }
+
   // NOTE(aghassemi) Currently server side does not want to encode for
   // performance reasons, so encoding/decoding is happening on the client side.
   var encodedVal;
   try {
-    encodedVal = vanadium.vom.encode(value);
+    encodedVal = vanadium.vom.encode(value, type);
   } catch (e) {
     return cb(e);
   }

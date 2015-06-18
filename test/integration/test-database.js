@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var naming = require('vanadium').naming;
+var async = require('async');
+var format = require('format');
+var stringify = require('json-stable-stringify');
 var test = require('prova');
+var toArray = require('stream-to-array');
+
 var vanadium = require('vanadium');
+var naming = vanadium.naming;
+var vdl = vanadium.vdl;
 
 var Database = require('../../src/nosql/database');
 var Table = require('../../src/nosql/table');
@@ -14,6 +20,7 @@ var databaseExists = testUtil.databaseExists;
 var tableExists = testUtil.tableExists;
 var setupApp = testUtil.setupApp;
 var setupDatabase = testUtil.setupDatabase;
+var setupTable = testUtil.setupTable;
 var uniqueName = testUtil.uniqueName;
 
 test('app.noSqlDatabase() returns a database', function(t) {
@@ -252,3 +259,247 @@ test('Getting/Setting permissions of a database', function(t) {
     });
   });
 });
+
+test('database.exec', function(t) {
+  setupTable(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    var ctx = o.ctx;
+    var db = o.database;
+    var table = o.table;
+
+    var personType = new vdl.Type({
+      kind: vdl.kind.STRUCT,
+      name: 'personType',
+      fields: [
+        {
+          name: 'first',
+          type: vdl.types.STRING
+        },
+        {
+          name: 'last',
+          type: vdl.types.STRING
+        },
+        {
+          name: 'employed',
+          type: vdl.types.BOOL
+        },
+        {
+          name: 'age',
+          type: vdl.types.INT32
+        }
+      ]
+    });
+
+    var homer = {
+      first: 'Homer',
+      last: 'Simpson',
+      employed: true,
+      age: 38
+    };
+
+    var bart = {
+      first: 'Bart',
+      last: 'Simpson',
+      employed: false,
+      age: 10
+    };
+
+    var maggie = {
+      first: 'Maggie',
+      last: 'Simpson',
+      employed: false,
+      age: 1
+    };
+
+    var moe = {
+      first: 'Moe',
+      last: 'Syzlak',
+      employed: true,
+      age: 46
+    };
+
+    var people = [homer, bart, maggie, moe];
+
+    var cityType = new vdl.Type({
+      kind: vdl.kind.STRUCT,
+      name: 'cityType',
+      fields: [
+        {
+          name: 'name',
+          type: vdl.types.STRING
+        },
+        {
+          name: 'population',
+          type: vdl.types.INT32
+        },
+        {
+          name: 'age',
+          type: vdl.types.INT32
+        }
+      ]
+    });
+
+    var springfield = {
+      name: 'Springfield',
+      population: 30720,
+      age: 219
+    };
+
+    var shelbyville = {
+      name: 'Shelbyville',
+      population: 600000,
+      age: 220
+    };
+
+    var cities = [springfield, shelbyville];
+
+    var testCases = [
+      {
+        q: 'select k, v from %s',
+        want: [
+          ['k', 'v'],
+          ['Homer', homer],
+          ['Bart', bart],
+          ['Moe', moe],
+          ['Maggie', maggie],
+          ['Springfield', springfield],
+          ['Shelbyville', shelbyville]
+        ]
+      },
+      {
+        q: 'select k, v.Age from %s',
+        want: [
+          ['k', 'v.Age'],
+          ['Homer', homer.age],
+          ['Bart', bart.age],
+          ['Moe', moe.age],
+          ['Maggie', maggie.age],
+          ['Springfield', springfield.age],
+          ['Shelbyville', shelbyville.age]
+        ]
+      },
+      {
+        q: 'select k, v.First from %s where t = "personType"',
+        want: [
+          ['k', 'v.First'],
+          ['Homer', homer.first],
+          ['Bart', bart.first],
+          ['Moe', moe.first],
+          ['Maggie', maggie.first]
+        ]
+      },
+      {
+        q: 'select k, v.Population from %s where t = "cityType"',
+        want: [
+          ['k', 'v.Population'],
+          ['Shelbyville', shelbyville.population],
+          ['Springfield', springfield.population],
+        ]
+      },
+      {
+        q: 'select k, v from %s where v.Age = 10',
+        want: [
+          ['k', 'v'],
+          ['Bart', bart]
+        ]
+      },
+      {
+        q: 'select k, v from %s where k = "Homer"',
+        want: [
+          ['k', 'v'],
+          ['Homer', homer],
+        ]
+      },
+      {
+        // Note the double-percent below. The query is passed through 'format'
+        // to insert the table name. The double %% will be replaced with a
+        // single %.
+        q: 'select k, v from %s where k like "M%%"',
+        want: [
+          ['k', 'v'],
+          ['Moe', moe],
+          ['Maggie', maggie],
+        ]
+      },
+      {
+        q: 'select k, v from %s where v.Employed = true',
+        want: [
+          ['k', 'v'],
+          ['Homer', homer],
+          ['Moe', moe],
+        ]
+      },
+    ];
+
+    putPeople();
+
+    // Put all people, keyed by their first name.
+    function putPeople() {
+      async.forEach(people, function(person, cb) {
+        table.put(ctx, person.first, person, personType, cb);
+      }, putCities);
+    }
+
+    // Put all cities, keyed by their name.
+    function putCities(err) {
+      if (err) {
+        return end(err);
+      }
+
+      async.forEach(cities, function(city, cb) {
+        table.put(ctx, city.name, city, cityType, cb);
+      }, runTestCases);
+    }
+
+    // Check all the test cases.
+    function runTestCases(err) {
+      if (err) {
+        return end(err);
+      }
+
+      async.forEachSeries(testCases, function(testCase, cb) {
+        assertExec(format(testCase.q, table.name), testCase.want, cb);
+      }, end);
+    }
+
+    function end(err) {
+      t.error(err);
+      o.teardown(t.end);
+    }
+
+    // Assert that query 'q' returns the rows in 'want'.
+    function assertExec(q, want, cb) {
+      var stream = db.exec(ctx, q, function(err) {
+        t.error(err);
+        cb();
+      });
+      stream.on('error', t.error);
+      toArray(stream, function(err, got) {
+        t.error(err);
+        got.sort(arrayCompare);
+        want.sort(arrayCompare);
+
+        var msg = 'query: "' + q + '" returns the correct values';
+        t.deepEqual(got, want, msg);
+      });
+    }
+  });
+});
+
+// Compare two arrays by json-encoding all items, then joining and treating it
+// as string.  Used to sort an array of arrays deterministically.
+function arrayCompare(a1, a2) {
+  var a1s = a1.map(stringify).join('/');
+  var a2s = a2.map(stringify).join('/');
+
+  if (a1s <= a2s) {
+    return -1;
+  }
+  if (a1s >= a2s) {
+    return 1;
+  }
+  return 0;
+}

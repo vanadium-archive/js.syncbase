@@ -24,6 +24,7 @@ var _type1 = new vdl.Type();
 var _type2 = new vdl.Type();
 var _type3 = new vdl.Type();
 var _type4 = new vdl.Type();
+var _type5 = new vdl.Type();
 var _typeBatchOptions = new vdl.Type();
 var _typeKeyValue = new vdl.Type();
 var _typePrefixPermissions = new vdl.Type();
@@ -38,16 +39,19 @@ _type2.elem = _typeSyncGroupMemberInfo;
 _type2.key = vdl.types.STRING;
 _type3.kind = vdl.kind.LIST;
 _type3.name = "";
-_type3.elem = vdl.types.BYTE;
+_type3.elem = vdl.types.ANY;
 _type4.kind = vdl.kind.LIST;
 _type4.name = "";
-_type4.elem = _typePrefixPermissions;
+_type4.elem = vdl.types.BYTE;
+_type5.kind = vdl.kind.LIST;
+_type5.name = "";
+_type5.elem = _typePrefixPermissions;
 _typeBatchOptions.kind = vdl.kind.STRUCT;
 _typeBatchOptions.name = "v.io/syncbase/v23/services/syncbase/nosql.BatchOptions";
 _typeBatchOptions.fields = [{name: "Hint", type: vdl.types.STRING}, {name: "ReadOnly", type: vdl.types.BOOL}];
 _typeKeyValue.kind = vdl.kind.STRUCT;
 _typeKeyValue.name = "v.io/syncbase/v23/services/syncbase/nosql.KeyValue";
-_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type3}];
+_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type4}];
 _typePrefixPermissions.kind = vdl.kind.STRUCT;
 _typePrefixPermissions.name = "v.io/syncbase/v23/services/syncbase/nosql.PrefixPermissions";
 _typePrefixPermissions.fields = [{name: "Prefix", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}];
@@ -61,6 +65,7 @@ _type1.freeze();
 _type2.freeze();
 _type3.freeze();
 _type4.freeze();
+_type5.freeze();
 _typeBatchOptions.freeze();
 _typeKeyValue.freeze();
 _typePrefixPermissions.freeze();
@@ -387,6 +392,11 @@ Database.prototype.commit = function(ctx, serverCall) {
 };
     
       
+Database.prototype.exec = function(ctx, serverCall, query) {
+  throw new Error('Method Exec not implemented');
+};
+    
+      
 Database.prototype.abort = function(ctx, serverCall) {
   throw new Error('Method Abort not implemented');
 };
@@ -521,6 +531,26 @@ Database.prototype._serviceDescription = {
     outArgs: [],
     inStream: null,
     outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'Exec',
+    doc: "// Exec executes a syncQL query and returns all results as specified by\n// in the query's select clause.  The returned stream reads\n// from a consistent snapshot taken at the time of the Exec RPC.",
+    inArgs: [{
+      name: 'query',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _type3
+    },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
     
@@ -858,12 +888,12 @@ Table.prototype._serviceDescription = {
     inArgs: [{
       name: 'start',
       doc: "",
-      type: _type3
+      type: _type4
     },
     {
       name: 'limit',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     outArgs: [],
@@ -879,12 +909,12 @@ Table.prototype._serviceDescription = {
     inArgs: [{
       name: 'start',
       doc: "",
-      type: _type3
+      type: _type4
     },
     {
       name: 'limit',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     outArgs: [],
@@ -931,7 +961,7 @@ Table.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type4
+      type: _type5
     },
     ],
     inStream: null,
@@ -996,7 +1026,7 @@ Row.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     inStream: null,
@@ -1011,7 +1041,7 @@ Row.prototype._serviceDescription = {
     inArgs: [{
       name: 'value',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     outArgs: [],

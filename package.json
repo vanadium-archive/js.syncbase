@@ -11,7 +11,9 @@
   "devDependencies": {
     "async": "~1.0.0",
     "deep-equal": "~1.0.0",
+    "format": "~0.2.1",
     "jshint": "~2.7.0",
+    "json-stable-stringify": "~1.0.0",
     "minimist": "~1.1.1",
     "mkdirp": "~0.5.1",
     "prova": "aghassemi/prova#0.0.4",

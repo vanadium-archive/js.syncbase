@@ -80,13 +80,19 @@ Table.prototype.get = function(ctx, key, cb) {
 /**
  * Put writes the given value to this Table. The value's primary key field
  * must be set.
+ *
+ * Note that if you want to sync data with a Go syncbase client, or if you want
+ * to use syncbase queries, you must either specify the type of the value, or
+ * use a vdl value that includes its type.
+ *
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {string} key Primary key of the row.
  * @param {*} value Value to put in the row.
+ * @param {module:vanadium.vdl.Type} [type] Type of value.
  * @param {function} cb Callback.
  */
-Table.prototype.put = function(ctx, key, value, cb) {
-  this.row(key).put(ctx, value, cb);
+Table.prototype.put = function(ctx, key, value, type, cb) {
+  this.row(key).put(ctx, value, type, cb);
 };
 
 /**
@@ -107,6 +113,7 @@ Table.prototype.delete = function(ctx, range, cb) {
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {module:syncbase.nosql.rowrange.RowRange} range Row ranges to scan.
  * @param {function} cb Callback.
+ * @returns {stream} Stream of row objects.
  */
 Table.prototype.scan = function(ctx, range, cb) {
   var vomStreamDecoder = through2({

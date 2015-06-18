@@ -64,3 +64,20 @@ BatchDatabase.prototype.commit = function(ctx, cb) {
 BatchDatabase.prototype.abort = function(ctx, cb) {
   this._db._wire(ctx).abort(ctx, cb);
 };
+
+/**
+ * Executes a syncQL query.
+ *
+ * Returns a stream of rows.  The first row contains an array of headers (i.e.
+ * column names).  Subsequent rows contain an array of values for each row that
+ * matches the query.  The number of values returned in each row will match the
+ * size of the headers array.
+ *
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {string} query Query string.
+ * @param {function} cb Callback.
+ * @returns {stream} Stream of rows.
+ */
+BatchDatabase.prototype.exec = function(ctx, query, cb) {
+  this._db.exec(ctx, query, cb);
+};

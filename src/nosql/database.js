@@ -4,7 +4,11 @@
 
 module.exports = Database;
 
+var through2 = require('through2');
 var vanadium = require('vanadium');
+// TODO(nlacasse): We should put unwrap and other type util methods on
+// vanadium.vdl object.
+var unwrap = require('vanadium/src/vdl/type-util').unwrap;
 
 var BatchDatabase = require('./batch-database');
 var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
@@ -71,6 +75,50 @@ Database.prototype.create = function(ctx, perms, cb) {
  */
 Database.prototype.delete = function(ctx, cb) {
   this._wire(ctx).delete(ctx, cb);
+};
+
+/**
+ * Executes a syncQL query.
+ *
+ * Returns a stream of rows.  The first row contains an array of headers (i.e.
+ * column names).  Subsequent rows contain an array of values for each row that
+ * matches the query.  The number of values returned in each row will match the
+ * size of the headers array.
+ *
+ * NOTE(nlacasse): The Go client library returns the headers seperately from
+ * the stream.  We could potentially do something similar in JavaScript, by
+ * pulling the headers off the stream and passing them to the callback.
+ * However, by Vanadium JS convention the callback gets called at the *end* of
+ * the RPC, so a developer would have to wait for the stream to finish before
+ * seeing what the headers are, which is not ideal.  We also cannot return the
+ * headers directly because reading from the stream is async.
+ *
+ * TODO(nlacasse): Syncbase queries don't work on values that were put without
+ * type information.  When JavaScript encodes values with no type infomation,
+ * it uses "vdl.Value" for the type.  Presumably, syncbase does not know how to
+ * decode such objects, so queries that involve inspecting the object or its
+ * type don't work.
+ *
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {string} query Query string.
+ * @param {function} cb Callback.
+ * @returns {stream} Stream of rows.
+ */
+Database.prototype.exec = function(ctx, query, cb) {
+  var streamUnwrapper = through2({
+    objectMode: true
+  }, function(res, enc, cb) {
+    return cb(null, res.map(unwrap));
+  });
+
+  var stream = this._wire(ctx).exec(ctx, query, cb).stream;
+
+  var decodedStream = stream.pipe(streamUnwrapper);
+  stream.on('error', function(err) {
+    decodedStream.emit('error', err);
+  });
+
+  return decodedStream;
 };
 
 /**
