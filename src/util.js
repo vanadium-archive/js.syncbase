@@ -74,9 +74,15 @@ function getChildNames(ctx, parentFullName, cb) {
 
   var globPattern = vanadium.naming.join(parentFullName, '*');
 
+  var streamErr = null;
+
   var stream = namespace.glob(ctx, globPattern, function(err) {
     if (err) {
       return cb(err);
+    }
+
+    if (streamErr) {
+      return cb(streamErr);
     }
 
     cb(null, childNames);
@@ -90,6 +96,8 @@ function getChildNames(ctx, parentFullName, cb) {
 
   stream.on('error', function(err) {
     console.error('Stream error: ' + JSON.stringify(err));
+    // Store the first stream error in streamErr.
+    streamErr = streamErr || err.error;
   });
 }
 
