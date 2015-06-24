@@ -6,7 +6,9 @@ var async = require('async');
 var naming = require('vanadium').naming;
 var test = require('prova');
 
-var nosql = require('../..').nosql;
+var syncbase = require('../..');
+var nosql = syncbase.nosql;
+var syncbaseSuffix = syncbase.syncbaseSuffix;
 var SyncGroup = require('../../src/nosql/syncgroup');
 var verror = require('vanadium').verror;
 
@@ -68,7 +70,9 @@ test('syncgroup.create with valid spec', function(t) {
 
     // TODO(nlacasse): It's not obvious that the syncgroup name needs to be
     // appended to a syncbase service name.
-    var name = naming.join(o.service.fullName, uniqueName('syncgroup'));
+    var name = naming.join(o.service.fullName,
+                           syncbaseSuffix,
+                           uniqueName('syncgroup'));
     var prefix = 't1/foo';
 
     var spec = new nosql.SyncGroupSpec({
@@ -100,7 +104,9 @@ test('creating a nested syncgroup', function(t) {
 
     // TODO(nlacasse): It's not obvious that the syncgroup name needs to be
     // appended to a syncbase service name.
-    var name = naming.join(o.service.fullName, uniqueName('syncgroup'));
+    var name = naming.join(o.service.fullName,
+                           syncbaseSuffix,
+                           uniqueName('syncgroup'));
 
     var spec = new nosql.SyncGroupSpec({
       description: 'another syncgroup named ' + name,
@@ -207,7 +213,9 @@ test.skip('db.getSyncGroupNames returns the correct names', function(t) {
     ];
 
     var fullNames = names.map(function(name) {
-      return naming.join(o.service.fullName, name);
+      return naming.join(o.service.fullName,
+                         syncbaseSuffix,
+                         name);
     });
 
     createSyncGroups();

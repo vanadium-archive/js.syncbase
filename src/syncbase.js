@@ -7,7 +7,16 @@ var nosql = require('./nosql');
 
 module.exports = {
   newService: newService,
-  nosql: nosql
+  nosql: nosql,
+  // syncbaseSuffix is used for Syncbase-to-Syncbase RPCs.  It should be
+  // completely internal to syncbase, but currently syncgroup names must
+  // include it for implementation-dependant reasons.
+  //
+  // TODO(nlacasse): This suffix should go away.  One possibility is to detect
+  // "internal" RPCs by the method they call, and dispatch to different object
+  // based on that method.  We could also have the client or server inject the
+  // suffix automatically.
+  syncbaseSuffix: '$sync'
 };
 
 function newService(fullName) {

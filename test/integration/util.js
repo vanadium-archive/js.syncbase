@@ -24,6 +24,7 @@ var streamToArray = require('stream-to-array');
 var vanadium = require('vanadium');
 
 var syncbase = require('../..');
+var syncbaseSuffix = syncbase.syncbaseSuffix;
 
 var SERVICE_NAME = require('./service-name');
 
@@ -112,7 +113,9 @@ function setupSyncGroup(t, perms, prefixes, cb) {
     }
 
     var sgName = uniqueName('syncgroup');
-    var fullSgName = vanadium.naming.join(o.service.fullName, sgName);
+    var fullSgName = vanadium.naming.join(o.service.fullName,
+                                          syncbaseSuffix,
+                                          sgName);
 
     // TODO(nlacasse): Where does this magic number 8 come from? It's in
     // syncgroup_test.go.
