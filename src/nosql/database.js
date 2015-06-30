@@ -84,6 +84,10 @@ Database.prototype.delete = function(ctx, cb) {
  * column names).  Subsequent rows contain an array of values for each row that
  * matches the query.  The number of values returned in each row will match the
  * size of the headers array.
+ * Concurrency semantics: It is legal to perform writes concurrently with
+ * Exec. The returned stream reads from a consistent snapshot taken at the
+ * time of the RPC, and will not reflect subsequent writes to keys not yet
+ * reached by the stream.
  *
  * NOTE(nlacasse): The Go client library returns the headers seperately from
  * the stream.  We could potentially do something similar in JavaScript, by
@@ -214,18 +218,21 @@ Database.prototype.getPermissions = function(ctx, cb) {
 
 /**
  * Creates a new batch. Instead of calling this function directly, clients are
- * recommended to use the RunInBatch() helper function, which detects
- * "concurrent batch" errors and handles retries internally.
+ * encouraged to use the RunInBatch() helper function, which detects "concurrent
+ * batch" errors and handles retries internally.
  *
  * Default concurrency semantics:
- * - Reads inside a batch see a consistent snapshot, taken during
- *   beginBatch(), and will not see the effect of writes inside the batch.
+ * - Reads (e.g. gets, scans) inside a batch operate over a consistent snapshot
+ *   taken during beginBatch(), and will see the effects of prior writes
+ *   performed inside the batch.
  * - commit() may fail with errConcurrentBatch, indicating that after
  *   beginBatch() but before commit(), some concurrent routine wrote to a key
- *   that matches a key or row-range read inside this batch. (Writes inside a
- *   batch cannot cause that batch's commit() to fail.)
- * - Other methods (e.g. get) will never fail with error errConcurrentBatch,
- *   even if it is known that commit() will fail with this error.
+ *   that matches a key or row-range read inside this batch.
+ * - Other methods will never fail with error errConcurrentBatch, even if it is
+ *   known that commit() will fail with this error.
+ *
+ * Once a batch has been committed or aborted, subsequent method calls will
+ * fail with no effect.
  *
  * Concurrency semantics can be configured using BatchOptions.
  * @param {module:vanadium.context.Context} ctx Vanadium context.

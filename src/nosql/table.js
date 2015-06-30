@@ -108,8 +108,11 @@ Table.prototype.delete = function(ctx, range, cb) {
 };
 
 /**
- * Scan returns all rows in the given range. The returned stream reads from a
- * consistent snapshot taken at the time of the Scan RPC.
+ * Scan returns all rows in the given range.
+ * Concurrency semantics: It is legal to perform writes concurrently with
+ * Scan. The returned stream reads from a consistent snapshot taken at the
+ * time of the RPC, and will not reflect subsequent writes to keys not yet
+ * reached by the stream.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {module:syncbase.nosql.rowrange.RowRange} range Row ranges to scan.
  * @param {function} cb Callback.
