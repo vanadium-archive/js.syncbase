@@ -63,9 +63,12 @@ Database.prototype._wire = function(ctx) {
  * @param {module:vanadium.security.access.Permissions} perms Permissions for
  * the new database.  If perms is null, we inherit (copy) the App perms.
  * @param {function} cb Callback.
+ *
+ * TODO(nlacasse): Port schema changes to javascript code. See cl:
+ *    https://vanadium-review.googlesource.com/#/c/13040/ .
  */
 Database.prototype.create = function(ctx, perms, cb) {
-  this._wire(ctx).create(ctx, perms, cb);
+  this._wire(ctx).create(ctx, perms, null, cb);
 };
 
 /**

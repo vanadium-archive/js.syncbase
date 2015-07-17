@@ -25,62 +25,161 @@ var _type2 = new vdl.Type();
 var _type3 = new vdl.Type();
 var _type4 = new vdl.Type();
 var _type5 = new vdl.Type();
+var _type6 = new vdl.Type();
+var _type7 = new vdl.Type();
+var _type8 = new vdl.Type();
 var _typeBatchOptions = new vdl.Type();
+var _typeBlobRef = new vdl.Type();
+var _typeChange = new vdl.Type();
+var _typeChangeType = new vdl.Type();
+var _typeCrPolicy = new vdl.Type();
+var _typeCrRule = new vdl.Type();
+var _typeFetchState = new vdl.Type();
+var _typeFetchStatus = new vdl.Type();
 var _typeKeyValue = new vdl.Type();
 var _typePrefixPermissions = new vdl.Type();
+var _typeResolverType = new vdl.Type();
+var _typeResumeMarker = new vdl.Type();
+var _typeSchemaMetadata = new vdl.Type();
 var _typeSyncGroupMemberInfo = new vdl.Type();
 var _typeSyncGroupSpec = new vdl.Type();
+var _typeTablePrefixRange = new vdl.Type();
+var _typeWatchRequest = new vdl.Type();
 _type1.kind = vdl.kind.LIST;
 _type1.name = "";
-_type1.elem = vdl.types.STRING;
-_type2.kind = vdl.kind.MAP;
+_type1.elem = _typeTablePrefixRange;
+_type2.kind = vdl.kind.LIST;
 _type2.name = "";
-_type2.elem = _typeSyncGroupMemberInfo;
-_type2.key = vdl.types.STRING;
+_type2.elem = vdl.types.BYTE;
 _type3.kind = vdl.kind.LIST;
 _type3.name = "";
-_type3.elem = vdl.types.ANY;
-_type4.kind = vdl.kind.LIST;
+_type3.elem = vdl.types.STRING;
+_type4.kind = vdl.kind.MAP;
 _type4.name = "";
-_type4.elem = vdl.types.BYTE;
+_type4.elem = _typeSyncGroupMemberInfo;
+_type4.key = vdl.types.STRING;
 _type5.kind = vdl.kind.LIST;
 _type5.name = "";
-_type5.elem = _typePrefixPermissions;
+_type5.elem = _typeCrRule;
+_type6.kind = vdl.kind.OPTIONAL;
+_type6.name = "";
+_type6.elem = _typeSchemaMetadata;
+_type7.kind = vdl.kind.LIST;
+_type7.name = "";
+_type7.elem = vdl.types.ANY;
+_type8.kind = vdl.kind.LIST;
+_type8.name = "";
+_type8.elem = _typePrefixPermissions;
 _typeBatchOptions.kind = vdl.kind.STRUCT;
 _typeBatchOptions.name = "v.io/syncbase/v23/services/syncbase/nosql.BatchOptions";
 _typeBatchOptions.fields = [{name: "Hint", type: vdl.types.STRING}, {name: "ReadOnly", type: vdl.types.BOOL}];
+_typeBlobRef.kind = vdl.kind.STRING;
+_typeBlobRef.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobRef";
+_typeChange.kind = vdl.kind.STRUCT;
+_typeChange.name = "v.io/syncbase/v23/services/syncbase/nosql.Change";
+_typeChange.fields = [{name: "Table", type: vdl.types.STRING}, {name: "Row", type: vdl.types.STRING}, {name: "ChangeType", type: _typeChangeType}, {name: "Value", type: _type2}, {name: "ResumeMarker", type: _typeResumeMarker}, {name: "FromSync", type: vdl.types.BOOL}, {name: "Continued", type: vdl.types.BOOL}];
+_typeChangeType.kind = vdl.kind.ENUM;
+_typeChangeType.name = "v.io/syncbase/v23/services/syncbase/nosql.ChangeType";
+_typeChangeType.labels = ["Put", "Delete"];
+_typeCrPolicy.kind = vdl.kind.STRUCT;
+_typeCrPolicy.name = "v.io/syncbase/v23/services/syncbase/nosql.CrPolicy";
+_typeCrPolicy.fields = [{name: "Rules", type: _type5}];
+_typeCrRule.kind = vdl.kind.STRUCT;
+_typeCrRule.name = "v.io/syncbase/v23/services/syncbase/nosql.CrRule";
+_typeCrRule.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "KeyPrefix", type: vdl.types.STRING}, {name: "Type", type: vdl.types.STRING}, {name: "Resolver", type: _typeResolverType}];
+_typeFetchState.kind = vdl.kind.ENUM;
+_typeFetchState.name = "v.io/syncbase/v23/services/syncbase/nosql.FetchState";
+_typeFetchState.labels = ["Pending", "Locating", "Fetching", "Done"];
+_typeFetchStatus.kind = vdl.kind.STRUCT;
+_typeFetchStatus.name = "v.io/syncbase/v23/services/syncbase/nosql.FetchStatus";
+_typeFetchStatus.fields = [{name: "State", type: _typeFetchState}, {name: "Received", type: vdl.types.UINT64}, {name: "Total", type: vdl.types.UINT64}];
 _typeKeyValue.kind = vdl.kind.STRUCT;
 _typeKeyValue.name = "v.io/syncbase/v23/services/syncbase/nosql.KeyValue";
-_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type4}];
+_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type2}];
 _typePrefixPermissions.kind = vdl.kind.STRUCT;
 _typePrefixPermissions.name = "v.io/syncbase/v23/services/syncbase/nosql.PrefixPermissions";
 _typePrefixPermissions.fields = [{name: "Prefix", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}];
+_typeResolverType.kind = vdl.kind.ENUM;
+_typeResolverType.name = "v.io/syncbase/v23/services/syncbase/nosql.ResolverType";
+_typeResolverType.labels = ["LastWins", "AppResolves", "Defer"];
+_typeResumeMarker.kind = vdl.kind.STRING;
+_typeResumeMarker.name = "v.io/syncbase/v23/services/syncbase/nosql.ResumeMarker";
+_typeSchemaMetadata.kind = vdl.kind.STRUCT;
+_typeSchemaMetadata.name = "v.io/syncbase/v23/services/syncbase/nosql.SchemaMetadata";
+_typeSchemaMetadata.fields = [{name: "Version", type: vdl.types.INT64}, {name: "Policy", type: _typeCrPolicy}];
 _typeSyncGroupMemberInfo.kind = vdl.kind.STRUCT;
 _typeSyncGroupMemberInfo.name = "v.io/syncbase/v23/services/syncbase/nosql.SyncGroupMemberInfo";
 _typeSyncGroupMemberInfo.fields = [{name: "SyncPriority", type: vdl.types.BYTE}];
 _typeSyncGroupSpec.kind = vdl.kind.STRUCT;
 _typeSyncGroupSpec.name = "v.io/syncbase/v23/services/syncbase/nosql.SyncGroupSpec";
-_typeSyncGroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type1}, {name: "MountTables", type: _type1}, {name: "IsPrivate", type: vdl.types.BOOL}];
+_typeSyncGroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type3}, {name: "MountTables", type: _type3}, {name: "IsPrivate", type: vdl.types.BOOL}];
+_typeTablePrefixRange.kind = vdl.kind.STRUCT;
+_typeTablePrefixRange.name = "v.io/syncbase/v23/services/syncbase/nosql.TablePrefixRange";
+_typeTablePrefixRange.fields = [{name: "Table", type: vdl.types.STRING}, {name: "Prefix", type: vdl.types.STRING}];
+_typeWatchRequest.kind = vdl.kind.STRUCT;
+_typeWatchRequest.name = "v.io/syncbase/v23/services/syncbase/nosql.WatchRequest";
+_typeWatchRequest.fields = [{name: "Ranges", type: _type1}, {name: "ResumeMarker", type: _typeResumeMarker}];
 _type1.freeze();
 _type2.freeze();
 _type3.freeze();
 _type4.freeze();
 _type5.freeze();
+_type6.freeze();
+_type7.freeze();
+_type8.freeze();
 _typeBatchOptions.freeze();
+_typeBlobRef.freeze();
+_typeChange.freeze();
+_typeChangeType.freeze();
+_typeCrPolicy.freeze();
+_typeCrRule.freeze();
+_typeFetchState.freeze();
+_typeFetchStatus.freeze();
 _typeKeyValue.freeze();
 _typePrefixPermissions.freeze();
+_typeResolverType.freeze();
+_typeResumeMarker.freeze();
+_typeSchemaMetadata.freeze();
 _typeSyncGroupMemberInfo.freeze();
 _typeSyncGroupSpec.freeze();
+_typeTablePrefixRange.freeze();
+_typeWatchRequest.freeze();
 module.exports.BatchOptions = (vdl.registry.lookupOrCreateConstructor(_typeBatchOptions));
+module.exports.BlobRef = (vdl.registry.lookupOrCreateConstructor(_typeBlobRef));
+module.exports.Change = (vdl.registry.lookupOrCreateConstructor(_typeChange));
+module.exports.ChangeType = {
+  PUT: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeChangeType))('Put', true), _typeChangeType),
+  DELETE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeChangeType))('Delete', true), _typeChangeType),
+};
+module.exports.CrPolicy = (vdl.registry.lookupOrCreateConstructor(_typeCrPolicy));
+module.exports.CrRule = (vdl.registry.lookupOrCreateConstructor(_typeCrRule));
+module.exports.FetchState = {
+  PENDING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Pending', true), _typeFetchState),
+  LOCATING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Locating', true), _typeFetchState),
+  FETCHING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Fetching', true), _typeFetchState),
+  DONE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Done', true), _typeFetchState),
+};
+module.exports.FetchStatus = (vdl.registry.lookupOrCreateConstructor(_typeFetchStatus));
 module.exports.KeyValue = (vdl.registry.lookupOrCreateConstructor(_typeKeyValue));
 module.exports.PrefixPermissions = (vdl.registry.lookupOrCreateConstructor(_typePrefixPermissions));
+module.exports.ResolverType = {
+  LAST_WINS: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeResolverType))('LastWins', true), _typeResolverType),
+  APP_RESOLVES: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeResolverType))('AppResolves', true), _typeResolverType),
+  DEFER: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeResolverType))('Defer', true), _typeResolverType),
+};
+module.exports.ResumeMarker = (vdl.registry.lookupOrCreateConstructor(_typeResumeMarker));
+module.exports.SchemaMetadata = (vdl.registry.lookupOrCreateConstructor(_typeSchemaMetadata));
 module.exports.SyncGroupMemberInfo = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupMemberInfo));
 module.exports.SyncGroupSpec = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupSpec));
+module.exports.TablePrefixRange = (vdl.registry.lookupOrCreateConstructor(_typeTablePrefixRange));
+module.exports.WatchRequest = (vdl.registry.lookupOrCreateConstructor(_typeWatchRequest));
 
 
 
 
 // Consts:
+
+  module.exports.NullBlobRef = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobRef))("", true), _typeBlobRef);
 
 
 
@@ -107,6 +206,70 @@ module.exports.ReadOnlyBatchError = makeError('v.io/syncbase/v23/services/syncba
 
 
 // Services:
+
+  
+    
+function DatabaseWatcher(){}
+module.exports.DatabaseWatcher = DatabaseWatcher;
+
+    
+      
+DatabaseWatcher.prototype.watch = function(ctx, serverCall, req) {
+  throw new Error('Method Watch not implemented');
+};
+    
+      
+DatabaseWatcher.prototype.getResumeMarker = function(ctx, serverCall) {
+  throw new Error('Method GetResumeMarker not implemented');
+};
+     
+
+    
+DatabaseWatcher.prototype._serviceDescription = {
+  name: 'DatabaseWatcher',
+  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  doc: "// Watch allows a client to watch for updates in the database. For each watched\n// request, the client will receive a reliable stream of watch events without\n// re-ordering.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log and a set of (table, row prefix) pairs. Updates with rows not\n// covered by the set are excluded from the result stream. The result stream\n// consists of a never-ending sequence of Change messages (until the call fails\n// or is canceled). Each Change message contains an optional continued bit.\n// A sub-sequence of Change messages with continued=true followed by a Change\n// message with continued=false forms a batch. If the client has no access to\n// a row specified in a change, that change is excluded from the result stream.\n//\n// See \"v.io/v23/services/watch\".GlobWatcher for more detailed explanation of\n// the general behavior.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
+  embeds: [],
+  methods: [
+    
+      
+    {
+    name: 'Watch',
+    doc: "// Watch returns a stream of changes for a given watch request. If this\n// Database is bound to a batch, Watch() will fail with ErrBoundToBatch.\n// If the provided ResumeMarker is invalid or outdated, Watch() will fail\n// with \"v.io/v23/services/watch\".ErrUnknownResumeMarker.",
+    inArgs: [{
+      name: 'req',
+      doc: "",
+      type: _typeWatchRequest
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeChange
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetResumeMarker',
+    doc: "// GetResumeMarker returns the ResumeMarker that points to the current end\n// of the current event log. GetResumeMarker() can be called on a batch.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _typeResumeMarker
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+     
+  ]
+};
 
   
     
@@ -176,7 +339,7 @@ SyncGroupManager.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type1
+      type: _type3
     },
     ],
     inStream: null,
@@ -354,7 +517,7 @@ SyncGroupManager.prototype._serviceDescription = {
     outArgs: [{
       name: 'members',
       doc: "",
-      type: _type2
+      type: _type4
     },
     ],
     inStream: null,
@@ -367,12 +530,332 @@ SyncGroupManager.prototype._serviceDescription = {
 
   
     
+function BlobManager(){}
+module.exports.BlobManager = BlobManager;
+
+    
+      
+BlobManager.prototype.createBlob = function(ctx, serverCall) {
+  throw new Error('Method CreateBlob not implemented');
+};
+    
+      
+BlobManager.prototype.putBlob = function(ctx, serverCall, br) {
+  throw new Error('Method PutBlob not implemented');
+};
+    
+      
+BlobManager.prototype.commitBlob = function(ctx, serverCall, br) {
+  throw new Error('Method CommitBlob not implemented');
+};
+    
+      
+BlobManager.prototype.getBlobSize = function(ctx, serverCall, br) {
+  throw new Error('Method GetBlobSize not implemented');
+};
+    
+      
+BlobManager.prototype.deleteBlob = function(ctx, serverCall, br) {
+  throw new Error('Method DeleteBlob not implemented');
+};
+    
+      
+BlobManager.prototype.getBlob = function(ctx, serverCall, br, offset) {
+  throw new Error('Method GetBlob not implemented');
+};
+    
+      
+BlobManager.prototype.fetchBlob = function(ctx, serverCall, br, priority) {
+  throw new Error('Method FetchBlob not implemented');
+};
+    
+      
+BlobManager.prototype.pinBlob = function(ctx, serverCall, br) {
+  throw new Error('Method PinBlob not implemented');
+};
+    
+      
+BlobManager.prototype.unpinBlob = function(ctx, serverCall, br) {
+  throw new Error('Method UnpinBlob not implemented');
+};
+    
+      
+BlobManager.prototype.keepBlob = function(ctx, serverCall, br, rank) {
+  throw new Error('Method KeepBlob not implemented');
+};
+     
+
+    
+BlobManager.prototype._serviceDescription = {
+  name: 'BlobManager',
+  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  doc: "// BlobManager is the interface for blob operations.",
+  embeds: [],
+  methods: [
+    
+      
+    {
+    name: 'CreateBlob',
+    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
+    inArgs: [],
+    outArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'PutBlob',
+    doc: "// PutBlob appends the byte stream to the blob.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: {
+      name: '',
+      doc: '',
+      type: _type2
+    },
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'CommitBlob',
+    doc: "// CommitBlob marks the blob as immutable.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetBlobSize',
+    doc: "// GetBlobSize returns the count of bytes written as part of the blob\n// (committed or uncommitted).",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'DeleteBlob',
+    doc: "// DeleteBlob locally deletes the blob (committed or uncommitted).",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetBlob',
+    doc: "// GetBlob returns the byte stream from a committed blob starting at offset.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    {
+      name: 'offset',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _type2
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'FetchBlob',
+    doc: "// FetchBlob initiates fetching a blob if not locally found. priority\n// controls the network priority of the blob. Higher priority blobs are\n// fetched before the lower priority ones. However an ongoing blob\n// transfer is not interrupted. Status updates are streamed back to the\n// client as fetch is in progress.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    {
+      name: 'priority',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeFetchStatus
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'PinBlob',
+    doc: "// PinBlob locally pins the blob so that it is not evicted.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'UnpinBlob',
+    doc: "// UnpinBlob locally unpins the blob so that it can be evicted if needed.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'KeepBlob',
+    doc: "// KeepBlob locally caches the blob with the specified rank. Lower\n// ranked blobs are more eagerly evicted.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    {
+      name: 'rank',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+     
+  ]
+};
+
+  
+    
+function SchemaManager(){}
+module.exports.SchemaManager = SchemaManager;
+
+    
+      
+SchemaManager.prototype.getSchemaMetadata = function(ctx, serverCall) {
+  throw new Error('Method GetSchemaMetadata not implemented');
+};
+    
+      
+SchemaManager.prototype.setSchemaMetadata = function(ctx, serverCall, metadata) {
+  throw new Error('Method SetSchemaMetadata not implemented');
+};
+     
+
+    
+SchemaManager.prototype._serviceDescription = {
+  name: 'SchemaManager',
+  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  doc: "// SchemaManager implements the API for managing schema metadata attached\n// to a Database.",
+  embeds: [],
+  methods: [
+    
+      
+    {
+    name: 'GetSchemaMetadata',
+    doc: "// GetSchemaMetadata retrieves schema metadata for this database.\n//\n// Requires: Client must have at least Read access on the Database.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _typeSchemaMetadata
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'SetSchemaMetadata',
+    doc: "// SetSchemaMetadata stores schema metadata for this database.\n//\n// Requires: Client must have at least Write access on the Database.",
+    inArgs: [{
+      name: 'metadata',
+      doc: "",
+      type: _typeSchemaMetadata
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+     
+  ]
+};
+
+  
+    
 function Database(){}
 module.exports.Database = Database;
 
     
       
-Database.prototype.create = function(ctx, serverCall, perms) {
+Database.prototype.create = function(ctx, serverCall, perms, metadata) {
   throw new Error('Method Create not implemented');
 };
     
@@ -414,6 +897,16 @@ Database.prototype.setPermissions = function(ctx, serverCall, perms, version) {
       
 Database.prototype.getPermissions = function(ctx, serverCall) {
   throw new Error('Method GetPermissions not implemented');
+};
+    
+      
+Database.prototype.watch = function(ctx, serverCall, req) {
+  throw new Error('Method Watch not implemented');
+};
+    
+      
+Database.prototype.getResumeMarker = function(ctx, serverCall) {
+  throw new Error('Method GetResumeMarker not implemented');
 };
     
       
@@ -460,6 +953,66 @@ Database.prototype.setSyncGroupSpec = function(ctx, serverCall, sgName, spec, ve
 Database.prototype.getSyncGroupMembers = function(ctx, serverCall, sgName) {
   throw new Error('Method GetSyncGroupMembers not implemented');
 };
+    
+      
+Database.prototype.createBlob = function(ctx, serverCall) {
+  throw new Error('Method CreateBlob not implemented');
+};
+    
+      
+Database.prototype.putBlob = function(ctx, serverCall, br) {
+  throw new Error('Method PutBlob not implemented');
+};
+    
+      
+Database.prototype.commitBlob = function(ctx, serverCall, br) {
+  throw new Error('Method CommitBlob not implemented');
+};
+    
+      
+Database.prototype.getBlobSize = function(ctx, serverCall, br) {
+  throw new Error('Method GetBlobSize not implemented');
+};
+    
+      
+Database.prototype.deleteBlob = function(ctx, serverCall, br) {
+  throw new Error('Method DeleteBlob not implemented');
+};
+    
+      
+Database.prototype.getBlob = function(ctx, serverCall, br, offset) {
+  throw new Error('Method GetBlob not implemented');
+};
+    
+      
+Database.prototype.fetchBlob = function(ctx, serverCall, br, priority) {
+  throw new Error('Method FetchBlob not implemented');
+};
+    
+      
+Database.prototype.pinBlob = function(ctx, serverCall, br) {
+  throw new Error('Method PinBlob not implemented');
+};
+    
+      
+Database.prototype.unpinBlob = function(ctx, serverCall, br) {
+  throw new Error('Method UnpinBlob not implemented');
+};
+    
+      
+Database.prototype.keepBlob = function(ctx, serverCall, br, rank) {
+  throw new Error('Method KeepBlob not implemented');
+};
+    
+      
+Database.prototype.getSchemaMetadata = function(ctx, serverCall) {
+  throw new Error('Method GetSchemaMetadata not implemented');
+};
+    
+      
+Database.prototype.setSchemaMetadata = function(ctx, serverCall, metadata) {
+  throw new Error('Method SetSchemaMetadata not implemented');
+};
      
 
     
@@ -473,9 +1026,24 @@ Database.prototype._serviceDescription = {
       doc: "// Object provides access control for Vanadium objects.\n//\n// Vanadium services implementing dynamic access control would typically embed\n// this interface and tag additional methods defined by the service with one of\n// Admin, Read, Write, Resolve etc. For example, the VDL definition of the\n// object would be:\n//\n//   package mypackage\n//\n//   import \"v.io/v23/security/access\"\n//   import \"v.io/v23/services/permissions\"\n//\n//   type MyObject interface {\n//     permissions.Object\n//     MyRead() (string, error) {access.Read}\n//     MyWrite(string) error    {access.Write}\n//   }\n//\n// If the set of pre-defined tags is insufficient, services may define their\n// own tag type and annotate all methods with this new type.\n//\n// Instead of embedding this Object interface, define SetPermissions and\n// GetPermissions in their own interface. Authorization policies will typically\n// respect annotations of a single type. For example, the VDL definition of an\n// object would be:\n//\n//  package mypackage\n//\n//  import \"v.io/v23/security/access\"\n//\n//  type MyTag string\n//\n//  const (\n//    Blue = MyTag(\"Blue\")\n//    Red  = MyTag(\"Red\")\n//  )\n//\n//  type MyObject interface {\n//    MyMethod() (string, error) {Blue}\n//\n//    // Allow clients to change access via the access.Object interface:\n//    SetPermissions(perms access.Permissions, version string) error         {Red}\n//    GetPermissions() (perms access.Permissions, version string, err error) {Blue}\n//  }"
     },
     {
+      name: 'DatabaseWatcher',
+      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      doc: "// Watch allows a client to watch for updates in the database. For each watched\n// request, the client will receive a reliable stream of watch events without\n// re-ordering.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log and a set of (table, row prefix) pairs. Updates with rows not\n// covered by the set are excluded from the result stream. The result stream\n// consists of a never-ending sequence of Change messages (until the call fails\n// or is canceled). Each Change message contains an optional continued bit.\n// A sub-sequence of Change messages with continued=true followed by a Change\n// message with continued=false forms a batch. If the client has no access to\n// a row specified in a change, that change is excluded from the result stream.\n//\n// See \"v.io/v23/services/watch\".GlobWatcher for more detailed explanation of\n// the general behavior.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
+    },
+    {
       name: 'SyncGroupManager',
       pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
       doc: "// SyncGroupManager is the interface for SyncGroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method."
+    },
+    {
+      name: 'BlobManager',
+      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      doc: "// BlobManager is the interface for blob operations."
+    },
+    {
+      name: 'SchemaManager',
+      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      doc: "// SchemaManager implements the API for managing schema metadata attached\n// to a Database."
     },
     ],
   methods: [
@@ -488,6 +1056,11 @@ Database.prototype._serviceDescription = {
       name: 'perms',
       doc: "",
       type: new access.Permissions()._type
+    },
+    {
+      name: 'metadata',
+      doc: "",
+      type: _type6
     },
     ],
     outArgs: [],
@@ -526,7 +1099,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'BeginBatch',
-    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.",
+    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.\n// TODO(sadovsky): make BatchOptions optional",
     inArgs: [{
       name: 'bo',
       doc: "",
@@ -570,7 +1143,7 @@ Database.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _type3
+      type: _type7
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -630,13 +1203,49 @@ Database.prototype._serviceDescription = {
     
       
     {
+    name: 'Watch',
+    doc: "// Watch returns a stream of changes for a given watch request. If this\n// Database is bound to a batch, Watch() will fail with ErrBoundToBatch.\n// If the provided ResumeMarker is invalid or outdated, Watch() will fail\n// with \"v.io/v23/services/watch\".ErrUnknownResumeMarker.",
+    inArgs: [{
+      name: 'req',
+      doc: "",
+      type: _typeWatchRequest
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeChange
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetResumeMarker',
+    doc: "// GetResumeMarker returns the ResumeMarker that points to the current end\n// of the current event log. GetResumeMarker() can be called on a batch.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _typeResumeMarker
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
     name: 'GetSyncGroupNames',
     doc: "// GetSyncGroupNames returns the global names of all SyncGroups attached to\n// this database.",
     inArgs: [],
     outArgs: [{
       name: '',
       doc: "",
-      type: _type1
+      type: _type3
     },
     ],
     inStream: null,
@@ -814,12 +1423,236 @@ Database.prototype._serviceDescription = {
     outArgs: [{
       name: 'members',
       doc: "",
-      type: _type2
+      type: _type4
     },
     ],
     inStream: null,
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'CreateBlob',
+    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
+    inArgs: [],
+    outArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'PutBlob',
+    doc: "// PutBlob appends the byte stream to the blob.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: {
+      name: '',
+      doc: '',
+      type: _type2
+    },
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'CommitBlob',
+    doc: "// CommitBlob marks the blob as immutable.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetBlobSize',
+    doc: "// GetBlobSize returns the count of bytes written as part of the blob\n// (committed or uncommitted).",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'DeleteBlob',
+    doc: "// DeleteBlob locally deletes the blob (committed or uncommitted).",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetBlob',
+    doc: "// GetBlob returns the byte stream from a committed blob starting at offset.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    {
+      name: 'offset',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _type2
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'FetchBlob',
+    doc: "// FetchBlob initiates fetching a blob if not locally found. priority\n// controls the network priority of the blob. Higher priority blobs are\n// fetched before the lower priority ones. However an ongoing blob\n// transfer is not interrupted. Status updates are streamed back to the\n// client as fetch is in progress.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    {
+      name: 'priority',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeFetchStatus
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'PinBlob',
+    doc: "// PinBlob locally pins the blob so that it is not evicted.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'UnpinBlob',
+    doc: "// UnpinBlob locally unpins the blob so that it can be evicted if needed.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'KeepBlob',
+    doc: "// KeepBlob locally caches the blob with the specified rank. Lower\n// ranked blobs are more eagerly evicted.",
+    inArgs: [{
+      name: 'br',
+      doc: "",
+      type: _typeBlobRef
+    },
+    {
+      name: 'rank',
+      doc: "",
+      type: vdl.types.UINT64
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'GetSchemaMetadata',
+    doc: "// GetSchemaMetadata retrieves schema metadata for this database.\n//\n// Requires: Client must have at least Read access on the Database.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _typeSchemaMetadata
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'SetSchemaMetadata',
+    doc: "// SetSchemaMetadata stores schema metadata for this database.\n//\n// Requires: Client must have at least Write access on the Database.",
+    inArgs: [{
+      name: 'metadata',
+      doc: "",
+      type: _typeSchemaMetadata
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
   },
      
   ]
@@ -930,12 +1763,12 @@ Table.prototype._serviceDescription = {
     inArgs: [{
       name: 'start',
       doc: "",
-      type: _type4
+      type: _type2
     },
     {
       name: 'limit',
       doc: "",
-      type: _type4
+      type: _type2
     },
     ],
     outArgs: [],
@@ -951,12 +1784,12 @@ Table.prototype._serviceDescription = {
     inArgs: [{
       name: 'start',
       doc: "",
-      type: _type4
+      type: _type2
     },
     {
       name: 'limit',
       doc: "",
-      type: _type4
+      type: _type2
     },
     ],
     outArgs: [],
@@ -982,7 +1815,7 @@ Table.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type5
+      type: _type8
     },
     ],
     inStream: null,
@@ -1089,7 +1922,7 @@ Row.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type4
+      type: _type2
     },
     ],
     inStream: null,
@@ -1104,7 +1937,7 @@ Row.prototype._serviceDescription = {
     inArgs: [{
       name: 'value',
       doc: "",
-      type: _type4
+      type: _type2
     },
     ],
     outArgs: [],
