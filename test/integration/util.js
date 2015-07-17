@@ -3,10 +3,6 @@
 // license that can be found in the LICENSE file.
 
 module.exports = {
-  appExists: appExists,
-  databaseExists: databaseExists,
-  tableExists: tableExists,
-
   setupApp: setupApp,
   setupDatabase: setupDatabase,
   setupService: setupService,
@@ -220,36 +216,6 @@ function testGetSetPermissions(t, ctx, obj, cb) {
         return cb(null);
       });
     });
-  });
-}
-
-function appExists(ctx, service, name, cb) {
-  service.listApps(ctx, function(err, names) {
-    if (err) {
-      return cb(err);
-    }
-
-    cb(null, names.indexOf(name) >= 0);
-  });
-}
-
-function databaseExists(ctx, app, name, cb) {
-  app.listDatabases(ctx, function(err, names) {
-    if (err) {
-      return cb(err);
-    }
-
-    cb(null, names.indexOf(name) >= 0);
-  });
-}
-
-function tableExists(ctx, db, name, cb) {
-  db.listTables(ctx, function(err, names) {
-    if (err) {
-      return cb(err);
-    }
-
-    cb(null, names.indexOf(name) >= 0);
   });
 }
 

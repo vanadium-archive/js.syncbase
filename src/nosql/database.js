@@ -78,6 +78,18 @@ Database.prototype.delete = function(ctx, cb) {
 };
 
 /**
+ * Returns true only if this Database exists.
+ * Insufficient permissions cause exists to return false instead of an error.
+ * TODO(ivanpi): exists may fail with an error if higher levels of hierarchy
+ * do not exist.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.exists = function(ctx, cb) {
+  this._wire(ctx).exists(ctx, cb);
+};
+
+/**
  * Executes a syncQL query.
  *
  * Returns a stream of rows.  The first row contains an array of headers (i.e.

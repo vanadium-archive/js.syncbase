@@ -52,6 +52,12 @@ App.prototype.delete = function(ctx, cb) {
   this._wire(ctx).delete(ctx, cb);
 };
 
+// exists returns true only if this app exists. Insufficient permissions cause
+// exists to return false instead of an error.
+App.prototype.exists = function(ctx, cb) {
+  this._wire(ctx).exists(ctx, cb);
+};
+
 App.prototype.getPermissions = function(ctx, cb) {
   this._wire(ctx).getPermissions(ctx, cb);
 };

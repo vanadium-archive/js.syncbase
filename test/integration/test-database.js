@@ -16,8 +16,6 @@ var Database = require('../../src/nosql/database');
 var Table = require('../../src/nosql/table');
 
 var testUtil = require('./util');
-var databaseExists = testUtil.databaseExists;
-var tableExists = testUtil.tableExists;
 var setupApp = testUtil.setupApp;
 var setupDatabase = testUtil.setupDatabase;
 var setupTable = testUtil.setupTable;
@@ -71,18 +69,55 @@ test('db.create() creates a database', function(t) {
     }
 
     var db = o.app.noSqlDatabase(uniqueName('db'));
+    var db2 = o.app.noSqlDatabase(uniqueName('db'));
 
-    db.create(o.ctx, {}, function(err) {
-      if (err) {
-        t.error(err);
-        return o.teardown(t.end);
-      }
+    async.waterfall([
+      // Verify database does not exist yet.
+      db.exists.bind(db, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'exists: database doesn\'t exist yet');
+        cb(null);
+      },
 
-      databaseExists(o.ctx, o.app, db.name, function(err, exists) {
-        t.error(err);
-        t.ok(exists, 'database exists');
-        o.teardown(t.end);
-      });
+      // Verify database list is empty.
+      o.app.listDatabases.bind(o.app, o.ctx),
+      function(dbList, cb) {
+        t.deepEqual(dbList, [],
+          'listDatabases: no databases exist');
+        cb(null);
+      },
+
+      // Create database.
+      db.create.bind(db, o.ctx, {}),
+
+      // Verify database exists.
+      db.exists.bind(db, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'exists: database exists');
+        cb(null);
+      },
+
+      // Verify database list contains the database.
+      o.app.listDatabases.bind(o.app, o.ctx),
+      function(dbList, cb) {
+        t.deepEqual(dbList, [db.name],
+          'listDatabases: database exists');
+        cb(null);
+      },
+
+      // Create another database.
+      db2.create.bind(db2, o.ctx, {}),
+
+      // Verify database list contains both databases.
+      o.app.listDatabases.bind(o.app, o.ctx),
+      function(dbList, cb) {
+        t.deepEqual(dbList.sort(), [db.name, db2.name].sort(),
+          'listDatabases: both databases exist');
+        cb(null);
+      },
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
     });
   });
 });
@@ -119,24 +154,29 @@ test('db.delete() deletes a database', function(t) {
 
     var db = o.app.noSqlDatabase(uniqueName('db'));
 
-    db.create(o.ctx, {}, function(err) {
-      if (err) {
-        t.error(err);
-        return o.teardown(t.end);
-      }
+    async.waterfall([
+      // Create database.
+      db.create.bind(db, o.ctx, {}),
 
-      db.delete(o.ctx, function(err) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
+      // Verify database exists.
+      db.exists.bind(db, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'database exists');
+        cb(null);
+      },
 
-        databaseExists(o.ctx, o.app, db.name, function(err, exists) {
-          t.error(err);
-          t.notok(exists, 'database does not exist');
-          o.teardown(t.end);
-        });
-      });
+      // Delete database.
+      db.delete.bind(db, o.ctx),
+
+      // Verify database no longer exists.
+      db.exists.bind(db, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'database no longer exists');
+        cb(null);
+      },
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
     });
   });
 });
@@ -183,19 +223,56 @@ test('db.createTable() creates a table', function(t) {
     }
 
     var db = o.database;
+    var table = db.table(uniqueName('table'));
+    var table2 = db.table(uniqueName('table'));
 
-    var tableName = uniqueName('table');
-    db.createTable(o.ctx, tableName, {}, function(err) {
-      if (err) {
-        t.error(err);
-        return o.teardown(t.end);
-      }
+    async.waterfall([
+      // Verify table does not exist yet.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'exists: table doesn\'t exist yet');
+        cb(null);
+      },
 
-      tableExists(o.ctx, db, tableName, function(err, exists) {
-        t.error(err);
-        t.ok(exists, 'table exists');
-        o.teardown(t.end);
-      });
+      // Verify table list is empty.
+      db.listTables.bind(db, o.ctx),
+      function(tableList, cb) {
+        t.deepEqual(tableList, [],
+          'listTables: no tables exist');
+        cb(null);
+      },
+
+      // Create table.
+      db.createTable.bind(db, o.ctx, table.name, {}),
+
+      // Verify table exists.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'exists: table exists');
+        cb(null);
+      },
+
+      // Verify table list contains the table.
+      db.listTables.bind(db, o.ctx),
+      function(tableList, cb) {
+        t.deepEqual(tableList, [table.name],
+          'listTables: table exists');
+        cb(null);
+      },
+
+      // Create another table.
+      db.createTable.bind(db, o.ctx, table2.name, {}),
+
+      // Verify table list contains both tables.
+      db.listTables.bind(db, o.ctx),
+      function(tableList, cb) {
+        t.deepEqual(tableList.sort(), [table.name, table2.name].sort(),
+          'listTables: both tables exist');
+        cb(null);
+      },
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
     });
   });
 });
@@ -207,26 +284,31 @@ test('db.deleteTable() deletes a table', function(t) {
     }
 
     var db = o.database;
+    var table = db.table(uniqueName('table'));
 
-    var tableName = uniqueName('table');
-    db.createTable(o.ctx, tableName, {}, function(err) {
-      if (err) {
-        t.error(err);
-        return o.teardown(t.end);
-      }
+    async.waterfall([
+      // Create table.
+      db.createTable.bind(db, o.ctx, table.name, {}),
 
-      db.deleteTable(o.ctx, tableName, function(err) {
-        if (err) {
-          t.error(err);
-          return o.teardown(t.end);
-        }
+      // Verify table exists.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'table exists');
+        cb(null);
+      },
 
-        tableExists(o.ctx, db, tableName, function(err, exists) {
-          t.error(err);
-          t.notok(exists, 'table does not exist');
-          o.teardown(t.end);
-        });
-      });
+      // Delete table.
+      db.deleteTable.bind(db, o.ctx, table.name),
+
+      // Verify table no longer exists.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'table no longer exists');
+        cb(null);
+      },
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
     });
   });
 });

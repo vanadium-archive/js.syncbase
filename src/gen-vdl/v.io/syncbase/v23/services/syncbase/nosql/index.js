@@ -382,6 +382,11 @@ Database.prototype.delete = function(ctx, serverCall) {
 };
     
       
+Database.prototype.exists = function(ctx, serverCall) {
+  throw new Error('Method Exists not implemented');
+};
+    
+      
 Database.prototype.beginBatch = function(ctx, serverCall, bo) {
   throw new Error('Method BeginBatch not implemented');
 };
@@ -504,8 +509,24 @@ Database.prototype._serviceDescription = {
     
       
     {
+    name: 'Exists',
+    doc: "// Exists returns true only if this Database exists. Insufficient permissions\n// cause Exists to return false instead of an error.\n// TODO(ivanpi): Exists may fail with an error if higher levels of hierarchy\n// do not exist.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: vdl.types.BOOL
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
     name: 'BeginBatch',
-    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch.\n//\n// Concurrency semantics are documented in model.go.",
+    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.",
     inArgs: [{
       name: 'bo',
       doc: "",
@@ -537,7 +558,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'Exec',
-    doc: "// Exec executes a syncQL query and returns all results as specified by\n// in the query's select clause.  The returned stream reads\n// from a consistent snapshot taken at the time of the Exec RPC.",
+    doc: "// Exec executes a syncQL query and returns all results as specified by in the\n// query's select clause. Concurrency semantics are documented in model.go.",
     inArgs: [{
       name: 'query',
       doc: "",
@@ -821,6 +842,11 @@ Table.prototype.delete = function(ctx, serverCall) {
 };
     
       
+Table.prototype.exists = function(ctx, serverCall) {
+  throw new Error('Method Exists not implemented');
+};
+    
+      
 Table.prototype.deleteRowRange = function(ctx, serverCall, start, limit) {
   throw new Error('Method DeleteRowRange not implemented');
 };
@@ -831,13 +857,13 @@ Table.prototype.scan = function(ctx, serverCall, start, limit) {
 };
     
       
-Table.prototype.setPermissions = function(ctx, serverCall, prefix, perms) {
-  throw new Error('Method SetPermissions not implemented');
+Table.prototype.getPermissions = function(ctx, serverCall, key) {
+  throw new Error('Method GetPermissions not implemented');
 };
     
       
-Table.prototype.getPermissions = function(ctx, serverCall, key) {
-  throw new Error('Method GetPermissions not implemented');
+Table.prototype.setPermissions = function(ctx, serverCall, prefix, perms) {
+  throw new Error('Method SetPermissions not implemented');
 };
     
       
@@ -883,8 +909,24 @@ Table.prototype._serviceDescription = {
     
       
     {
+    name: 'Exists',
+    doc: "// Exists returns true only if this Table exists. Insufficient permissions\n// cause Exists to return false instead of an error.\n// TODO(ivanpi): Exists may fail with an error if higher levels of hierarchy\n// do not exist.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: vdl.types.BOOL
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
     name: 'DeleteRowRange',
-    doc: "// Delete deletes all rows in the given half-open range [start, limit). If\n// limit is \"\", all rows with keys >= start are included. If the last row that\n// is covered by a prefix from SetPermissions is deleted, that (prefix, perms)\n// pair is removed.\n// TODO(sadovsky): Automatic GC interacts poorly with sync. Revisit this API.",
+    doc: "// Delete deletes all rows in the given half-open range [start, limit). If\n// limit is \"\", all rows with keys >= start are included.",
     inArgs: [{
       name: 'start',
       doc: "",
@@ -905,7 +947,7 @@ Table.prototype._serviceDescription = {
       
     {
     name: 'Scan',
-    doc: "// Scan returns all rows in the given half-open range [start, limit). If limit\n// is \"\", all rows with keys >= start are included. The returned stream reads\n// from a consistent snapshot taken at the time of the Scan RPC.",
+    doc: "// Scan returns all rows in the given half-open range [start, limit). If limit\n// is \"\", all rows with keys >= start are included. Concurrency semantics are\n// documented in model.go.",
     inArgs: [{
       name: 'start',
       doc: "",
@@ -929,27 +971,6 @@ Table.prototype._serviceDescription = {
     
       
     {
-    name: 'SetPermissions',
-    doc: "// SetPermissions sets the permissions for all current and future rows with\n// the given prefix. If the prefix overlaps with an existing prefix, the\n// longest prefix that matches a row applies. For example:\n//     SetPermissions(ctx, Prefix(\"a/b\"), perms1)\n//     SetPermissions(ctx, Prefix(\"a/b/c\"), perms2)\n// The permissions for row \"a/b/1\" are perms1, and the permissions for row\n// \"a/b/c/1\" are perms2.\n//\n// SetPermissions will fail if called with a prefix that does not match any\n// rows.",
-    inArgs: [{
-      name: 'prefix',
-      doc: "",
-      type: vdl.types.STRING
-    },
-    {
-      name: 'perms',
-      doc: "",
-      type: new access.Permissions()._type
-    },
-    ],
-    outArgs: [],
-    inStream: null,
-    outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
-  },
-    
-      
-    {
     name: 'GetPermissions',
     doc: "// GetPermissions returns an array of (prefix, perms) pairs. The array is\n// sorted from longest prefix to shortest, so element zero is the one that\n// applies to the row with the given key. The last element is always the\n// prefix \"\" which represents the table's permissions -- the array will always\n// have at least one element.",
     inArgs: [{
@@ -964,6 +985,27 @@ Table.prototype._serviceDescription = {
       type: _type5
     },
     ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'SetPermissions',
+    doc: "// SetPermissions sets the permissions for all current and future rows with\n// the given prefix. If the prefix overlaps with an existing prefix, the\n// longest prefix that matches a row applies. For example:\n//     SetPermissions(ctx, Prefix(\"a/b\"), perms1)\n//     SetPermissions(ctx, Prefix(\"a/b/c\"), perms2)\n// The permissions for row \"a/b/1\" are perms1, and the permissions for row\n// \"a/b/c/1\" are perms2.",
+    inArgs: [{
+      name: 'prefix',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    {
+      name: 'perms',
+      doc: "",
+      type: new access.Permissions()._type
+    },
+    ],
+    outArgs: [],
     inStream: null,
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
@@ -995,6 +1037,11 @@ module.exports.Row = Row;
 
     
       
+Row.prototype.exists = function(ctx, serverCall) {
+  throw new Error('Method Exists not implemented');
+};
+    
+      
 Row.prototype.get = function(ctx, serverCall) {
   throw new Error('Method Get not implemented');
 };
@@ -1017,6 +1064,22 @@ Row.prototype._serviceDescription = {
   doc: "// Row represents a single row in a Table.\n// All access checks are performed against the most specific matching prefix\n// permissions in the Table.\n// NOTE(sadovsky): Currently we send []byte values over the wire for Get, Put,\n// and Scan. If there's a way to avoid encoding/decoding on the server side, we\n// can use vdl.Value everywhere without sacrificing performance.",
   embeds: [],
   methods: [
+    
+      
+    {
+    name: 'Exists',
+    doc: "// Exists returns true only if this Row exists. Insufficient permissions\n// cause Exists to return false instead of an error.\n// TODO(ivanpi): Exists may fail with an error if higher levels of hierarchy\n// do not exist.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: vdl.types.BOOL
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
     
       
     {

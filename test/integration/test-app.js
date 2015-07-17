@@ -9,7 +9,6 @@ var vanadium = require('vanadium');
 var syncbase = require('../..');
 
 var testUtil = require('./util');
-var appExists = testUtil.appExists;
 var setupApp = testUtil.setupApp;
 var setupService = testUtil.setupService;
 var uniqueName = testUtil.uniqueName;
@@ -52,22 +51,51 @@ test('Creating and listing apps', function(t) {
       uniqueName('app'),
       uniqueName('app')
     ];
-    async.forEach(appNames, function(appName, cb) {
-      o.service.app(appName).create(o.ctx, {}, cb);
-    }, function(err) {
-      if (err) {
-        t.error(err);
-        return o.teardown(t.end);
-      }
 
-      // Verify each app exists.
-      async.map(appNames, function(appName, cb) {
-        appExists(o.ctx, o.service, appName, cb);
-      }, function(err, existsArray) {
-        t.error(err);
-        t.deepEqual(existsArray, [true, true, true], 'all apps exist');
-        o.teardown(t.end);
-      });
+    async.waterfall([
+      // Verify none of the apps exist using exists().
+      async.apply(async.map, appNames, function(appName, cb) {
+        o.service.app(appName).exists(o.ctx, cb);
+      }),
+      function(existsArray, cb) {
+        t.deepEqual(existsArray, [false, false, false],
+          'exists: no apps exist');
+        cb(null);
+      },
+
+      // Verify none of the apps exist using listApps().
+      o.service.listApps.bind(o.service, o.ctx),
+      function(appList, cb) {
+        t.deepEqual(appList, [],
+          'listApps: no apps exist');
+        cb(null);
+      },
+
+      // Create all apps.
+      async.apply(async.forEach, appNames, function(appName, cb) {
+        o.service.app(appName).create(o.ctx, {}, cb);
+      }),
+
+      // Verify each app exists using exists().
+      async.apply(async.map, appNames, function(appName, cb) {
+        o.service.app(appName).exists(o.ctx, cb);
+      }),
+      function(existsArray, cb) {
+        t.deepEqual(existsArray, [true, true, true],
+          'exists: all apps exist');
+        cb(null);
+      },
+
+      // Verify all the apps exist using listApps().
+      o.service.listApps.bind(o.service, o.ctx),
+      function(appList, cb) {
+        t.deepEqual(appList.sort(), appNames.sort(),
+          'listApps: all apps exist');
+        cb(null);
+      }
+    ], function(err) {
+      t.error(err);
+      o.teardown(t.end);
     });
   });
 });
@@ -78,17 +106,26 @@ test('Deleting an app', function(t) {
       return t.end(err);
     }
 
-    o.app.delete(o.ctx, function(err) {
-      if (err) {
-        t.error(err);
-        return o.teardown(t.end);
-      }
+    async.waterfall([
+      // Verify app exists.
+      o.app.exists.bind(o.app, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'app exists');
+        cb(null);
+      },
 
-      appExists(o.ctx, o.service, o.app.name, function(err, exists) {
-        t.error(err);
+      // Delete app.
+      o.app.delete.bind(o.app, o.ctx),
+
+      // Verify app no longer exists.
+      o.app.exists.bind(o.app, o.ctx),
+      function(exists, cb) {
         t.notok(exists, 'app no longer exists');
-        o.teardown(t.end);
-      });
+        cb(null);
+      }
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
     });
   });
 });

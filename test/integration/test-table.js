@@ -53,16 +53,46 @@ test('Deleting a row', function(t) {
     var value = uniqueName(ROW_VAL);
 
     var table = o.table;
-    table.put(o.ctx, key, value, deleteRow);
+    var row = o.table.row(key);
 
-    function deleteRow() {
-      table.row(key).delete(o.ctx, function() {
-        table.get(o.ctx, key, function(err, val) {
-          t.ok(err, 'get should error after row is deleted');
-          o.teardown(t.end);
-        });
+    async.waterfall([
+      // Verify row doesn't exist yet.
+      row.exists.bind(row, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'row doesn\'t exist yet');
+        cb(null);
+      },
+
+      // Put row.
+      table.put.bind(table, o.ctx, key, value),
+
+      // Verify row exists.
+      row.exists.bind(row, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'row exists');
+        cb(null);
+      },
+
+      // Delete row.
+      row.delete.bind(row, o.ctx),
+
+      // Verify row no longer exists.
+      row.exists.bind(row, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'row no longer exists');
+        cb(null);
+      },
+    ], function(err, arg) {
+      if (err) {
+        t.error(err);
+        return o.teardown(t.end);
+      }
+
+      table.get(o.ctx, key, function(err, val) {
+        t.ok(err, 'get should error after row is deleted');
+        o.teardown(t.end);
       });
-    }
+    });
   });
 });
 

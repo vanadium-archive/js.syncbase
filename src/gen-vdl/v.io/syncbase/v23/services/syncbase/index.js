@@ -133,6 +133,11 @@ App.prototype.delete = function(ctx, serverCall) {
 };
     
       
+App.prototype.exists = function(ctx, serverCall) {
+  throw new Error('Method Exists not implemented');
+};
+    
+      
 App.prototype.setPermissions = function(ctx, serverCall, perms, version) {
   throw new Error('Method SetPermissions not implemented');
 };
@@ -181,6 +186,22 @@ App.prototype._serviceDescription = {
     inStream: null,
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'Exists',
+    doc: "// Exists returns true only if this App exists. Insufficient permissions\n// cause Exists to return false instead of an error.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: vdl.types.BOOL
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
     
       
