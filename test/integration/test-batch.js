@@ -142,8 +142,10 @@ test('concurrent transactions are isolated', function(t) {
         return batch.table(table.name);
       });
 
+      // Put to the same key in each batch.
+      var key = uniqueName('key');
       async.mapSeries(batchTables, function(batchTable, cb) {
-        var key = uniqueName('key');
+        // Put different value in each batch.
         var value = uniqueName('value');
         batchTable.put(ctx, key, value, function(err) {
           if (err) {
@@ -339,19 +341,33 @@ test('new batch operations fail after unsuccessful batch commit', function(t) {
     var db = o.database;
     var table = o.table;
 
-    db.beginBatch(ctx, {}, putTable);
+    db.beginBatch(ctx, {}, readBatchTable);
 
     var key = uniqueName('key');
     var value = uniqueName('value');
 
     var batch;
+    var batchTable;
 
-    function putTable(err, _batch) {
+    function readBatchTable(err, _batch) {
       if (err) {
-        return end(err);
+        return t.end(err);
       }
 
       batch = _batch;
+      batchTable = batch.table(table.name);
+
+      batchTable.get(ctx, key, function(err) {
+        // Should error because the key does not exist yet.
+        t.ok(err, 'get should error when key does not exist');
+        putTable();
+      });
+    }
+
+    function putTable(err) {
+      if (err) {
+        return end(err);
+      }
 
       // Put on the table directly, not the batch table.  This will conflict
       // with future batchTable.put() call.
@@ -365,7 +381,6 @@ test('new batch operations fail after unsuccessful batch commit', function(t) {
 
       var newValue = uniqueName('value');
 
-      var batchTable = batch.table(table.name);
       batchTable.put(ctx, key, newValue, commit);
     }
 
