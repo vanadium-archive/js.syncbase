@@ -77,7 +77,7 @@ test('runInBatch aborts on failure', function(t) {
   });
 });
 
-test('runInBatch aborts if commit fails', function(t) {
+test('runInBatch does not abort if commit fails', function(t) {
   var ctx = {};
   var db = new MockDb(true);
 
@@ -90,7 +90,7 @@ test('runInBatch aborts if commit fails', function(t) {
 
     t.ok(db.batchDb, 'batch db is created');
     t.ok(db.batchDb.commitCalled, 'batchDb.commit() was called');
-    t.ok(db.batchDb.abortCalled, 'batchDb.abort() was called');
+    t.notok(db.batchDb.abortCalled, 'batchDb.abort() was not called');
 
     t.end();
   });
