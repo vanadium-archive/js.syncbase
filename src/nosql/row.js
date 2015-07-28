@@ -12,13 +12,14 @@ module.exports = Row;
  * @summary
  * Represents a single row in a Table.
  * Private constructor, use table.row() to get an instance.
+ * @param {number} schemaVersion Database schema version expected by client.
  * @inner
  * @constructor
  * @memberof module:syncbase.nosql
  */
-function Row(parentFullName, key) {
+function Row(parentFullName, key, schemaVersion) {
   if (!(this instanceof Row)) {
-    return new Row(parentFullName, key);
+    return new Row(parentFullName, key, schemaVersion);
   }
 
   // TODO(aghassemi) We may need to escape the key. Align with Go implementation
@@ -27,6 +28,7 @@ function Row(parentFullName, key) {
   // Should they all behave the same or is row key really different?
   var fullName = vanadium.naming.join(parentFullName, key);
 
+  this.schemaVersion = schemaVersion;
   /**
    * The key of this Row.
    * @property name
@@ -82,7 +84,7 @@ Row.prototype._wire = function(ctx) {
  * @param {function} cb Callback.
  */
 Row.prototype.exists = function(ctx, cb) {
-  this._wire(ctx).exists(ctx, cb);
+  this._wire(ctx).exists(ctx, this.schemaVersion, cb);
 };
 
 /**
@@ -91,7 +93,7 @@ Row.prototype.exists = function(ctx, cb) {
  * @param {function} cb Callback.
  */
 Row.prototype.get = function(ctx, cb) {
-  this._wire(ctx).get(ctx, function(err, value) {
+  this._wire(ctx).get(ctx, this.schemaVersion, function(err, value) {
     if (err) {
       return cb(err);
     }
@@ -121,7 +123,7 @@ Row.prototype.put = function(ctx, value, type, cb) {
   } catch (e) {
     return cb(e);
   }
-  this._wire(ctx).put(ctx, encodedVal, cb);
+  this._wire(ctx).put(ctx, this.schemaVersion, encodedVal, cb);
 };
 
 /**
@@ -130,5 +132,5 @@ Row.prototype.put = function(ctx, value, type, cb) {
  * @param {function} cb Callback.
  */
 Row.prototype.delete = function(ctx, cb) {
-  this._wire(ctx).delete(ctx, cb);
+  this._wire(ctx).delete(ctx, this.schemaVersion, cb);
 };

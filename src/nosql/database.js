@@ -24,14 +24,18 @@ var util = require('../util');
  * Database.
  * @param {string} relativeName Relative name of this Database.  Must not
  * contain slashes.
+ * @param {module:syncbase.schema.Schema} schema Schema for the database.
+ * TODO(nlacasse): port definition of Schema from go to javascript
  */
-function Database(parentFullName, relativeName) {
+function Database(parentFullName, relativeName, schema) {
   if (!(this instanceof Database)) {
     return new Database(parentFullName, relativeName);
   }
 
   util.addNameProperties(this, parentFullName, relativeName);
 
+  this.schema = null;  // TODO(nlacasse): use schema from params
+  this.schemaVersion = -1;  // TODO(nlacasse): derive this from schema
   /**
    * Caches the database wire object.
    * @private
@@ -68,7 +72,8 @@ Database.prototype._wire = function(ctx) {
  *    https://vanadium-review.googlesource.com/#/c/13040/ .
  */
 Database.prototype.create = function(ctx, perms, cb) {
-  this._wire(ctx).create(ctx, perms, null, cb);
+  //TODO(nlacasse): pass schema.metadata below instead of null
+  this._wire(ctx).create(ctx, null, perms, cb);
 };
 
 /**
@@ -77,7 +82,7 @@ Database.prototype.create = function(ctx, perms, cb) {
  * @param {function} cb Callback.
  */
 Database.prototype.delete = function(ctx, cb) {
-  this._wire(ctx).delete(ctx, cb);
+  this._wire(ctx).delete(ctx, this.schemaVersion, cb);
 };
 
 /**
@@ -89,7 +94,7 @@ Database.prototype.delete = function(ctx, cb) {
  * @param {function} cb Callback.
  */
 Database.prototype.exists = function(ctx, cb) {
-  this._wire(ctx).exists(ctx, cb);
+  this._wire(ctx).exists(ctx, this.schemaVersion, cb);
 };
 
 /**
@@ -130,7 +135,7 @@ Database.prototype.exec = function(ctx, query, cb) {
     return cb(null, res.map(unwrap));
   });
 
-  var stream = this._wire(ctx).exec(ctx, query, cb).stream;
+  var stream = this._wire(ctx).exec(ctx, this.schemaVersion, query, cb).stream;
 
   var decodedStream = stream.pipe(streamUnwrapper);
   stream.on('error', function(err) {
@@ -146,7 +151,7 @@ Database.prototype.exec = function(ctx, query, cb) {
  * @return {module:syncbase.table.Table} Table object.
  */
 Database.prototype.table = function(relativeName) {
-  return new Table(this.fullName, relativeName);
+  return new Table(this.fullName, relativeName, this.schemaVersion);
 };
 
 /**
@@ -194,7 +199,7 @@ Database.prototype._tableWire = function(ctx, relativeName) {
  * @param {function} cb Callback.
  */
 Database.prototype.createTable = function(ctx, relativeName, perms, cb) {
-  this._tableWire(ctx, relativeName).create(ctx, perms, cb);
+  this._tableWire(ctx, relativeName).create(ctx, this.schemaVersion, perms, cb);
 };
 
 /**
@@ -205,7 +210,7 @@ Database.prototype.createTable = function(ctx, relativeName, perms, cb) {
  * @param {function} cb Callback.
  */
 Database.prototype.deleteTable = function(ctx, relativeName, cb) {
-  this._tableWire(ctx, relativeName).delete(ctx, cb);
+  this._tableWire(ctx, relativeName).delete(ctx, this.schemaVersion, cb);
 };
 
 /**
@@ -256,18 +261,19 @@ Database.prototype.getPermissions = function(ctx, cb) {
  */
 Database.prototype.beginBatch = function(ctx, opts, cb) {
   var self = this;
-  this._wire(ctx).beginBatch(ctx, opts, function(err, relativeName) {
-    if (err) {
-      return cb(err);
-    }
+  this._wire(ctx).beginBatch(ctx, this.schemaVersion, opts,
+    function(err, relativeName) {
+      if (err) {
+        return cb(err);
+      }
 
-    // The relativeName returned from the beginBatch() call above is different
-    // than the relativeName of the current database. We must create a new
-    // Database with this new relativeName, and then create a BatchDatabase
-    // from that new Database.
-    var db = new Database(self._parentFullName, relativeName);
-    return cb(null, new BatchDatabase(db));
-  });
+      // The relativeName returned from the beginBatch() call above is different
+      // than the relativeName of the current database. We must create a new
+      // Database with this new relativeName, and then create a BatchDatabase
+      // from that new Database.
+      var db = new Database(self._parentFullName, relativeName);
+      return cb(null, new BatchDatabase(db));
+    });
 };
 
 /**
