@@ -279,6 +279,12 @@ module.exports.publicKeyThirdPartyCaveatParam = (vdl.registry.lookupOrCreateCons
 
   module.exports.SignatureForDischarge = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(vdl.types.STRING))("D", true), vdl.types.STRING);
 
+  module.exports.SignatureForMessageSigningV1 = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(vdl.types.STRING))("S1", true), vdl.types.STRING);
+
+  module.exports.SignatureForBlessingCertificatesV1 = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(vdl.types.STRING))("B1", true), vdl.types.STRING);
+
+  module.exports.SignatureForDischargeV1 = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(vdl.types.STRING))("D1", true), vdl.types.STRING);
+
 
 
 // Errors:
@@ -366,6 +372,13 @@ module.exports.AuthorizationFailedError = makeError('v.io/v23/security.Authoriza
   _type3,
   _type8,
   _type3,
+]);
+
+
+module.exports.InvalidSigningBlessingCaveatError = makeError('v.io/v23/security.InvalidSigningBlessingCaveat', actions.NO_RETRY, {
+  'en': '{1:}{2:} blessing has caveat with UUID {3} which makes it unsuitable for signing -- please use blessings with just Expiry caveats',
+}, [
+  new uniqueid.Id()._type,
 ]);
 
 

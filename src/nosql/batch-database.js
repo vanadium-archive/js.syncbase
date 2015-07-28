@@ -14,12 +14,14 @@ module.exports = BatchDatabase;
  * @constructor
  * @inner
  * @param {module:syncbase.database.Database} db Database.
+ * @param {number} schemaVersion Database schema version expected by client.
  */
-function BatchDatabase(db) {
+function BatchDatabase(db, schemaVersion) {
   if (!(this instanceof BatchDatabase)) {
-    return new BatchDatabase(db);
+    return new BatchDatabase(db, schemaVersion);
   }
 
+  this.schemaVersion = schemaVersion;
   Object.defineProperty(this, '_db', {
     enumerable: false,
     value: db,
@@ -51,7 +53,7 @@ BatchDatabase.prototype.listTables = function(ctx, cb) {
  * @param {function} cb Callback.
  */
 BatchDatabase.prototype.commit = function(ctx, cb) {
-  this._db._wire(ctx).commit(ctx, cb);
+  this._db._wire(ctx).commit(ctx, this.schemaVersion, cb);
 };
 
 /**
@@ -62,7 +64,7 @@ BatchDatabase.prototype.commit = function(ctx, cb) {
  * @param {function} cb Callback.
  */
 BatchDatabase.prototype.abort = function(ctx, cb) {
-  this._db._wire(ctx).abort(ctx, cb);
+  this._db._wire(ctx).abort(ctx, this.schemaVersion, cb);
 };
 
 /**

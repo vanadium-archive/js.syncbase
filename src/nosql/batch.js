@@ -8,7 +8,7 @@ module.exports = runInBatch;
  * @summary
  * runInBatch runs a function with a newly created batch. If the function
  * errors, the batch is aborted. If the function succeeds, the batch is
- * committed. If an error occurs during commit, then the batch is aborted.
+ * committed.
  *
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {module:syncbase.database.Database} db Database.
@@ -17,41 +17,39 @@ module.exports = runInBatch;
  * batch.
  * @param {module:vanadium~voidCb} cb Callback that will be called after the
  * batch has been committed or aborted.
- *
- * TODO(nlacasse): Add retry loop.
  */
 function runInBatch(ctx, db, opts, fn, cb) {
-  db.beginBatch(ctx, opts, function(err, batchDb) {
-    if (err) {
-      return cb(err);
-    }
-
-    function onError(err) {
-      batchDb.abort(ctx, function() {
-        cb(err);
-      });
-    }
-
-    function onSuccess() {
-      // TODO(nlacasse): Commit() can fail for a number of reasons, e.g. RPC
-      // failure or ErrConcurrentTransaction. Depending on the cause of
-      // failure, it may be desirable to retry the Commit() and/or to call
-      // Abort(). For now, we always abort on a failed commit.
-      batchDb.commit(ctx, function(commitErr) {
-        if (commitErr) {
-          return onError(commitErr);
-        }
-        return cb(null);
-      });
-    }
-
-    fn(batchDb, function(err) {
+  function attempt(cb) {
+    db.beginBatch(ctx, opts, function(err, batchDb) {
       if (err) {
-        return onError(err);
+        return cb(err);
       }
-      onSuccess();
+      fn(batchDb, function(err) {
+        if (err) {
+          return batchDb.abort(ctx, function() {
+            return cb(err);  // return fn error, not abort error
+          });
+        }
+        // TODO(sadovsky): commit() can fail for a number of reasons, e.g. RPC
+        // failure or ErrConcurrentTransaction. Depending on the cause of
+        // failure, it may be desirable to retry the commit() and/or to call
+        // abort().
+        batchDb.commit(ctx, cb);
+      });
     });
-  });
+  }
+
+  function retryLoop(i) {
+    attempt(function(err) {
+      if (err && i < 2) {
+        retryLoop(i + 1);
+      } else {
+        cb(err);
+      }
+    });
+  }
+
+  retryLoop(0);
 }
 
 /**

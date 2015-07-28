@@ -9,7 +9,17 @@
 # does not allow flags or arguments to the executables it starts.  We should
 # fix service-runner to allow flags/arguments, and then have it start syncbased
 # directly with the appropriate flags.  Then we can delete this file.
-# TODO(rdaoud): how to cleanup the tmp test dir; "rm" here doesn't do it.
 
-testdir="$(mktemp -d "${TMPDIR:-/tmp}"/sbtest.XXXXXXXX)"
-syncbased -v=1 --name test/syncbased --engine memstore --root-dir "${testdir}" --v23.tcp.address 127.0.0.1:0
+TESTDIR="$(mktemp -d "${TMPDIR:-/tmp}"/sbtest.XXXXXXXX)"
+# Delete TESTDIR and stop syncbased on exit.
+function cleanup {
+	rm -rf "${TESTDIR}"
+	kill -TERM "${CHILD}" 2>/dev/null
+	exit 0
+}
+trap cleanup SIGINT SIGTERM EXIT
+
+syncbased -v=3 --name test/syncbased --engine "${STORAGE_ENGINE:-leveldb}" --root-dir "${TESTDIR}" --v23.tcp.address 127.0.0.1:0 &
+
+CHILD=$!
+wait "${CHILD}"

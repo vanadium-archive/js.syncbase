@@ -21,16 +21,19 @@ var util = require('../util');
  * Table.
  * @param {string} relativeName Relative name of this Table.  Must not
  * contain slashes.
+ * @param {number} schemaVersion Database schema version expected by client.
  * @constructor
  * @inner
  * @memberof {module:syncbase.nosql}
  */
-function Table(parentFullName, relativeName) {
+function Table(parentFullName, relativeName, schemaVersion) {
   if (!(this instanceof Table)) {
-    return new Table(parentFullName, relativeName);
+    return new Table(parentFullName, relativeName, schemaVersion);
   }
 
   util.addNameProperties(this, parentFullName, relativeName);
+
+  this.schemaVersion = schemaVersion;
 
   /**
    * Caches the table wire object.
@@ -66,7 +69,7 @@ Table.prototype._wire = function(ctx) {
  * @param {function} cb Callback.
  */
 Table.prototype.exists = function(ctx, cb) {
-  this._wire(ctx).exists(ctx, cb);
+  this._wire(ctx).exists(ctx, this.schemaVersion, cb);
 };
 
 /**
@@ -75,7 +78,7 @@ Table.prototype.exists = function(ctx, cb) {
  * @return {module:syncbase.row.Row} Row object.
  */
 Table.prototype.row = function(key) {
-  return new Row(this.fullName, key);
+  return new Row(this.fullName, key, this.schemaVersion);
 };
 
 /**
@@ -116,7 +119,8 @@ Table.prototype.put = function(ctx, key, value, type, cb) {
  * @param {function} cb Callback.
  */
 Table.prototype.delete = function(ctx, range, cb) {
-  this._wire(ctx).deleteRowRange(ctx, range.start, range.limit, cb);
+  this._wire(ctx).deleteRowRange(
+        ctx, this.schemaVersion, range.start, range.limit, cb);
 };
 
 /**
@@ -143,7 +147,8 @@ Table.prototype.scan = function(ctx, range, cb) {
     });
   });
 
-  var stream = this._wire(ctx).scan(ctx, range.start, range.limit, cb).stream;
+  var stream = this._wire(ctx)
+        .scan(ctx, this.schemaVersion, range.start, range.limit, cb).stream;
   var decodedStream = stream.pipe(vomStreamDecoder);
   stream.on('error', function(err) {
     decodedStream.emit('error', err);
@@ -171,7 +176,8 @@ Table.prototype.scan = function(ctx, range, cb) {
  * @param {function} cb Callback.
  */
 Table.prototype.setPermissions = function(ctx, prefix, perms, cb) {
-  this._wire(ctx).setPermissions(ctx, stringifyPrefix(prefix), perms, cb);
+  this._wire(ctx).setPermissions(
+        ctx, this.schemaVersion, stringifyPrefix(prefix), perms, cb);
 };
 
 
@@ -190,20 +196,22 @@ Table.prototype.getPermissions = function(ctx, key, cb) {
   // There are two PrefixPermission types, one is the wire type which has
   // Prefix as a string and then there is the client type where prefix is a
   // PrefixRange, therefore we convert between the wire and client types.
-  this._wire(ctx).getPermissions(ctx, key, function(err, wirePerms) {
-    if (err) {
-      return cb(err);
-    }
+  this._wire(ctx).getPermissions(ctx, this.schemaVersion, key,
+      function(err, wirePerms) {
+        if (err) {
+          return cb(err);
+        }
 
-    var perms = wirePerms.map(function(v) {
-      return new PrefixPermissions(
-        prefix(v.prefix),
-        v.perms
-      );
-    });
+        var perms = wirePerms.map(function(v) {
+          return new PrefixPermissions(
+            prefix(v.prefix),
+            v.perms
+          );
+        });
 
-    cb(null, perms);
-  });
+        cb(null, perms);
+      }
+  );
 };
 
 /**
@@ -216,7 +224,8 @@ Table.prototype.getPermissions = function(ctx, key, cb) {
  */
 Table.prototype.deletePermissions = function(ctx, prefix, cb) {
   //TODO(aghassemi): Why is prefix a PrefixRange in Go?
-  this._wire(ctx).deletePermissions(ctx, stringifyPrefix(prefix), cb);
+  this._wire(ctx).deletePermissions(
+        ctx, this.schemaVersion, stringifyPrefix(prefix), cb);
 };
 
 function stringifyPrefix(prefix) {
