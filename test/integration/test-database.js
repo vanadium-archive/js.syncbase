@@ -464,7 +464,7 @@ test('database.exec', function(t) {
         ]
       },
       {
-        q: 'select k, v.First from %s where Type(v) = "personType"',
+        q: 'select k, v.First from %s where Type(v) like "%.personType"',
         want: [
           ['k', 'v.First'],
           ['Homer', homer.first],
@@ -474,7 +474,7 @@ test('database.exec', function(t) {
         ]
       },
       {
-        q: 'select k, v.Population from %s where Type(v) = "cityType"',
+        q: 'select k, v.Population from %s where Type(v) like "%.cityType"',
         want: [
           ['k', 'v.Population'],
           ['Shelbyville', shelbyville.population],
