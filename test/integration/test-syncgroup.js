@@ -253,3 +253,80 @@ test.skip('db.getSyncGroupNames returns the correct names', function(t) {
     }
   });
 });
+
+test('syncgroup.get/setSpec', function(t) {
+  var perms = {};
+  var prefixes = ['biz/bazz'];
+
+  var firstVersion;
+
+  var newSpec = new nosql.SyncGroupSpec({
+    description: 'new spec'
+  });
+
+  var newSpec2 = new nosql.SyncGroupSpec({
+    description: 'another new spec'
+  });
+
+  setupSyncGroup(t, perms, prefixes, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    var sg = o.syncgroup;
+    var ctx = o.ctx;
+    sg.getSpec(ctx, assertSpec);
+
+    function assertSpec(err, spec, version) {
+      if (err) {
+        return done(err);
+      }
+
+      firstVersion = version;
+
+      t.deepEqual(spec.perms, perms, 'sg has correct perms');
+      t.deepEqual(spec.prefixes, prefixes, 'sg has correct prefixes');
+      t.equal(typeof version, 'string', 'version is string');
+
+      // Set spec with bogus version.
+      var bogusVersion = 'totally-bogus';
+
+      sg.setSpec(ctx, newSpec, bogusVersion, assertSetSpecFails);
+    }
+
+    function assertSetSpecFails(err) {
+      // TODO(nlacasse): Syncbase does not currently enforce that the version
+      // sent on SetSpec matches the current version.  Once it does enforce
+      // this, the following assertion should be uncommented.
+      // t.ok(err, 'setting spec with bogus version should fail');
+
+      // Set spec with empty version.
+      sg.setSpec(ctx, newSpec, '', assertSetSpecSucceeds);
+    }
+
+    function assertSetSpecSucceeds(err) {
+      if (err) {
+        return done(err);
+      }
+
+      sg.getSpec(ctx, assertGetSpec);
+    }
+
+    function assertGetSpec(err, spec, version) {
+      if (err) {
+        return done(err);
+      }
+
+      t.equal(spec.name, newSpec.name, 'spec has the correct name');
+      t.equal(typeof version, 'string', 'version is string');
+
+      // Set spec with previous version.
+      sg.setSpec(ctx, newSpec2, version, done);
+    }
+
+    function done(err) {
+      t.error(err);
+      o.teardown(t.end);
+    }
+  });
+});

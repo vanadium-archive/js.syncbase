@@ -219,7 +219,7 @@ Database.prototype.deleteTable = function(ctx, relativeName, cb) {
  * @param {module:vanadium.security.access.Permissions} perms Permissions for
  * the database.
  * @param {string} version Version of the current Permissions object which will
- * be over-written.  If empty, SetPermissions will perform an unconditional
+ * be overwritten. If empty, SetPermissions will perform an unconditional
  * update.
  * @param {function} cb Callback.
  */

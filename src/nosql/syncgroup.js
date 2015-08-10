@@ -132,10 +132,12 @@ SyncGroup.prototype.getSpec = function(ctx, cb) {
  *
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {module:syncbase.nosql.SyncGroupSpec} spec SyncGroupSpec.
+ * @param {string} version Version of the current SyncGroupSpec object which
+ * will be overwritten. If empty, setSpec will perform an unconditional update.
  * @param {function} cb Callback.
  */
-SyncGroup.prototype.setSpec = function(ctx, spec, cb) {
-  this._db._wire(ctx).setSyncGroupSpec(ctx, this.name, spec, cb);
+SyncGroup.prototype.setSpec = function(ctx, spec, version, cb) {
+  this._db._wire(ctx).setSyncGroupSpec(ctx, this.name, spec, version, cb);
 };
 
 /**
