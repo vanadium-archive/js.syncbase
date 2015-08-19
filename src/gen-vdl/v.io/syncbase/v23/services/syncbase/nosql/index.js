@@ -29,11 +29,11 @@ var _type5 = new vdl.Type();
 var _type6 = new vdl.Type();
 var _type7 = new vdl.Type();
 var _typeBatchOptions = new vdl.Type();
+var _typeBlobFetchState = new vdl.Type();
+var _typeBlobFetchStatus = new vdl.Type();
 var _typeBlobRef = new vdl.Type();
 var _typeCrPolicy = new vdl.Type();
 var _typeCrRule = new vdl.Type();
-var _typeFetchState = new vdl.Type();
-var _typeFetchStatus = new vdl.Type();
 var _typeKeyValue = new vdl.Type();
 var _typePrefixPermissions = new vdl.Type();
 var _typeResolverType = new vdl.Type();
@@ -66,6 +66,12 @@ _type7.elem = _typePrefixPermissions;
 _typeBatchOptions.kind = vdl.kind.STRUCT;
 _typeBatchOptions.name = "v.io/syncbase/v23/services/syncbase/nosql.BatchOptions";
 _typeBatchOptions.fields = [{name: "Hint", type: vdl.types.STRING}, {name: "ReadOnly", type: vdl.types.BOOL}];
+_typeBlobFetchState.kind = vdl.kind.ENUM;
+_typeBlobFetchState.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobFetchState";
+_typeBlobFetchState.labels = ["Pending", "Locating", "Fetching", "Done"];
+_typeBlobFetchStatus.kind = vdl.kind.STRUCT;
+_typeBlobFetchStatus.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobFetchStatus";
+_typeBlobFetchStatus.fields = [{name: "State", type: _typeBlobFetchState}, {name: "Received", type: vdl.types.INT64}, {name: "Total", type: vdl.types.INT64}];
 _typeBlobRef.kind = vdl.kind.STRING;
 _typeBlobRef.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobRef";
 _typeCrPolicy.kind = vdl.kind.STRUCT;
@@ -74,12 +80,6 @@ _typeCrPolicy.fields = [{name: "Rules", type: _type4}];
 _typeCrRule.kind = vdl.kind.STRUCT;
 _typeCrRule.name = "v.io/syncbase/v23/services/syncbase/nosql.CrRule";
 _typeCrRule.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "KeyPrefix", type: vdl.types.STRING}, {name: "Type", type: vdl.types.STRING}, {name: "Resolver", type: _typeResolverType}];
-_typeFetchState.kind = vdl.kind.ENUM;
-_typeFetchState.name = "v.io/syncbase/v23/services/syncbase/nosql.FetchState";
-_typeFetchState.labels = ["Pending", "Locating", "Fetching", "Done"];
-_typeFetchStatus.kind = vdl.kind.STRUCT;
-_typeFetchStatus.name = "v.io/syncbase/v23/services/syncbase/nosql.FetchStatus";
-_typeFetchStatus.fields = [{name: "State", type: _typeFetchState}, {name: "Received", type: vdl.types.UINT64}, {name: "Total", type: vdl.types.UINT64}];
 _typeKeyValue.kind = vdl.kind.STRUCT;
 _typeKeyValue.name = "v.io/syncbase/v23/services/syncbase/nosql.KeyValue";
 _typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type3}];
@@ -109,11 +109,11 @@ _type5.freeze();
 _type6.freeze();
 _type7.freeze();
 _typeBatchOptions.freeze();
+_typeBlobFetchState.freeze();
+_typeBlobFetchStatus.freeze();
 _typeBlobRef.freeze();
 _typeCrPolicy.freeze();
 _typeCrRule.freeze();
-_typeFetchState.freeze();
-_typeFetchStatus.freeze();
 _typeKeyValue.freeze();
 _typePrefixPermissions.freeze();
 _typeResolverType.freeze();
@@ -122,16 +122,16 @@ _typeStoreChange.freeze();
 _typeSyncGroupMemberInfo.freeze();
 _typeSyncGroupSpec.freeze();
 module.exports.BatchOptions = (vdl.registry.lookupOrCreateConstructor(_typeBatchOptions));
+module.exports.BlobFetchState = {
+  PENDING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchState))('Pending', true), _typeBlobFetchState),
+  LOCATING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchState))('Locating', true), _typeBlobFetchState),
+  FETCHING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchState))('Fetching', true), _typeBlobFetchState),
+  DONE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchState))('Done', true), _typeBlobFetchState),
+};
+module.exports.BlobFetchStatus = (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchStatus));
 module.exports.BlobRef = (vdl.registry.lookupOrCreateConstructor(_typeBlobRef));
 module.exports.CrPolicy = (vdl.registry.lookupOrCreateConstructor(_typeCrPolicy));
 module.exports.CrRule = (vdl.registry.lookupOrCreateConstructor(_typeCrRule));
-module.exports.FetchState = {
-  PENDING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Pending', true), _typeFetchState),
-  LOCATING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Locating', true), _typeFetchState),
-  FETCHING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Fetching', true), _typeFetchState),
-  DONE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeFetchState))('Done', true), _typeFetchState),
-};
-module.exports.FetchStatus = (vdl.registry.lookupOrCreateConstructor(_typeFetchStatus));
 module.exports.KeyValue = (vdl.registry.lookupOrCreateConstructor(_typeKeyValue));
 module.exports.PrefixPermissions = (vdl.registry.lookupOrCreateConstructor(_typePrefixPermissions));
 module.exports.ResolverType = {
@@ -185,6 +185,12 @@ module.exports.SchemaVersionMismatchError = makeError('v.io/syncbase/v23/service
 ]);
 
 
+module.exports.BlobNotCommittedError = makeError('v.io/syncbase/v23/services/syncbase/nosql.BlobNotCommitted', actions.NO_RETRY, {
+  'en': '{1:}{2:} blob is not yet committed',
+}, [
+]);
+
+
 
 
 // Services:
@@ -210,7 +216,7 @@ DatabaseWatcher.prototype.watchGlob = function(ctx, serverCall, req) {
 DatabaseWatcher.prototype._serviceDescription = {
   name: 'DatabaseWatcher',
   pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
-  doc: "// Watch allows a client to watch for updates in the database. For each watched\n// request, the client will receive a reliable stream of watch events without\n// re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
+  doc: "// DatabaseWatcher allows a client to watch for updates in the database.\n// For each watched request, the client will receive a reliable stream of watch\n// events without re-ordering. See watch.GlobWatcher for a detailed explanation\n// of the behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// 'table/row*'. Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
   embeds: [{
       name: 'GlobWatcher',
       pkgPath: 'v.io/v23/services/watch',
@@ -714,7 +720,7 @@ BlobManager.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _typeFetchStatus
+      type: _typeBlobFetchStatus
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -857,6 +863,11 @@ Database.prototype.exists = function(ctx, serverCall, schemaVersion) {
 };
     
       
+Database.prototype.exec = function(ctx, serverCall, schemaVersion, query) {
+  throw new Error('Method Exec not implemented');
+};
+    
+      
 Database.prototype.beginBatch = function(ctx, serverCall, schemaVersion, bo) {
   throw new Error('Method BeginBatch not implemented');
 };
@@ -864,11 +875,6 @@ Database.prototype.beginBatch = function(ctx, serverCall, schemaVersion, bo) {
       
 Database.prototype.commit = function(ctx, serverCall, schemaVersion) {
   throw new Error('Method Commit not implemented');
-};
-    
-      
-Database.prototype.exec = function(ctx, serverCall, schemaVersion, query) {
-  throw new Error('Method Exec not implemented');
 };
     
       
@@ -1015,7 +1021,7 @@ Database.prototype._serviceDescription = {
     {
       name: 'DatabaseWatcher',
       pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
-      doc: "// Watch allows a client to watch for updates in the database. For each watched\n// request, the client will receive a reliable stream of watch events without\n// re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
+      doc: "// DatabaseWatcher allows a client to watch for updates in the database.\n// For each watched request, the client will receive a reliable stream of watch\n// events without re-ordering. See watch.GlobWatcher for a detailed explanation\n// of the behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// 'table/row*'. Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
     },
     {
       name: 'SyncGroupManager',
@@ -1095,6 +1101,31 @@ Database.prototype._serviceDescription = {
     
       
     {
+    name: 'Exec',
+    doc: "// Exec executes a syncQL query and returns all results as specified by in the\n// query's select clause. Concurrency semantics are documented in model.go.",
+    inArgs: [{
+      name: 'schemaVersion',
+      doc: "",
+      type: vdl.types.INT32
+    },
+    {
+      name: 'query',
+      doc: "",
+      type: vdl.types.STRING
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: {
+      name: '',
+      doc: '',
+      type: _type6
+    },
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
     name: 'BeginBatch',
     doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.\n// TODO(sadovsky): make BatchOptions optional",
     inArgs: [{
@@ -1132,31 +1163,6 @@ Database.prototype._serviceDescription = {
     outArgs: [],
     inStream: null,
     outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
-  },
-    
-      
-    {
-    name: 'Exec',
-    doc: "// Exec executes a syncQL query and returns all results as specified by in the\n// query's select clause. Concurrency semantics are documented in model.go.",
-    inArgs: [{
-      name: 'schemaVersion',
-      doc: "",
-      type: vdl.types.INT32
-    },
-    {
-      name: 'query',
-      doc: "",
-      type: vdl.types.STRING
-    },
-    ],
-    outArgs: [],
-    inStream: null,
-    outStream: {
-      name: '',
-      doc: '',
-      type: _type6
-    },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
     
@@ -1582,7 +1588,7 @@ Database.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _typeFetchStatus
+      type: _typeBlobFetchStatus
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -1791,7 +1797,7 @@ Table.prototype._serviceDescription = {
       
     {
     name: 'DeleteRowRange',
-    doc: "// Delete deletes all rows in the given half-open range [start, limit). If\n// limit is \"\", all rows with keys >= start are included.",
+    doc: "// Delete deletes all rows in the given half-open range [start, limit). If\n// limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Delete prefix perms fully covered by the row range?",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",

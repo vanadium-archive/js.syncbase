@@ -10,11 +10,14 @@ var vanadium = require('vanadium');
 // vanadium.vdl object.
 var unwrap = require('vanadium/src/vdl/type-util').unwrap;
 
-var BatchDatabase = require('./batch-database');
 var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var watchVdl = require('../gen-vdl/v.io/v23/services/watch');
+
+var BatchDatabase = require('./batch-database');
 var SyncGroup = require('./syncgroup');
 var Table = require('./table');
 var util = require('../util');
+var watch = require('./watch');
 
 /**
  * Database represents a collection of Tables. Batches, queries, sync, watch,
@@ -211,6 +214,80 @@ Database.prototype.createTable = function(ctx, relativeName, perms, cb) {
  */
 Database.prototype.deleteTable = function(ctx, relativeName, cb) {
   this._tableWire(ctx, relativeName).delete(ctx, this.schemaVersion, cb);
+};
+
+/**
+ * Watches for updates to the database. For each watch request, the client will
+ * receive a reliable stream of watch events without re-ordering.
+ *
+ * This method is designed to be used in the following way:
+ * 1) begin a read-only batch
+ * 2) read all information your app needs
+ * 3) read the ResumeMarker
+ * 4) abort the batch
+ * 5) start watching for changes to the data using the ResumeMarker
+ *
+ * In this configuration the client doesn't miss any changes.
+ *
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {string} table Name of table to watch.
+ * @param {string} prefix Prefix of keys to watch.
+ * @param {module:syncbase.nosql.watch.ResumeMarker} resumeMarker ResumeMarker
+ * to resume watching from.
+ * @param {function} [cb] Optional callback that will be called after watch RPC
+ * finishes.
+ * @returns {stream} Stream of WatchChange objects.
+ */
+Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
+  var globReq = new watchVdl.GlobRequest({
+    pattern: vanadium.naming.join(tableName, prefix + '*'),
+    resumeMarker: resumeMarker
+  });
+
+  var watchChangeEncoder = through2({
+    objectMode: true
+  }, function(change, enc, cb) {
+    var changeType;
+    switch (change.state) {
+      case watchVdl.Exists.val:
+        changeType = 'put';
+        break;
+      case watchVdl.DoesNotExist.val:
+        changeType = 'delete';
+        break;
+      default:
+        return cb(new Error('invalid change state ' + change.state));
+    }
+
+    var wc = new watch.WatchChange({
+      tableName: vanadium.naming.stripBasename(change.name),
+      rowName: vanadium.naming.basename(change.name),
+      changeType: changeType,
+      valueBytes: changeType === 'put' ? change.value.value : null,
+      resumeMarker: change.resumeMarker,
+      fromSync: change.value.fromSync,
+      continued: change.continued
+    });
+    return cb(null, wc);
+  });
+
+  var stream = this._wire(ctx).watchGlob(ctx, globReq, cb).stream;
+
+  var watchChangeStream = stream.pipe(watchChangeEncoder);
+  stream.on('error', function(err) {
+    watchChangeStream.emit('error', err);
+  });
+
+  return watchChangeStream;
+};
+
+/**
+ * Gets the ResumeMarker that points to the current end of the event log.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.getResumeMarker = function(ctx, cb) {
+  this._wire(ctx).getResumeMarker(ctx, cb);
 };
 
 /**

@@ -5,6 +5,7 @@
 var rowrange = require('./rowrange');
 var runInBatch = require('./batch');
 var vdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var watch = require('./watch');
 
 /**
  * @summary
@@ -16,8 +17,10 @@ var vdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 module.exports = {
   BatchOptions: vdl.BatchOptions,
   ReadOnlyBatchError: vdl.ReadOnlyBatchError,
+  ResumeMarker: watch.ResumeMarker,
   rowrange: rowrange,
   runInBatch: runInBatch,
   SyncGroupMemberInfo: vdl.SyncGroupMemberInfo,
-  SyncGroupSpec: vdl.SyncGroupSpec
+  SyncGroupSpec: vdl.SyncGroupSpec,
+  WatchChange: watch.WatchChange
 };
