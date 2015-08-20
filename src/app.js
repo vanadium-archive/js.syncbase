@@ -31,9 +31,10 @@ function App(parentFullName, relativeName) {
 }
 
 // noSqlDatabase returns the noSqlDatabase with the given name. relativeName
-// must not contain slashes.
-App.prototype.noSqlDatabase = function(relativeName) {
-  return new Database(this.fullName, relativeName);
+// must not contain slashes. schema can be null or undefined only if a schema
+// was never set for the database in the first place.
+App.prototype.noSqlDatabase = function(relativeName, schema) {
+  return new Database(this.fullName, relativeName, schema);
 };
 
 // listDatabases returns of all database names.

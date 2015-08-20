@@ -15,13 +15,18 @@ var vdl = vanadium.vdl;
 var Database = require('../../src/nosql/database');
 var Table = require('../../src/nosql/table');
 
+var nosql = require('../..').nosql;
+var Schema = nosql.Schema;
+var SchemaMetadata = nosql.SchemaMetadata;
+
 var testUtil = require('./util');
 var setupApp = testUtil.setupApp;
 var setupDatabase = testUtil.setupDatabase;
 var setupTable = testUtil.setupTable;
 var uniqueName = testUtil.uniqueName;
 
-test('app.noSqlDatabase() returns a database', function(t) {
+test('app.noSqlDatabase(name) returns a database with correct name',
+     function(t) {
   setupApp(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -42,6 +47,30 @@ test('app.noSqlDatabase() returns a database', function(t) {
 
     db.fullName = 'bar';
     t.equal(db.fullName, expectedFullName, 'Setting fullName has no effect.');
+
+    o.teardown(t.end);
+  });
+});
+
+test('app.noSqlDatabase(name, schema) returns a database with correct schema',
+     function(t) {
+  setupApp(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    var version = 123;
+    var md = new SchemaMetadata({version: version});
+    var updater = function() {};
+    var schema = new Schema(md, updater);
+
+    var dbName = uniqueName('db');
+    var db = o.app.noSqlDatabase(dbName, schema);
+
+    t.ok(db, 'Database is constructed.');
+    t.ok(db instanceof Database, 'database is a Database object.');
+    t.equal(db.schema, schema, 'database has correct schema.');
+    t.equal(db.schemaVersion, version, 'database has correct schemaVersion');
 
     o.teardown(t.end);
   });

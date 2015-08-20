@@ -9,6 +9,7 @@ var vanadium = require('vanadium');
 // TODO(nlacasse): We should put unwrap and other type util methods on
 // vanadium.vdl object.
 var unwrap = require('vanadium/src/vdl/type-util').unwrap;
+var verror = vanadium.verror;
 
 var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 var watchVdl = require('../gen-vdl/v.io/v23/services/watch');
@@ -28,7 +29,6 @@ var watch = require('./watch');
  * @param {string} relativeName Relative name of this Database.  Must not
  * contain slashes.
  * @param {module:syncbase.schema.Schema} schema Schema for the database.
- * TODO(nlacasse): port definition of Schema from go to javascript
  */
 function Database(parentFullName, relativeName, schema) {
   if (!(this instanceof Database)) {
@@ -37,8 +37,18 @@ function Database(parentFullName, relativeName, schema) {
 
   util.addNameProperties(this, parentFullName, relativeName);
 
-  this.schema = null;  // TODO(nlacasse): use schema from params
-  this.schemaVersion = -1;  // TODO(nlacasse): derive this from schema
+  Object.defineProperty(this, 'schema', {
+    enumerable: false,
+    value: schema,
+    writable: false
+  });
+
+  Object.defineProperty(this, 'schemaVersion', {
+    enumerable: false,
+    value: schema ? schema.metadata.version : -1,
+    writable: false
+  });
+
   /**
    * Caches the database wire object.
    * @private
@@ -70,13 +80,13 @@ Database.prototype._wire = function(ctx) {
  * @param {module:vanadium.security.access.Permissions} perms Permissions for
  * the new database.  If perms is null, we inherit (copy) the App perms.
  * @param {function} cb Callback.
- *
- * TODO(nlacasse): Port schema changes to javascript code. See cl:
- *    https://vanadium-review.googlesource.com/#/c/13040/ .
  */
 Database.prototype.create = function(ctx, perms, cb) {
-  //TODO(nlacasse): pass schema.metadata below instead of null
-  this._wire(ctx).create(ctx, null, perms, cb);
+  var schemaMetadata = null;
+  if (this.schema) {
+    schemaMetadata = this.schema.metadata;
+  }
+  this._wire(ctx).create(ctx, schemaMetadata, perms, cb);
 };
 
 /**
@@ -369,4 +379,111 @@ Database.prototype.syncGroup = function(name) {
  */
 Database.prototype.getSyncGroupNames = function(ctx, cb) {
   this._wire(ctx).getSyncGroupNames(ctx, cb);
+};
+
+/**
+ * Compares the current schema version of the database with the schema version
+ * provided while creating this database handle. If the current database schema
+ * version is lower, then schema.updater is called. If schema.updater is
+ * successful this method stores the new schema metadata in database.
+ *
+ * It is important not to access or modify the database until upgradeIfOutdated
+ * has called its callback.
+ *
+ * TODO(nlacasse): Consider locking the database in some way so that the
+ * upgrader function can access it, but all other attempts fail immediately
+ * with a helpful error.
+ *
+ * Note: schema can be nil, in which case this method skips schema check and
+ * the caller is responsible for maintaining schema sanity.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype.upgradeIfOutdated = function(ctx, cb) {
+  var self = this;
+  if (!self.schema) {
+    return process.nextTick(function() {
+      cb(new verror.BadStateError(ctx,
+          'schema or schema.metadata cannot be nil.  ' +
+          'A valid schema needs to be used when creating Database handle.'));
+    });
+  }
+
+  if (self.schema.metadata.version < 0) {
+    return process.nextTick(function() {
+      cb(new verror.BadStateError(ctx,
+          'schema version cannot be less than zero'));
+    });
+  }
+
+  self._getSchemaMetadata(ctx, function(err, currMeta) {
+    if (err) {
+      if (!(err instanceof verror.NoExistError)) {
+        return cb(err);
+      }
+
+      // If the client app did not set a schema as part of create db
+      // getSchemaMetadata() will return a NoExistError. If so we set the
+      // schema here.
+      self._setSchemaMetadata(ctx, self.schema.metadata, function(err) {
+
+        // The database may not yet exist. If so above call will return
+        // NoExistError and we return db without error. If the error is
+        // different then return the error to the caller.
+        if (err && !(err instanceof verror.NoExistError)) {
+          return cb(err);
+        }
+        return cb(null, false);
+      });
+
+      return;
+    }
+
+    if (currMeta.version >= self.schema.metadata.version) {
+      return cb(null, false);
+    }
+
+    // Call the Upgrader provided by the app to upgrade the schema.
+    //
+    // TODO(nlacasse,jlodhia): disable sync before running Upgrader and
+    // reenable once Upgrader is finished.
+    //
+    // TODO(nlacasse,jlodhia): prevent other processes (local/remote) from
+    // accessing the database while upgrade is in progress.
+    self.schema.upgrader(self, currMeta.version, self.schema.metadata.version,
+        function(err) {
+      if (err) {
+        return cb(err);
+      }
+
+      // Update the schema metadata in db to the latest version.
+      self._setSchemaMetadata(ctx, self.schema.metadata, function(err) {
+        if (err) {
+          return cb(err);
+        }
+        cb(null, true);
+      });
+    });
+  });
+};
+
+/**
+ * Retrieves the schema metadata for the database.
+ * @private
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Database.prototype._getSchemaMetadata = function(ctx, cb) {
+  return this._wire(ctx).getSchemaMetadata(ctx, cb);
+};
+
+/**
+ * Stores the schema metadata for the database.
+ * @private
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {module:syncbase.schema.SchemaMetadata} metadata Schema metadata.
+ * @param {function} cb Callback.
+ */
+Database.prototype._setSchemaMetadata = function(ctx, metadata, cb) {
+  return this._wire(ctx).setSchemaMetadata(ctx, metadata, cb);
 };

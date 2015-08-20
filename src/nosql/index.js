@@ -4,6 +4,7 @@
 
 var rowrange = require('./rowrange');
 var runInBatch = require('./batch');
+var Schema = require('./schema');
 var vdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 var watch = require('./watch');
 
@@ -20,6 +21,8 @@ module.exports = {
   ResumeMarker: watch.ResumeMarker,
   rowrange: rowrange,
   runInBatch: runInBatch,
+  Schema: Schema,
+  SchemaMetadata: vdl.SchemaMetadata,
   SyncGroupMemberInfo: vdl.SyncGroupMemberInfo,
   SyncGroupSpec: vdl.SyncGroupSpec,
   WatchChange: watch.WatchChange
