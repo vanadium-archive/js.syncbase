@@ -18,6 +18,7 @@
     "mkdirp": "~0.5.1",
     "prova": "aghassemi/prova#0.0.4",
     "run-parallel": "~1.1.1",
+    "stream-array": "~1.1.0",
     "stream-to-array": "~2.0.2",
     "tap-xunit": "~1.1.1",
     "which": "~1.1.1",

@@ -15,6 +15,10 @@ var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
 var watchVdl = require('../gen-vdl/v.io/v23/services/watch');
 
 var BatchDatabase = require('./batch-database');
+/* jshint -W079 */
+// Silence jshint's error about redefining 'Blob'.
+var Blob = require('./blob');
+/* jshint +W079 */
 var SyncGroup = require('./syncgroup');
 var Table = require('./table');
 var util = require('../util');
@@ -487,3 +491,29 @@ Database.prototype._getSchemaMetadata = function(ctx, cb) {
 Database.prototype._setSchemaMetadata = function(ctx, metadata, cb) {
   return this._wire(ctx).setSchemaMetadata(ctx, metadata, cb);
 };
+
+/**
+ * Returns a handle to the blob with the given blobRef.
+ * @param {module:syncbase.nosql.BlobRef} blobRef BlobRef of blob to get.
+ *
+ */
+Database.prototype.blob = function(blobRef) {
+  return new Blob(this, blobRef);
+};
+
+/**
+ * Creates a new blob.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ *
+ */
+Database.prototype.createBlob = function(ctx, cb) {
+  var self = this;
+  this._wire(ctx).createBlob(ctx, function(err, blobRef) {
+    if (err) {
+      return cb(err);
+    }
+    return cb(null, new Blob(self, blobRef));
+  });
+};
+

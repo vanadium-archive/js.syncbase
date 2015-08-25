@@ -19,6 +19,10 @@ function App(parentFullName, relativeName) {
 
   util.addNameProperties(this, parentFullName, relativeName);
 
+  // TODO(nlacasse): Use the prr module to simplify all the
+  // 'Object.defineProperty' calls scattered throughout the project.
+  // https://www.npmjs.com/package/prr
+
   /**
    * Caches the database wire object.
    * @private

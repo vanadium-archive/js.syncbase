@@ -17,6 +17,7 @@ var watch = require('./watch');
  */
 module.exports = {
   BatchOptions: vdl.BatchOptions,
+  BlobRef: vdl.BlobRef,
   ReadOnlyBatchError: vdl.ReadOnlyBatchError,
   ResumeMarker: watch.ResumeMarker,
   rowrange: rowrange,
