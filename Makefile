@@ -1,5 +1,5 @@
 SHELL := /bin/bash -euo pipefail
-export PATH := ./go/bin:$(V23_ROOT)/release/go/bin:$(V23_ROOT)/roadmap/go/bin:node_modules/.bin:$(V23_ROOT)/third_party/cout/node/bin:$(PATH)
+export PATH := ./go/bin:$(V23_ROOT)/release/go/bin:node_modules/.bin:$(V23_ROOT)/third_party/cout/node/bin:$(PATH)
 
 # This target causes any target files to be deleted if the target task fails.
 .DELETE_ON_ERROR:

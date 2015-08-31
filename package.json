@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://vanadium.googlesource.com/roadmap.js.syncbase"
+    "url": "https://vanadium.googlesource.com/release.js.syncbase"
   },
   "author": "",
   "license": "BSD"
