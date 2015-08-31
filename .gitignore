@@ -1,1 +1,5 @@
+/go/bin
+/node_modules
+/tmp
+
 /.v23
