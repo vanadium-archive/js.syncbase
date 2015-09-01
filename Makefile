@@ -53,11 +53,11 @@ all:
 go/bin: $(shell find $(V23_ROOT) -name "*.go")
 	v23 go build -a -o $@/principal v.io/x/ref/cmd/principal
 	v23 go build -a -tags wspr -o $@/servicerunner v.io/x/ref/cmd/servicerunner
-	v23 go build -a -o $@/syncbased v.io/syncbase/x/ref/services/syncbase/syncbased
+	v23 go build -a -o $@/syncbased v.io/x/ref/services/syncbase/syncbased
 
 .PHONY: gen-vdl
 gen-vdl:
-	v23 run vdl generate --lang=javascript --js-out-dir=src/gen-vdl v.io/syncbase/v23/services/syncbase/...
+	v23 run vdl generate --lang=javascript --js-out-dir=src/gen-vdl v.io/v23/services/syncbase/...
 
 node_modules: package.json
 	npm prune
