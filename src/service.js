@@ -6,7 +6,7 @@ var vanadium = require('vanadium');
 
 var App = require('./app');
 var util = require('./util');
-var vdl = require('./gen-vdl/v.io/syncbase/v23/services/syncbase');
+var vdl = require('./gen-vdl/v.io/v23/services/syncbase');
 
 // TODO(aghassemi): This looks clunky,
 // https://github.com/vanadium/issues/issues/499 to deal with it.

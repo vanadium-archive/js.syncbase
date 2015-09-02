@@ -6,7 +6,7 @@ var vanadium = require('vanadium');
 
 var Database = require('./nosql/database');
 var util = require('./util');
-var vdl = require('./gen-vdl/v.io/syncbase/v23/services/syncbase');
+var vdl = require('./gen-vdl/v.io/v23/services/syncbase');
 
 var wireSignature = vdl.App.prototype._serviceDescription;
 

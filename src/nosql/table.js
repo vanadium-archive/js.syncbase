@@ -5,7 +5,7 @@
 var through2 = require('through2');
 var vanadium = require('vanadium');
 
-var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var prefix = require('./rowrange').prefix;
 var Row = require('./row');
 
@@ -169,7 +169,7 @@ Table.prototype.scan = function(ctx, range, cb) {
  * SetPermissions will fail if called with a prefix that does not match any
  * rows.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:syncbase.nosql.rowrane.PrefixRange|string} prefix Prefix or
+ * @param {module:syncbase.nosql.rowrange.PrefixRange|string} prefix Prefix or
  * PrefixRange.
  * @param @param {module:vanadium.security.access.Permissions} perms Permissions
  * for the rows matching the prefix.

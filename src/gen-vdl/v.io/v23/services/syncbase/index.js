@@ -12,8 +12,8 @@ var canonicalize = require('vanadium').vdl.canonicalize;
 
 
 
-var access = require('./../../../../v23/security/access');
-var permissions = require('./../../../../v23/services/permissions');
+var access = require('./../../security/access');
+var permissions = require('./../permissions');
 
 module.exports = {};
 
@@ -30,7 +30,7 @@ module.exports = {};
 
 // Errors:
 
-module.exports.InvalidNameError = makeError('v.io/syncbase/v23/services/syncbase.InvalidName', actions.NO_RETRY, {
+module.exports.InvalidNameError = makeError('v.io/v23/services/syncbase.InvalidName', actions.NO_RETRY, {
   'en': '{1:}{2:} invalid name: {3}',
 }, [
   vdl.types.STRING,
@@ -61,7 +61,7 @@ Service.prototype.getPermissions = function(ctx, serverCall) {
     
 Service.prototype._serviceDescription = {
   name: 'Service',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase',
+  pkgPath: 'v.io/v23/services/syncbase',
   doc: "// Service represents a Vanadium Syncbase service.\n// Service.Glob operates over App names.",
   embeds: [{
       name: 'Object',
@@ -151,7 +151,7 @@ App.prototype.getPermissions = function(ctx, serverCall) {
     
 App.prototype._serviceDescription = {
   name: 'App',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase',
+  pkgPath: 'v.io/v23/services/syncbase',
   doc: "// App represents the data for a specific app instance (possibly a combination\n// of user, device, and app).\n// App.Glob operates over Database names.",
   embeds: [{
       name: 'Object',

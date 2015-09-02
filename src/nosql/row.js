@@ -4,7 +4,7 @@
 
 var vanadium = require('vanadium');
 
-var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 
 module.exports = Row;
 

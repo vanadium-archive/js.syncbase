@@ -12,9 +12,9 @@ var canonicalize = require('vanadium').vdl.canonicalize;
 
 
 
-var access = require('./../../../../../v23/security/access');
-var permissions = require('./../../../../../v23/services/permissions');
-var watch = require('./../../../../../v23/services/watch');
+var access = require('./../../../security/access');
+var permissions = require('./../../permissions');
+var watch = require('./../../watch');
 
 module.exports = {};
 
@@ -28,19 +28,32 @@ var _type4 = new vdl.Type();
 var _type5 = new vdl.Type();
 var _type6 = new vdl.Type();
 var _type7 = new vdl.Type();
+var _type8 = new vdl.Type();
+var _type9 = new vdl.Type();
+var _typeBatchInfo = new vdl.Type();
 var _typeBatchOptions = new vdl.Type();
+var _typeBatchSource = new vdl.Type();
 var _typeBlobFetchState = new vdl.Type();
 var _typeBlobFetchStatus = new vdl.Type();
 var _typeBlobRef = new vdl.Type();
+var _typeConflictData = new vdl.Type();
+var _typeConflictInfo = new vdl.Type();
 var _typeCrPolicy = new vdl.Type();
 var _typeCrRule = new vdl.Type();
 var _typeKeyValue = new vdl.Type();
+var _typeOperation = new vdl.Type();
 var _typePrefixPermissions = new vdl.Type();
+var _typeResolutionInfo = new vdl.Type();
 var _typeResolverType = new vdl.Type();
+var _typeRowInfo = new vdl.Type();
+var _typeRowOp = new vdl.Type();
+var _typeScanOp = new vdl.Type();
 var _typeSchemaMetadata = new vdl.Type();
 var _typeStoreChange = new vdl.Type();
 var _typeSyncGroupMemberInfo = new vdl.Type();
 var _typeSyncGroupSpec = new vdl.Type();
+var _typeValue = new vdl.Type();
+var _typeValueSelection = new vdl.Type();
 _type1.kind = vdl.kind.LIST;
 _type1.name = "";
 _type1.elem = vdl.types.STRING;
@@ -56,51 +69,90 @@ _type4.name = "";
 _type4.elem = _typeCrRule;
 _type5.kind = vdl.kind.OPTIONAL;
 _type5.name = "";
-_type5.elem = _typeSchemaMetadata;
+_type5.elem = _typeValue;
 _type6.kind = vdl.kind.LIST;
 _type6.name = "";
-_type6.elem = vdl.types.ANY;
-_type7.kind = vdl.kind.LIST;
+_type6.elem = vdl.types.UINT16;
+_type7.kind = vdl.kind.OPTIONAL;
 _type7.name = "";
-_type7.elem = _typePrefixPermissions;
+_type7.elem = _typeSchemaMetadata;
+_type8.kind = vdl.kind.LIST;
+_type8.name = "";
+_type8.elem = vdl.types.ANY;
+_type9.kind = vdl.kind.LIST;
+_type9.name = "";
+_type9.elem = _typePrefixPermissions;
+_typeBatchInfo.kind = vdl.kind.STRUCT;
+_typeBatchInfo.name = "v.io/v23/services/syncbase/nosql.BatchInfo";
+_typeBatchInfo.fields = [{name: "Id", type: vdl.types.UINT16}, {name: "Hint", type: vdl.types.STRING}, {name: "Source", type: _typeBatchSource}];
 _typeBatchOptions.kind = vdl.kind.STRUCT;
-_typeBatchOptions.name = "v.io/syncbase/v23/services/syncbase/nosql.BatchOptions";
+_typeBatchOptions.name = "v.io/v23/services/syncbase/nosql.BatchOptions";
 _typeBatchOptions.fields = [{name: "Hint", type: vdl.types.STRING}, {name: "ReadOnly", type: vdl.types.BOOL}];
+_typeBatchSource.kind = vdl.kind.ENUM;
+_typeBatchSource.name = "v.io/v23/services/syncbase/nosql.BatchSource";
+_typeBatchSource.labels = ["Local", "Remote"];
 _typeBlobFetchState.kind = vdl.kind.ENUM;
-_typeBlobFetchState.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobFetchState";
+_typeBlobFetchState.name = "v.io/v23/services/syncbase/nosql.BlobFetchState";
 _typeBlobFetchState.labels = ["Pending", "Locating", "Fetching", "Done"];
 _typeBlobFetchStatus.kind = vdl.kind.STRUCT;
-_typeBlobFetchStatus.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobFetchStatus";
+_typeBlobFetchStatus.name = "v.io/v23/services/syncbase/nosql.BlobFetchStatus";
 _typeBlobFetchStatus.fields = [{name: "State", type: _typeBlobFetchState}, {name: "Received", type: vdl.types.INT64}, {name: "Total", type: vdl.types.INT64}];
 _typeBlobRef.kind = vdl.kind.STRING;
-_typeBlobRef.name = "v.io/syncbase/v23/services/syncbase/nosql.BlobRef";
+_typeBlobRef.name = "v.io/v23/services/syncbase/nosql.BlobRef";
+_typeConflictData.kind = vdl.kind.UNION;
+_typeConflictData.name = "v.io/v23/services/syncbase/nosql.ConflictData";
+_typeConflictData.fields = [{name: "Batch", type: _typeBatchInfo}, {name: "Row", type: _typeRowInfo}];
+_typeConflictInfo.kind = vdl.kind.STRUCT;
+_typeConflictInfo.name = "v.io/v23/services/syncbase/nosql.ConflictInfo";
+_typeConflictInfo.fields = [{name: "Data", type: _typeConflictData}, {name: "Continued", type: vdl.types.BOOL}];
 _typeCrPolicy.kind = vdl.kind.STRUCT;
-_typeCrPolicy.name = "v.io/syncbase/v23/services/syncbase/nosql.CrPolicy";
+_typeCrPolicy.name = "v.io/v23/services/syncbase/nosql.CrPolicy";
 _typeCrPolicy.fields = [{name: "Rules", type: _type4}];
 _typeCrRule.kind = vdl.kind.STRUCT;
-_typeCrRule.name = "v.io/syncbase/v23/services/syncbase/nosql.CrRule";
+_typeCrRule.name = "v.io/v23/services/syncbase/nosql.CrRule";
 _typeCrRule.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "KeyPrefix", type: vdl.types.STRING}, {name: "Type", type: vdl.types.STRING}, {name: "Resolver", type: _typeResolverType}];
 _typeKeyValue.kind = vdl.kind.STRUCT;
-_typeKeyValue.name = "v.io/syncbase/v23/services/syncbase/nosql.KeyValue";
+_typeKeyValue.name = "v.io/v23/services/syncbase/nosql.KeyValue";
 _typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type3}];
+_typeOperation.kind = vdl.kind.UNION;
+_typeOperation.name = "v.io/v23/services/syncbase/nosql.Operation";
+_typeOperation.fields = [{name: "Read", type: _typeRowOp}, {name: "Write", type: _typeRowOp}, {name: "Scan", type: _typeScanOp}];
 _typePrefixPermissions.kind = vdl.kind.STRUCT;
-_typePrefixPermissions.name = "v.io/syncbase/v23/services/syncbase/nosql.PrefixPermissions";
+_typePrefixPermissions.name = "v.io/v23/services/syncbase/nosql.PrefixPermissions";
 _typePrefixPermissions.fields = [{name: "Prefix", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}];
+_typeResolutionInfo.kind = vdl.kind.STRUCT;
+_typeResolutionInfo.name = "v.io/v23/services/syncbase/nosql.ResolutionInfo";
+_typeResolutionInfo.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Selection", type: _typeValueSelection}, {name: "Result", type: _type5}, {name: "Continued", type: vdl.types.BOOL}];
 _typeResolverType.kind = vdl.kind.ENUM;
-_typeResolverType.name = "v.io/syncbase/v23/services/syncbase/nosql.ResolverType";
+_typeResolverType.name = "v.io/v23/services/syncbase/nosql.ResolverType";
 _typeResolverType.labels = ["LastWins", "AppResolves", "Defer"];
+_typeRowInfo.kind = vdl.kind.STRUCT;
+_typeRowInfo.name = "v.io/v23/services/syncbase/nosql.RowInfo";
+_typeRowInfo.fields = [{name: "Op", type: _typeOperation}, {name: "BatchIds", type: _type6}];
+_typeRowOp.kind = vdl.kind.STRUCT;
+_typeRowOp.name = "v.io/v23/services/syncbase/nosql.RowOp";
+_typeRowOp.fields = [{name: "Key", type: vdl.types.STRING}, {name: "LocalValue", type: _type5}, {name: "RemoteValue", type: _type5}, {name: "AncestorValue", type: _type5}];
+_typeScanOp.kind = vdl.kind.STRUCT;
+_typeScanOp.name = "v.io/v23/services/syncbase/nosql.ScanOp";
+_typeScanOp.fields = [{name: "Start", type: vdl.types.STRING}, {name: "Limit", type: vdl.types.STRING}];
 _typeSchemaMetadata.kind = vdl.kind.STRUCT;
-_typeSchemaMetadata.name = "v.io/syncbase/v23/services/syncbase/nosql.SchemaMetadata";
+_typeSchemaMetadata.name = "v.io/v23/services/syncbase/nosql.SchemaMetadata";
 _typeSchemaMetadata.fields = [{name: "Version", type: vdl.types.INT32}, {name: "Policy", type: _typeCrPolicy}];
 _typeStoreChange.kind = vdl.kind.STRUCT;
-_typeStoreChange.name = "v.io/syncbase/v23/services/syncbase/nosql.StoreChange";
+_typeStoreChange.name = "v.io/v23/services/syncbase/nosql.StoreChange";
 _typeStoreChange.fields = [{name: "Value", type: _type3}, {name: "FromSync", type: vdl.types.BOOL}];
 _typeSyncGroupMemberInfo.kind = vdl.kind.STRUCT;
-_typeSyncGroupMemberInfo.name = "v.io/syncbase/v23/services/syncbase/nosql.SyncGroupMemberInfo";
+_typeSyncGroupMemberInfo.name = "v.io/v23/services/syncbase/nosql.SyncGroupMemberInfo";
 _typeSyncGroupMemberInfo.fields = [{name: "SyncPriority", type: vdl.types.BYTE}];
 _typeSyncGroupSpec.kind = vdl.kind.STRUCT;
-_typeSyncGroupSpec.name = "v.io/syncbase/v23/services/syncbase/nosql.SyncGroupSpec";
+_typeSyncGroupSpec.name = "v.io/v23/services/syncbase/nosql.SyncGroupSpec";
 _typeSyncGroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type1}, {name: "MountTables", type: _type1}, {name: "IsPrivate", type: vdl.types.BOOL}];
+_typeValue.kind = vdl.kind.STRUCT;
+_typeValue.name = "v.io/v23/services/syncbase/nosql.Value";
+_typeValue.fields = [{name: "Bytes", type: _type3}, {name: "WriteTs", type: vdl.types.INT64}];
+_typeValueSelection.kind = vdl.kind.ENUM;
+_typeValueSelection.name = "v.io/v23/services/syncbase/nosql.ValueSelection";
+_typeValueSelection.labels = ["Local", "Remote", "Other"];
 _type1.freeze();
 _type2.freeze();
 _type3.freeze();
@@ -108,20 +160,38 @@ _type4.freeze();
 _type5.freeze();
 _type6.freeze();
 _type7.freeze();
+_type8.freeze();
+_type9.freeze();
+_typeBatchInfo.freeze();
 _typeBatchOptions.freeze();
+_typeBatchSource.freeze();
 _typeBlobFetchState.freeze();
 _typeBlobFetchStatus.freeze();
 _typeBlobRef.freeze();
+_typeConflictData.freeze();
+_typeConflictInfo.freeze();
 _typeCrPolicy.freeze();
 _typeCrRule.freeze();
 _typeKeyValue.freeze();
+_typeOperation.freeze();
 _typePrefixPermissions.freeze();
+_typeResolutionInfo.freeze();
 _typeResolverType.freeze();
+_typeRowInfo.freeze();
+_typeRowOp.freeze();
+_typeScanOp.freeze();
 _typeSchemaMetadata.freeze();
 _typeStoreChange.freeze();
 _typeSyncGroupMemberInfo.freeze();
 _typeSyncGroupSpec.freeze();
+_typeValue.freeze();
+_typeValueSelection.freeze();
+module.exports.BatchInfo = (vdl.registry.lookupOrCreateConstructor(_typeBatchInfo));
 module.exports.BatchOptions = (vdl.registry.lookupOrCreateConstructor(_typeBatchOptions));
+module.exports.BatchSource = {
+  LOCAL: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBatchSource))('Local', true), _typeBatchSource),
+  REMOTE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBatchSource))('Remote', true), _typeBatchSource),
+};
 module.exports.BlobFetchState = {
   PENDING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchState))('Pending', true), _typeBlobFetchState),
   LOCATING: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchState))('Locating', true), _typeBlobFetchState),
@@ -130,19 +200,32 @@ module.exports.BlobFetchState = {
 };
 module.exports.BlobFetchStatus = (vdl.registry.lookupOrCreateConstructor(_typeBlobFetchStatus));
 module.exports.BlobRef = (vdl.registry.lookupOrCreateConstructor(_typeBlobRef));
+module.exports.ConflictData = (vdl.registry.lookupOrCreateConstructor(_typeConflictData));
+module.exports.ConflictInfo = (vdl.registry.lookupOrCreateConstructor(_typeConflictInfo));
 module.exports.CrPolicy = (vdl.registry.lookupOrCreateConstructor(_typeCrPolicy));
 module.exports.CrRule = (vdl.registry.lookupOrCreateConstructor(_typeCrRule));
 module.exports.KeyValue = (vdl.registry.lookupOrCreateConstructor(_typeKeyValue));
+module.exports.Operation = (vdl.registry.lookupOrCreateConstructor(_typeOperation));
 module.exports.PrefixPermissions = (vdl.registry.lookupOrCreateConstructor(_typePrefixPermissions));
+module.exports.ResolutionInfo = (vdl.registry.lookupOrCreateConstructor(_typeResolutionInfo));
 module.exports.ResolverType = {
   LAST_WINS: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeResolverType))('LastWins', true), _typeResolverType),
   APP_RESOLVES: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeResolverType))('AppResolves', true), _typeResolverType),
   DEFER: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeResolverType))('Defer', true), _typeResolverType),
 };
+module.exports.RowInfo = (vdl.registry.lookupOrCreateConstructor(_typeRowInfo));
+module.exports.RowOp = (vdl.registry.lookupOrCreateConstructor(_typeRowOp));
+module.exports.ScanOp = (vdl.registry.lookupOrCreateConstructor(_typeScanOp));
 module.exports.SchemaMetadata = (vdl.registry.lookupOrCreateConstructor(_typeSchemaMetadata));
 module.exports.StoreChange = (vdl.registry.lookupOrCreateConstructor(_typeStoreChange));
 module.exports.SyncGroupMemberInfo = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupMemberInfo));
 module.exports.SyncGroupSpec = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupSpec));
+module.exports.Value = (vdl.registry.lookupOrCreateConstructor(_typeValue));
+module.exports.ValueSelection = {
+  LOCAL: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Local', true), _typeValueSelection),
+  REMOTE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Remote', true), _typeValueSelection),
+  OTHER: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Other', true), _typeValueSelection),
+};
 
 
 
@@ -155,37 +238,37 @@ module.exports.SyncGroupSpec = (vdl.registry.lookupOrCreateConstructor(_typeSync
 
 // Errors:
 
-module.exports.BoundToBatchError = makeError('v.io/syncbase/v23/services/syncbase/nosql.BoundToBatch', actions.NO_RETRY, {
+module.exports.BoundToBatchError = makeError('v.io/v23/services/syncbase/nosql.BoundToBatch', actions.NO_RETRY, {
   'en': '{1:}{2:} bound to batch',
 }, [
 ]);
 
 
-module.exports.NotBoundToBatchError = makeError('v.io/syncbase/v23/services/syncbase/nosql.NotBoundToBatch', actions.NO_RETRY, {
+module.exports.NotBoundToBatchError = makeError('v.io/v23/services/syncbase/nosql.NotBoundToBatch', actions.NO_RETRY, {
   'en': '{1:}{2:} not bound to batch',
 }, [
 ]);
 
 
-module.exports.ReadOnlyBatchError = makeError('v.io/syncbase/v23/services/syncbase/nosql.ReadOnlyBatch', actions.NO_RETRY, {
+module.exports.ReadOnlyBatchError = makeError('v.io/v23/services/syncbase/nosql.ReadOnlyBatch', actions.NO_RETRY, {
   'en': '{1:}{2:} batch is read-only',
 }, [
 ]);
 
 
-module.exports.ConcurrentBatchError = makeError('v.io/syncbase/v23/services/syncbase/nosql.ConcurrentBatch', actions.NO_RETRY, {
+module.exports.ConcurrentBatchError = makeError('v.io/v23/services/syncbase/nosql.ConcurrentBatch', actions.NO_RETRY, {
   'en': '{1:}{2:} concurrent batch',
 }, [
 ]);
 
 
-module.exports.SchemaVersionMismatchError = makeError('v.io/syncbase/v23/services/syncbase/nosql.SchemaVersionMismatch', actions.NO_RETRY, {
+module.exports.SchemaVersionMismatchError = makeError('v.io/v23/services/syncbase/nosql.SchemaVersionMismatch', actions.NO_RETRY, {
   'en': '{1:}{2:} actual schema version does not match the provided one',
 }, [
 ]);
 
 
-module.exports.BlobNotCommittedError = makeError('v.io/syncbase/v23/services/syncbase/nosql.BlobNotCommitted', actions.NO_RETRY, {
+module.exports.BlobNotCommittedError = makeError('v.io/v23/services/syncbase/nosql.BlobNotCommitted', actions.NO_RETRY, {
   'en': '{1:}{2:} blob is not yet committed',
 }, [
 ]);
@@ -215,7 +298,7 @@ DatabaseWatcher.prototype.watchGlob = function(ctx, serverCall, req) {
     
 DatabaseWatcher.prototype._serviceDescription = {
   name: 'DatabaseWatcher',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// DatabaseWatcher allows a client to watch for updates in the database.\n// For each watched request, the client will receive a reliable stream of watch\n// events without re-ordering. See watch.GlobWatcher for a detailed explanation\n// of the behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// 'table/row*'. Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
   embeds: [{
       name: 'GlobWatcher',
@@ -319,7 +402,7 @@ SyncGroupManager.prototype.getSyncGroupMembers = function(ctx, serverCall, sgNam
     
 SyncGroupManager.prototype._serviceDescription = {
   name: 'SyncGroupManager',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// SyncGroupManager is the interface for SyncGroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method.",
   embeds: [],
   methods: [
@@ -581,7 +664,7 @@ BlobManager.prototype.keepBlob = function(ctx, serverCall, br, rank) {
     
 BlobManager.prototype._serviceDescription = {
   name: 'BlobManager',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// BlobManager is the interface for blob operations.",
   embeds: [],
   methods: [
@@ -589,7 +672,7 @@ BlobManager.prototype._serviceDescription = {
       
     {
     name: 'CreateBlob',
-    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
+    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob. After commit, PutBlob and\n// CommitBlob can no longer be used. Blob creation can be resumed by\n// obtaining the current blob size with GetBlobSize and appending to the\n// blob via PutBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
     inArgs: [],
     outArgs: [{
       name: 'br',
@@ -801,7 +884,7 @@ SchemaManager.prototype.setSchemaMetadata = function(ctx, serverCall, metadata) 
     
 SchemaManager.prototype._serviceDescription = {
   name: 'SchemaManager',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// SchemaManager implements the API for managing schema metadata attached\n// to a Database.",
   embeds: [],
   methods: [
@@ -835,6 +918,48 @@ SchemaManager.prototype._serviceDescription = {
     outArgs: [],
     inStream: null,
     outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
+     
+  ]
+};
+
+  
+    
+function ConflictManager(){}
+module.exports.ConflictManager = ConflictManager;
+
+    
+      
+ConflictManager.prototype.startConflictResolver = function(ctx, serverCall) {
+  throw new Error('Method StartConflictResolver not implemented');
+};
+     
+
+    
+ConflictManager.prototype._serviceDescription = {
+  name: 'ConflictManager',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
+  doc: "// ConflictManager interface provides all the methods necessary to handle\n// conflict resolution for a given database.",
+  embeds: [],
+  methods: [
+    
+      
+    {
+    name: 'StartConflictResolver',
+    doc: "// StartConflictResolver registers a resolver for the database that is\n// associated with this ConflictManager and creates a stream to receive\n// conflicts and send resolutions.\n// Batches of ConflictInfos will be sent over with the Continued field\n// within the ConflictInfo representing the batch boundary. Client must\n// respond with a batch of ResolutionInfos in the same fashion.\n// A key is under conflict if two different values were written to it\n// concurrently (in logical time), i.e. neither value is an ancestor of the\n// other in the history graph.\n// A key under conflict can be a part of a batch committed on local or\n// remote or both syncbases. ConflictInfos for all keys in these two batches\n// are grouped together. These keys may themselves be under conflict; the\n// presented batch is a transitive closure of all batches containing keys\n// under conflict.\n// For example, for local batch {key1, key2} and remote batch {key1, key3},\n// the batch sent for conflict resolution will be {key1, key2, key3}.\n// If there was another concurrent batch {key2, key4}, then the batch sent\n// for conflict resolution will be {key1, key2, key3, key4}.",
+    inArgs: [],
+    outArgs: [],
+    inStream: {
+      name: '',
+      doc: '',
+      type: _typeResolutionInfo
+    },
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeConflictInfo
+    },
     tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
   },
      
@@ -1006,12 +1131,17 @@ Database.prototype.getSchemaMetadata = function(ctx, serverCall) {
 Database.prototype.setSchemaMetadata = function(ctx, serverCall, metadata) {
   throw new Error('Method SetSchemaMetadata not implemented');
 };
+    
+      
+Database.prototype.startConflictResolver = function(ctx, serverCall) {
+  throw new Error('Method StartConflictResolver not implemented');
+};
      
 
     
 Database.prototype._serviceDescription = {
   name: 'Database',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// Database represents a collection of Tables. Batches, queries, sync, watch,\n// etc. all operate at the Database level.\n// Database.Glob operates over Table names.\n// Param schemaVersion is the version number that the client expects the database\n// to be at. To disable schema version checking, pass -1.\n//\n// TODO(sadovsky): Add Watch method.",
   embeds: [{
       name: 'Object',
@@ -1020,23 +1150,28 @@ Database.prototype._serviceDescription = {
     },
     {
       name: 'DatabaseWatcher',
-      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      pkgPath: 'v.io/v23/services/syncbase/nosql',
       doc: "// DatabaseWatcher allows a client to watch for updates in the database.\n// For each watched request, the client will receive a reliable stream of watch\n// events without re-ordering. See watch.GlobWatcher for a detailed explanation\n// of the behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// 'table/row*'. Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
     },
     {
       name: 'SyncGroupManager',
-      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      pkgPath: 'v.io/v23/services/syncbase/nosql',
       doc: "// SyncGroupManager is the interface for SyncGroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method."
     },
     {
       name: 'BlobManager',
-      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      pkgPath: 'v.io/v23/services/syncbase/nosql',
       doc: "// BlobManager is the interface for blob operations."
     },
     {
       name: 'SchemaManager',
-      pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+      pkgPath: 'v.io/v23/services/syncbase/nosql',
       doc: "// SchemaManager implements the API for managing schema metadata attached\n// to a Database."
+    },
+    {
+      name: 'ConflictManager',
+      pkgPath: 'v.io/v23/services/syncbase/nosql',
+      doc: "// ConflictManager interface provides all the methods necessary to handle\n// conflict resolution for a given database."
     },
     ],
   methods: [
@@ -1048,7 +1183,7 @@ Database.prototype._serviceDescription = {
     inArgs: [{
       name: 'metadata',
       doc: "",
-      type: _type5
+      type: _type7
     },
     {
       name: 'perms',
@@ -1119,7 +1254,7 @@ Database.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _type6
+      type: _type8
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -1457,7 +1592,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'CreateBlob',
-    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
+    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob. After commit, PutBlob and\n// CommitBlob can no longer be used. Blob creation can be resumed by\n// obtaining the current blob size with GetBlobSize and appending to the\n// blob via PutBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
     inArgs: [],
     outArgs: [{
       name: 'br',
@@ -1677,6 +1812,25 @@ Database.prototype._serviceDescription = {
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
   },
+    
+      
+    {
+    name: 'StartConflictResolver',
+    doc: "// StartConflictResolver registers a resolver for the database that is\n// associated with this ConflictManager and creates a stream to receive\n// conflicts and send resolutions.\n// Batches of ConflictInfos will be sent over with the Continued field\n// within the ConflictInfo representing the batch boundary. Client must\n// respond with a batch of ResolutionInfos in the same fashion.\n// A key is under conflict if two different values were written to it\n// concurrently (in logical time), i.e. neither value is an ancestor of the\n// other in the history graph.\n// A key under conflict can be a part of a batch committed on local or\n// remote or both syncbases. ConflictInfos for all keys in these two batches\n// are grouped together. These keys may themselves be under conflict; the\n// presented batch is a transitive closure of all batches containing keys\n// under conflict.\n// For example, for local batch {key1, key2} and remote batch {key1, key3},\n// the batch sent for conflict resolution will be {key1, key2, key3}.\n// If there was another concurrent batch {key2, key4}, then the batch sent\n// for conflict resolution will be {key1, key2, key3, key4}.",
+    inArgs: [],
+    outArgs: [],
+    inStream: {
+      name: '',
+      doc: '',
+      type: _typeResolutionInfo
+    },
+    outStream: {
+      name: '',
+      doc: '',
+      type: _typeConflictInfo
+    },
+    tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
+  },
      
   ]
 };
@@ -1731,7 +1885,7 @@ Table.prototype.deletePermissions = function(ctx, serverCall, schemaVersion, pre
     
 Table.prototype._serviceDescription = {
   name: 'Table',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// Table represents a collection of Rows.\n// Table.Glob operates over the primary keys of Rows in the Table.\n// SchemaVersion is the version number that the client expects the database\n// to be at. To disable schema version checking, pass -1.",
   embeds: [],
   methods: [
@@ -1868,7 +2022,7 @@ Table.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type7
+      type: _type9
     },
     ],
     inStream: null,
@@ -1956,7 +2110,7 @@ Row.prototype.delete = function(ctx, serverCall, schemaVersion) {
     
 Row.prototype._serviceDescription = {
   name: 'Row',
-  pkgPath: 'v.io/syncbase/v23/services/syncbase/nosql',
+  pkgPath: 'v.io/v23/services/syncbase/nosql',
   doc: "// Row represents a single row in a Table.\n// All access checks are performed against the most specific matching prefix\n// permissions in the Table.\n// SchemaVersion is the version number that the client expects the database\n// to be at. To disable schema version checking, pass -1.\n// NOTE(sadovsky): Currently we send []byte values over the wire for Get, Put,\n// and Scan. If there's a way to avoid encoding/decoding on the server side, we\n// can use vdl.Value everywhere without sacrificing performance.",
   embeds: [],
   methods: [

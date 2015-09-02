@@ -5,7 +5,7 @@
 var rowrange = require('./rowrange');
 var runInBatch = require('./batch');
 var Schema = require('./schema');
-var vdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var vdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var watch = require('./watch');
 
 /**

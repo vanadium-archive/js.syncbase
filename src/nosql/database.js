@@ -11,7 +11,7 @@ var vanadium = require('vanadium');
 var unwrap = require('vanadium/src/vdl/type-util').unwrap;
 var verror = vanadium.verror;
 
-var nosqlVdl = require('../gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var watchVdl = require('../gen-vdl/v.io/v23/services/watch');
 
 var BatchDatabase = require('./batch-database');

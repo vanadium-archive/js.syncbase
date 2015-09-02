@@ -11,7 +11,7 @@ var test = require('prova');
 var Blob = require('../../src/nosql/blob');
 /* jshint +W079 */
 var vdl =
-  require('../../src/gen-vdl/v.io/syncbase/v23/services/syncbase/nosql');
+  require('../../src/gen-vdl/v.io/v23/services/syncbase/nosql');
 
 var testUtil = require('./util');
 var setupDatabase = testUtil.setupDatabase;
