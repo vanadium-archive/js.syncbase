@@ -52,9 +52,9 @@ App.prototype.create = function(ctx, perms, cb) {
   this._wire(ctx).create(ctx, perms, cb);
 };
 
-// delete deletes this app.
-App.prototype.delete = function(ctx, cb) {
-  this._wire(ctx).delete(ctx, cb);
+// destroy destroys this app.
+App.prototype.destroy = function(ctx, cb) {
+  this._wire(ctx).destroy(ctx, cb);
 };
 
 // exists returns true only if this app exists. Insufficient permissions cause

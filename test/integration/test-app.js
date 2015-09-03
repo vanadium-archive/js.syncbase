@@ -100,7 +100,7 @@ test('Creating and listing apps', function(t) {
   });
 });
 
-test('Deleting an app', function(t) {
+test('Destroy an app', function(t) {
   setupApp(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -114,8 +114,8 @@ test('Deleting an app', function(t) {
         cb(null);
       },
 
-      // Delete app.
-      o.app.delete.bind(o.app, o.ctx),
+      // Destroy app.
+      o.app.destroy.bind(o.app, o.ctx),
 
       // Verify app no longer exists.
       o.app.exists.bind(o.app, o.ctx),

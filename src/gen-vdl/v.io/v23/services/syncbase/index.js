@@ -128,8 +128,8 @@ App.prototype.create = function(ctx, serverCall, perms) {
 };
     
       
-App.prototype.delete = function(ctx, serverCall) {
-  throw new Error('Method Delete not implemented');
+App.prototype.destroy = function(ctx, serverCall) {
+  throw new Error('Method Destroy not implemented');
 };
     
       
@@ -179,8 +179,8 @@ App.prototype._serviceDescription = {
     
       
     {
-    name: 'Delete',
-    doc: "// Delete deletes this App.",
+    name: 'Destroy',
+    doc: "// Destroy destroys this App.",
     inArgs: [],
     outArgs: [],
     inStream: null,

@@ -94,12 +94,12 @@ Database.prototype.create = function(ctx, perms, cb) {
 };
 
 /**
- * Deletes this Database.
+ * Destroys this Database, permanently removing all of its data.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {function} cb Callback.
  */
-Database.prototype.delete = function(ctx, cb) {
-  this._wire(ctx).delete(ctx, this.schemaVersion, cb);
+Database.prototype.destroy = function(ctx, cb) {
+  this._wire(ctx).destroy(ctx, this.schemaVersion, cb);
 };
 
 /**

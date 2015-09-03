@@ -978,8 +978,8 @@ Database.prototype.create = function(ctx, serverCall, metadata, perms) {
 };
     
       
-Database.prototype.delete = function(ctx, serverCall, schemaVersion) {
-  throw new Error('Method Delete not implemented');
+Database.prototype.destroy = function(ctx, serverCall, schemaVersion) {
+  throw new Error('Method Destroy not implemented');
 };
     
       
@@ -1199,8 +1199,8 @@ Database.prototype._serviceDescription = {
     
       
     {
-    name: 'Delete',
-    doc: "// Delete deletes this Database.",
+    name: 'Destroy',
+    doc: "// Destroy destroys this Database, permanently removing all of its data.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",

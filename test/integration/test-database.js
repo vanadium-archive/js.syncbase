@@ -175,7 +175,7 @@ test('creating a database twice should error', function(t) {
   });
 });
 
-test('db.delete() deletes a database', function(t) {
+test('db.destroy() destroys a database', function(t) {
   setupApp(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -194,8 +194,8 @@ test('db.delete() deletes a database', function(t) {
         cb(null);
       },
 
-      // Delete database.
-      db.delete.bind(db, o.ctx),
+      // Destroy database.
+      db.destroy.bind(db, o.ctx),
 
       // Verify database no longer exists.
       db.exists.bind(db, o.ctx),
@@ -210,7 +210,7 @@ test('db.delete() deletes a database', function(t) {
   });
 });
 
-test('deleting a db that has not been created should not error', function(t) {
+test('destroying a db that has not been created should not error', function(t) {
   setupApp(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -218,7 +218,7 @@ test('deleting a db that has not been created should not error', function(t) {
 
     var db = o.app.noSqlDatabase(uniqueName('db'));
 
-    db.delete(o.ctx, function(err) {
+    db.destroy(o.ctx, function(err) {
       t.error(err);
       o.teardown(t.end);
     });
