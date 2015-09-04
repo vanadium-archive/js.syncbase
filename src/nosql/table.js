@@ -73,6 +73,29 @@ Table.prototype.exists = function(ctx, cb) {
 };
 
 /**
+ * Creates this Table.
+ * If perms is nil, we inherit (copy) the Database perms.
+ * Create must not be called from within a batch.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {module:vanadium.security.access.Permissions} perms Permissions for
+ * the new database.  If perms is null, we inherit (copy) the Database perms.
+ * @param {function} cb Callback.
+ */
+Table.prototype.create = function(ctx, perms, cb) {
+  this._wire(ctx).create(ctx, this.schemaVersion, perms, cb);
+};
+
+/**
+ * Destroys this Table, permanently removing all of its data.
+ * Destroy must not be called from within a batch.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Table.prototype.destroy = function(ctx, cb) {
+  this._wire(ctx).destroy(ctx, this.schemaVersion, cb);
+};
+
+/**
  * Creates a row the given primary key in this table.
  * @param {string} key Primary key for the row.
  * @return {module:syncbase.row.Row} Row object.

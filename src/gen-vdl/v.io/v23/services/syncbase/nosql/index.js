@@ -1847,8 +1847,8 @@ Table.prototype.create = function(ctx, serverCall, schemaVersion, perms) {
 };
     
       
-Table.prototype.delete = function(ctx, serverCall, schemaVersion) {
-  throw new Error('Method Delete not implemented');
+Table.prototype.destroy = function(ctx, serverCall, schemaVersion) {
+  throw new Error('Method Destroy not implemented');
 };
     
       
@@ -1913,8 +1913,8 @@ Table.prototype._serviceDescription = {
     
       
     {
-    name: 'Delete',
-    doc: "// Delete deletes this Table.",
+    name: 'Destroy',
+    doc: "// Destroy destroys this Table.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",

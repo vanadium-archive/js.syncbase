@@ -9,6 +9,7 @@ var syncbase = require('../..');
 
 var testUtil = require('./util');
 var assertScanRows = testUtil.assertScanRows;
+var setupDatabase = testUtil.setupDatabase;
 var setupTable = testUtil.setupTable;
 var uniqueName = testUtil.uniqueName;
 
@@ -17,6 +18,119 @@ var uniqueName = testUtil.uniqueName;
 //var ROW_VAL = '⛓⛸VALϦӪ';
 var ROW_KEY = 'row_key';
 var ROW_VAL = 'row value';
+
+test('table.create() creates a table', function(t) {
+  setupDatabase(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    var db = o.database;
+    var table = db.table(uniqueName('table'));
+    var table2 = db.table(uniqueName('table'));
+
+    async.waterfall([
+      // Verify table does not exist yet.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'exists: table doesn\'t exist yet');
+        cb(null);
+      },
+
+      // Verify table list is empty.
+      db.listTables.bind(db, o.ctx),
+      function(tableList, cb) {
+        t.deepEqual(tableList, [],
+          'listTables: no tables exist');
+        cb(null);
+      },
+
+      // Create table.
+      table.create.bind(table, o.ctx, {}),
+
+      // Verify table exists.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'exists: table exists');
+        cb(null);
+      },
+
+      // Verify table list contains the table.
+      db.listTables.bind(db, o.ctx),
+      function(tableList, cb) {
+        t.deepEqual(tableList, [table.name],
+          'listTables: table exists');
+        cb(null);
+      },
+
+      // Create another table.
+      table2.create.bind(table2, o.ctx, {}),
+
+      // Verify table list contains both tables.
+      db.listTables.bind(db, o.ctx),
+      function(tableList, cb) {
+        t.deepEqual(tableList.sort(), [table.name, table2.name].sort(),
+          'listTables: both tables exist');
+        cb(null);
+      },
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
+    });
+  });
+});
+
+test('table.destroy() destroys a table', function(t) {
+  setupDatabase(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    var db = o.database;
+    var table = db.table(uniqueName('table'));
+
+    async.waterfall([
+      // Create table.
+      table.create.bind(table, o.ctx, {}),
+
+      // Verify table exists.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.ok(exists, 'table exists');
+        cb(null);
+      },
+
+      // Destroy table.
+      table.destroy.bind(table, o.ctx),
+
+      // Verify table no longer exists.
+      table.exists.bind(table, o.ctx),
+      function(exists, cb) {
+        t.notok(exists, 'table no longer exists');
+        cb(null);
+      },
+    ], function(err, arg) {
+      t.error(err);
+      o.teardown(t.end);
+    });
+  });
+});
+
+test('Destroying a table that does not exist should error', function(t) {
+  setupDatabase(t, function(err, o) {
+    if (err) {
+      return t.end(err);
+    }
+
+    var db = o.database;
+    var tableName = uniqueName('table');
+
+    db.table(tableName).destroy(o.ctx, function(err) {
+      t.error(err);
+      o.teardown(t.end);
+    });
+  });
+});
 
 test('Putting a string value in a row', function(t) {
   setupTable(t, function(err, o) {

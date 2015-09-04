@@ -195,41 +195,6 @@ Database.prototype._tableWire = function(ctx, relativeName) {
   return client.bindWithSignature(fullTableName, signature);
 };
 
-// TODO(nlacasse): It's strange that we create a Database with:
-//   var db = new Database();
-//   db.create();
-// But we create a Table with:
-//   db.createTable();
-// The .delete method is similarly confusing.  db.delete deletes a database,
-// but table.delete deletes a row (or row range).
-// Consider puting all 'create' and 'delete' methods on the parent class for
-// consistency.
-// TODO(aghassemi): If we keep this, it should return "table" in the CB instead
-// of being void.
-/**
- * Creates the specified Table.
- * If perms is nil, we inherit (copy) the Database perms.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {string} relativeName Table name.  Must not contain slashes.
- * @param {module:vanadium.security.access.Permissions} perms Permissions for
- * the new database.  If perms is null, we inherit (copy) the Database perms.
- * @param {function} cb Callback.
- */
-Database.prototype.createTable = function(ctx, relativeName, perms, cb) {
-  this._tableWire(ctx, relativeName).create(ctx, this.schemaVersion, perms, cb);
-};
-
-/**
- * Deletes the specified Table.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {string} relativeName Relative name of Table to delete.  Must not
- * contain slashes.
- * @param {function} cb Callback.
- */
-Database.prototype.deleteTable = function(ctx, relativeName, cb) {
-  this._tableWire(ctx, relativeName).delete(ctx, this.schemaVersion, cb);
-};
-
 /**
  * Watches for updates to the database. For each watch request, the client will
  * receive a reliable stream of watch events without re-ordering.

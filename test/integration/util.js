@@ -148,7 +148,7 @@ function setupTable(t, cb) {
     var db = o.database;
 
     var tableName = uniqueName('table');
-    db.createTable(o.ctx, tableName, {}, function(err) {
+    db.table(tableName).create(o.ctx, {}, function(err) {
       if (err) {
         o.rt.close(t.error);
         return cb(err);
