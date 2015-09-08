@@ -6,8 +6,10 @@ var through2 = require('through2');
 var vanadium = require('vanadium');
 
 var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
-var prefix = require('./rowrange').prefix;
 var Row = require('./row');
+var RowRange = require('./rowrange');
+
+var prefix = RowRange.prefix;
 
 module.exports = Table;
 
@@ -147,10 +149,13 @@ Table.prototype.delete = function(ctx, key, cb) {
  * deleteRange deletes all rows in the given half-open range [start, limit). If
  * limit is "", all rows with keys >= start are included.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:syncbase.nosql.rowrange.RowRange} range Row ranges to delete.
+ * @param {module:syncbase.nosql.rowrange.RowRange|string} range Row range
+ * to delete. If a string value is provided for the range, it is assumed to be
+ * a prefix.
  * @param {function} cb Callback.
  */
 Table.prototype.deleteRange = function(ctx, range, cb) {
+  range = normalizeRangeParam(range);
   this._wire(ctx).deleteRange(
         ctx, this.schemaVersion, range.start, range.limit, cb);
 };
@@ -162,11 +167,14 @@ Table.prototype.deleteRange = function(ctx, range, cb) {
  * time of the RPC, and will not reflect subsequent writes to keys not yet
  * reached by the stream.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:syncbase.nosql.rowrange.RowRange} range Row ranges to scan.
+ * @param {module:syncbase.nosql.rowrange.RowRange|string} range Row range to
+ * scan. If a string value is provided for the range, it is assumed to be
+ * a prefix.
  * @param {function} cb Callback.
  * @returns {stream} Stream of row objects.
  */
 Table.prototype.scan = function(ctx, range, cb) {
+  range = normalizeRangeParam(range);
   var vomStreamDecoder = through2({
     objectMode: true
   }, function(row, enc, cb) {
@@ -201,18 +209,15 @@ Table.prototype.scan = function(ctx, range, cb) {
  * SetPermissions will fail if called with a prefix that does not match any
  * rows.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:syncbase.nosql.rowrange.PrefixRange|string} prefix Prefix or
- * PrefixRange.
+ * @param {string} prefix Prefix.
  * @param @param {module:vanadium.security.access.Permissions} perms Permissions
  * for the rows matching the prefix.
  * @param {function} cb Callback.
  */
 Table.prototype.setPermissions = function(ctx, prefix, perms, cb) {
   this._wire(ctx).setPermissions(
-        ctx, this.schemaVersion, stringifyPrefix(prefix), perms, cb);
+        ctx, this.schemaVersion, prefix, perms, cb);
 };
-
-
 
 /**
  * GetPermissions returns an array of (prefix, perms) pairs. The array is
@@ -225,80 +230,35 @@ Table.prototype.setPermissions = function(ctx, prefix, perms, cb) {
  * @param {function} cb Callback.
  */
 Table.prototype.getPermissions = function(ctx, key, cb) {
-  // There are two PrefixPermission types, one is the wire type which has
-  // Prefix as a string and then there is the client type where prefix is a
-  // PrefixRange, therefore we convert between the wire and client types.
-  this._wire(ctx).getPermissions(ctx, this.schemaVersion, key,
-      function(err, wirePerms) {
-        if (err) {
-          return cb(err);
-        }
-
-        var perms = wirePerms.map(function(v) {
-          return new PrefixPermissions(
-            prefix(v.prefix),
-            v.perms
-          );
-        });
-
-        cb(null, perms);
-      }
-  );
+  this._wire(ctx).getPermissions(ctx, this.schemaVersion, key, cb);
 };
 
 /**
  * DeletePermissions deletes the permissions for the specified prefix. Any
  * rows covered by this prefix will use the next longest prefix's permissions.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:syncbase.nosql.rowrane.PrefixRange|string} prefix Prefix or
- * PrefixRange.
+ * @param {string} prefix Prefix.
  * @param {function} cb Callback.
  */
 Table.prototype.deletePermissions = function(ctx, prefix, cb) {
-  //TODO(aghassemi): Why is prefix a PrefixRange in Go?
   this._wire(ctx).deletePermissions(
-        ctx, this.schemaVersion, stringifyPrefix(prefix), cb);
+        ctx, this.schemaVersion, prefix, cb);
 };
 
-function stringifyPrefix(prefix) {
-  var prefixStr = prefix;
-  if (typeof prefix === 'object') {
-    // assume it is a PrefixRange
-    prefixStr = prefix.prefix;
-  }
-  return prefixStr;
-}
-
 /**
- * @summary
- * Represents a pair of {@link module:syncbase.nosql~PrefixRange} and
- * {@link module:vanadium.security.access.Permissions}.
- * @constructor
- * @inner
- * @memberof {module:syncbase.nosql}
+ * Ensures range is either a string or a RowRange object.
+ * If a string, it returns a prefix RowRange object.
+ * If not a string or RowRange object, it throws a type error.
+ * @private
  */
-function PrefixPermissions(prefixRange, perms) {
-  if (!(this instanceof PrefixPermissions)) {
-    return new PrefixPermissions(prefixRange, perms);
+function normalizeRangeParam(range) {
+  if (typeof range === 'string') {
+    range = prefix(range);
+  } else if(!(range instanceof RowRange.RowRange)) {
+    var rangeType = (range.constructor ? range.constructor.name : typeof range);
+    throw new TypeError('range must be of type string or RowRange. got ' +
+      range + ' with type ' + rangeType);
   }
 
-  /**
-   * Prefix
-   * @type {module:syncbase.nosql~PrefixRange}
-   */
-  Object.defineProperty(this, 'prefix', {
-    value: prefixRange,
-    writable: false,
-    enumerable: true
-  });
-
-  /**
-   * Permissions
-   * @type {module:vanadium.security.access.Permissions}
-   */
-  Object.defineProperty(this, 'perms', {
-    value: perms,
-    writable: false,
-    enumerable: true
-  });
+  return range;
 }

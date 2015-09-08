@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var inherits = require('inherits');
-
 var util = require('../util');
 
 /**
@@ -16,7 +14,8 @@ var util = require('../util');
 module.exports = {
   range: range,
   singleRow: singleRow,
-  prefix: prefix
+  prefix: prefix,
+  RowRange: RowRange
 };
 
 /**
@@ -37,11 +36,14 @@ function range(start, limit) {
 /**
  * Creates a range that only matches items of the given prefix.
  * @param {string} prefix Prefix.
- * @return {module:syncbase.nosql~PrefixRange} A PrefixRange object. PrefixRange
+ * @return {module:syncbase.nosql~Range} A Range object covering the prefix.
  * inherits from {@link module:syncbase.nosql~RowRange}
  */
 function prefix(p) {
-  return new PrefixRange(p);
+  var startBytes = util.stringToUTF8Bytes(p);
+  var limitBytes = util.stringToUTF8Bytes(p);
+  util.prefixRangeLimit(limitBytes);
+  return new RowRange(startBytes, limitBytes);
 }
 
 var ASCII_NULL = '\x00';
@@ -93,37 +95,3 @@ function RowRange(start, limit) {
     enumerable: true
   });
 }
-
-/*
- * @summary
- * PrefixRange is a sub type of {@link module:syncbase.nosql.rowrange~RowRange}
- * that indicates all ranges matching a prefix.
- * Private constructor, use {@link module:syncbase.nosql.rowrange#prefix} to
- * create an instance.
- * @inherits module:syncbase.nosql.rowrange~RowRange
- * @inner
- * @constructor
- * @memberof {module:syncbase.nosql.rowrange}
- */
-function PrefixRange(prefix) {
-  if (!(this instanceof PrefixRange)) {
-    return new PrefixRange(prefix);
-  }
-
-  var startBytes = util.stringToUTF8Bytes(prefix);
-  var limitBytes = util.stringToUTF8Bytes(prefix);
-  util.prefixRangeLimit(limitBytes);
-
-  /**
-   * Prefix
-   * @type {string}
-   */
-  Object.defineProperty(this, 'prefix', {
-    value: prefix,
-    writable: false,
-    enumerable: true
-  });
-
-  RowRange.call(this, startBytes, limitBytes);
-}
-inherits(PrefixRange, RowRange);

@@ -241,7 +241,16 @@ test('Scanning table by single row', function(t) {
   });
 });
 
-test('Scanning table by a prefix range', function(t) {
+test('Scanning table by a prefix range passed as string', function(t) {
+  testScanningTableByPrefix(t, ROW_KEY);
+});
+
+test('Scanning table by a prefix range passed as RowRange', function(t) {
+  var range = syncbase.nosql.rowrange.prefix(ROW_KEY);
+  testScanningTableByPrefix(t, range);
+});
+
+function testScanningTableByPrefix(t, range) {
   setupTable(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -275,23 +284,30 @@ test('Scanning table by a prefix range', function(t) {
         return o.teardown(t.end);
       }
 
-      var range = syncbase.nosql.rowrange.prefix(ROW_KEY);
       assertScanRows(o.ctx, table, range, prefixedRows, function(err) {
         t.error(err);
         o.teardown(t.end);
       });
     }
   });
+}
+
+test('Deleting rows by a prefix range passed as string', function(t) {
+  testDeletingRowsByPrefix(t, ROW_KEY);
 });
 
-test('Deleting rows by a prefix range', function(t) {
+test('Deleting rows by a prefix range passed as RowRange', function(t) {
+  var range = syncbase.nosql.rowrange.prefix(ROW_KEY);
+  testDeletingRowsByPrefix(t, range);
+});
+
+function testDeletingRowsByPrefix(t, range) {
   setupTable(t, function(err, o) {
     if (err) {
       return t.end(err);
     }
 
     var table = o.table;
-    var range = syncbase.nosql.rowrange.prefix(ROW_KEY);
 
     // create multiple rows all with ROW_KEY as prefix
     var rows = [{
@@ -328,7 +344,7 @@ test('Deleting rows by a prefix range', function(t) {
       });
     }
   });
-});
+}
 
 //TODO(aghassemi) Skipped test.
 //Set permission for prefix != "" is not implemented.
