@@ -1,0 +1,7 @@
+{
+  "templates": {
+    "theme": "vanadium",
+    "inverseNav" : true,
+    "footer" : false
+  }
+}
