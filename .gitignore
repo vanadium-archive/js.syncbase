@@ -1,5 +1,7 @@
+/docs
 /go/bin
 /node_modules
 /tmp
+/npm-debug.log
 
 /.v23
