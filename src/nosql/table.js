@@ -134,15 +134,24 @@ Table.prototype.put = function(ctx, key, value, type, cb) {
 };
 
 /**
- * Delete deletes all rows in the given range. If the last row that is covered
- * by a prefix from SetPermissions is deleted, that (prefix, perms) pair is
- * removed.
+ * Delete deletes the row for the given primary key.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {string} key Primary key of the row.
+ * @param {function} cb Callback.
+ */
+Table.prototype.delete = function(ctx, key, cb) {
+   this.row(key).delete(ctx, cb);
+};
+
+/**
+ * deleteRange deletes all rows in the given half-open range [start, limit). If
+ * limit is "", all rows with keys >= start are included.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {module:syncbase.nosql.rowrange.RowRange} range Row ranges to delete.
  * @param {function} cb Callback.
  */
-Table.prototype.delete = function(ctx, range, cb) {
-  this._wire(ctx).deleteRowRange(
+Table.prototype.deleteRange = function(ctx, range, cb) {
+  this._wire(ctx).deleteRange(
         ctx, this.schemaVersion, range.start, range.limit, cb);
 };
 

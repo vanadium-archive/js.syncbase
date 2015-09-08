@@ -188,7 +188,7 @@ test('Deleting a row', function(t) {
       },
 
       // Delete row.
-      row.delete.bind(row, o.ctx),
+      table.delete.bind(table, o.ctx, key),
 
       // Verify row no longer exists.
       row.exists.bind(row, o.ctx),
@@ -312,7 +312,7 @@ test('Deleting rows by a prefix range', function(t) {
         return o.teardown(t.end);
       }
 
-      table.delete(o.ctx, range, scan);
+      table.deleteRange(o.ctx, range, scan);
     }
 
     function scan(err) {

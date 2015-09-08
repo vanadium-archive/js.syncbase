@@ -1857,8 +1857,8 @@ Table.prototype.exists = function(ctx, serverCall, schemaVersion) {
 };
     
       
-Table.prototype.deleteRowRange = function(ctx, serverCall, schemaVersion, start, limit) {
-  throw new Error('Method DeleteRowRange not implemented');
+Table.prototype.deleteRange = function(ctx, serverCall, schemaVersion, start, limit) {
+  throw new Error('Method DeleteRange not implemented');
 };
     
       
@@ -1950,8 +1950,8 @@ Table.prototype._serviceDescription = {
     
       
     {
-    name: 'DeleteRowRange',
-    doc: "// Delete deletes all rows in the given half-open range [start, limit). If\n// limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Delete prefix perms fully covered by the row range?",
+    name: 'DeleteRange',
+    doc: "// DeleteRange deletes all rows in the given half-open range [start, limit).\n// If limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Delete prefix perms fully covered by the row range?",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",

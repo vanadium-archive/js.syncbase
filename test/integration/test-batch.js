@@ -258,7 +258,7 @@ test('readonly batches', function(t) {
     }
 
     function attemptBatchDeletePrefix() {
-      batchTable.delete(ctx, range.prefix(key), function(err) {
+      batchTable.deleteRange(ctx, range.prefix(key), function(err) {
         assertReadOnlyBatchError(err);
         attemptBatchDeleteRow();
       });
@@ -477,7 +477,7 @@ function assertOpsFail(t, ctx, batch, tableName, cb) {
   }
 
   function assertDeleteFails(cb) {
-    batchTable.delete(ctx, range.prefix(uniqueName('key')), function(err) {
+    batchTable.deleteRange(ctx, range.prefix(uniqueName('key')), function(err) {
       t.ok(err, 'delete() should error');
       cb(null);
     });
