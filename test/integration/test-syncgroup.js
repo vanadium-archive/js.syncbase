@@ -261,11 +261,13 @@ test('syncgroup.get/setSpec', function(t) {
   var firstVersion;
 
   var newSpec = new nosql.SyncGroupSpec({
-    description: 'new spec'
+    description: 'new spec',
+    prefixes: ['a']
   });
 
   var newSpec2 = new nosql.SyncGroupSpec({
-    description: 'another new spec'
+    description: 'another new spec',
+    prefixes: ['b']
   });
 
   setupSyncGroup(t, perms, prefixes, function(err, o) {
