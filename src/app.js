@@ -74,7 +74,7 @@ App.prototype.setPermissions = function(ctx, perms, version, cb) {
 App.prototype._wire = function(ctx) {
   if (!this._wireObj) {
     var rt = vanadium.runtimeForContext(ctx);
-    var client = rt.newClient();
+    var client = rt.getClient();
     this._wireObj = client.bindWithSignature(this.fullName, [wireSignature]);
   }
 

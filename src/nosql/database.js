@@ -71,7 +71,7 @@ Database.prototype._wire = function(ctx) {
   if (this._wireObj) {
     return this._wireObj;
   }
-  var client = vanadium.runtimeForContext(ctx).newClient();
+  var client = vanadium.runtimeForContext(ctx).getClient();
   var signature = [nosqlVdl.Database.prototype._serviceDescription];
 
   this._wireObj = client.bindWithSignature(this.fullName, signature);
@@ -188,7 +188,7 @@ Database.prototype._tableWire = function(ctx, relativeName) {
     throw new Error('relativeName must not contain slashes.');
   }
 
-  var client = vanadium.runtimeForContext(ctx).newClient();
+  var client = vanadium.runtimeForContext(ctx).getClient();
   var signature = [nosqlVdl.Table.prototype._serviceDescription];
 
   var fullTableName = vanadium.naming.join(this.fullName, relativeName);

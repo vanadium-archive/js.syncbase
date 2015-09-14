@@ -69,7 +69,7 @@ inherits(InvalidNameError, Error);
  */
 function getChildNames(ctx, parentFullName, cb) {
   var rt = vanadium.runtimeForContext(ctx);
-  var namespace = rt.namespace();
+  var namespace = rt.getNamespace();
   var childNames = [];
 
   var globPattern = vanadium.naming.join(parentFullName, '*');

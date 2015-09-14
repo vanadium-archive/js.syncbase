@@ -68,7 +68,7 @@ Row.prototype._wire = function(ctx) {
   if (this._wireObj) {
     return this._wireObj;
   }
-  var client = vanadium.runtimeForContext(ctx).newClient();
+  var client = vanadium.runtimeForContext(ctx).getClient();
   var signature = [nosqlVdl.Row.prototype._serviceDescription];
 
   this._wireObj = client.bindWithSignature(this.fullName, signature);
