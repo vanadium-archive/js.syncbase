@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-module.exports = Database;
-
 var through2 = require('through2');
 var vanadium = require('vanadium');
-// TODO(nlacasse): We should put unwrap and other type util methods on
+// TODO(nlacasse): We should expose unwrap and other type-util methods on the
 // vanadium.vdl object.
 var unwrap = require('vanadium/src/vdl/type-util').unwrap;
 var verror = vanadium.verror;
@@ -24,22 +22,26 @@ var Table = require('./table');
 var util = require('../util');
 var watch = require('./watch');
 
+module.exports = Database;
+
 /**
+ * @summary
  * Database represents a collection of Tables. Batches, queries, sync, watch,
  * etc. all operate at the Database level.
+ * Private constructor. Use app.noSqlDatabase() to get an instance.
+ * @param {string} parentFullName Full name of parent App.
+ * @param {string} relativeName Relative name for this Database.
+ * @param {number} schemaVersion Database schema version expected by client.
  * @constructor
- * @param {string} parentFullName Full name of App which contains this
- * Database.
- * @param {string} relativeName Relative name of this Database.  Must not
- * contain slashes.
- * @param {module:syncbase.schema.Schema} schema Schema for the database.
+ * @inner
+ * @memberof {module:syncbase.nosql}
  */
 function Database(parentFullName, relativeName, schema) {
   if (!(this instanceof Database)) {
     return new Database(parentFullName, relativeName);
   }
 
-  util.addNameProperties(this, parentFullName, relativeName);
+  util.addNameProperties(this, parentFullName, relativeName, true);
 
   Object.defineProperty(this, 'schema', {
     enumerable: false,
@@ -177,18 +179,14 @@ Database.prototype.table = function(relativeName) {
  * @param {function} cb Callback.
  */
 Database.prototype.listTables = function(ctx, cb) {
-  util.getChildNames(ctx, this.fullName, cb);
+  this._wire(ctx).listTables(ctx, cb);
 };
 
 /**
  * @private
  */
 Database.prototype._tableWire = function(ctx, relativeName) {
-  if (relativeName.indexOf('/') >= 0) {
-    throw new Error('relativeName must not contain slashes.');
-  }
-
-  var client = vanadium.runtimeForContext(ctx).getClient();
+  var client = vanadium.runtimeForContext(ctx).newClient();
   var signature = [nosqlVdl.Table.prototype._serviceDescription];
 
   var fullTableName = vanadium.naming.join(this.fullName, relativeName);
@@ -219,7 +217,7 @@ Database.prototype._tableWire = function(ctx, relativeName) {
  */
 Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
   var globReq = new watchVdl.GlobRequest({
-    pattern: vanadium.naming.join(tableName, prefix + '*'),
+    pattern: vanadium.naming.join(tableName, util.NAME_SEP, prefix + '*'),
     resumeMarker: resumeMarker
   });
 
@@ -238,8 +236,11 @@ Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
         return cb(new Error('invalid change state ' + change.state));
     }
 
+    // NOTE(sadovsky): We call stripBasename twice to convert "<table>/$/<row>"
+    // to "<table>".
     var wc = new watch.WatchChange({
-      tableName: vanadium.naming.stripBasename(change.name),
+      tableName: vanadium.naming.stripBasename(
+        vanadium.naming.stripBasename(change.name)),
       rowName: vanadium.naming.basename(change.name),
       changeType: changeType,
       valueBytes: changeType === 'put' ? change.value.value : null,
@@ -252,6 +253,11 @@ Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
 
   var stream = this._wire(ctx).watchGlob(ctx, globReq, cb).stream;
 
+  // TODO(sadovsky): Our JS watch test times out after 20s when pattern is
+  // "<table>/<prefix>*", i.e. when it's missing the "/$/" separator. That's
+  // strange, because the server should immediately return an RPC error (since
+  // util.ParseTableRowPair returns an error). Does the JS watch test not check
+  // for this error?
   var watchChangeStream = stream.pipe(watchChangeEncoder);
   stream.on('error', function(err) {
     watchChangeStream.emit('error', err);
@@ -481,4 +487,3 @@ Database.prototype.createBlob = function(ctx, cb) {
     return cb(null, new Blob(self, blobRef));
   });
 };
-

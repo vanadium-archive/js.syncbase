@@ -299,7 +299,7 @@ DatabaseWatcher.prototype.watchGlob = function(ctx, serverCall, req) {
 DatabaseWatcher.prototype._serviceDescription = {
   name: 'DatabaseWatcher',
   pkgPath: 'v.io/v23/services/syncbase/nosql',
-  doc: "// DatabaseWatcher allows a client to watch for updates in the database.\n// For each watched request, the client will receive a reliable stream of watch\n// events without re-ordering. See watch.GlobWatcher for a detailed explanation\n// of the behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// 'table/row*'. Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
+  doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
   embeds: [{
       name: 'GlobWatcher',
       pkgPath: 'v.io/v23/services/watch',
@@ -672,7 +672,7 @@ BlobManager.prototype._serviceDescription = {
       
     {
     name: 'CreateBlob',
-    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob. After commit, PutBlob and\n// CommitBlob can no longer be used. Blob creation can be resumed by\n// obtaining the current blob size with GetBlobSize and appending to the\n// blob via PutBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
+    doc: "// CreateBlob returns a BlobRef for a newly created blob.",
     inArgs: [],
     outArgs: [{
       name: 'br',
@@ -786,7 +786,7 @@ BlobManager.prototype._serviceDescription = {
       
     {
     name: 'FetchBlob',
-    doc: "// FetchBlob initiates fetching a blob if not locally found. priority\n// controls the network priority of the blob. Higher priority blobs are\n// fetched before the lower priority ones. However an ongoing blob\n// transfer is not interrupted. Status updates are streamed back to the\n// client as fetch is in progress.",
+    doc: "// FetchBlob initiates fetching a blob if not locally found. priority\n// controls the network priority of the blob. Higher priority blobs are\n// fetched before the lower priority ones. However, an ongoing blob\n// transfer is not interrupted. Status updates are streamed back to the\n// client as fetch is in progress.",
     inArgs: [{
       name: 'br',
       doc: "",
@@ -988,6 +988,11 @@ Database.prototype.exists = function(ctx, serverCall, schemaVersion) {
 };
     
       
+Database.prototype.listTables = function(ctx, serverCall) {
+  throw new Error('Method ListTables not implemented');
+};
+    
+      
 Database.prototype.exec = function(ctx, serverCall, schemaVersion, query) {
   throw new Error('Method Exec not implemented');
 };
@@ -1151,7 +1156,7 @@ Database.prototype._serviceDescription = {
     {
       name: 'DatabaseWatcher',
       pkgPath: 'v.io/v23/services/syncbase/nosql',
-      doc: "// DatabaseWatcher allows a client to watch for updates in the database.\n// For each watched request, the client will receive a reliable stream of watch\n// events without re-ordering. See watch.GlobWatcher for a detailed explanation\n// of the behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// 'table/row*'. Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
+      doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
     },
     {
       name: 'SyncGroupManager',
@@ -1227,6 +1232,22 @@ Database.prototype._serviceDescription = {
       name: '',
       doc: "",
       type: vdl.types.BOOL
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'ListTables',
+    doc: "// ListTables returns a list of all Table names.",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: _type1
     },
     ],
     inStream: null,
@@ -1592,7 +1613,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'CreateBlob',
-    doc: "// API for resumable blob creation (append-only). After commit, a blob\n// is immutable. Before commit, the BlobRef can be used with PutBlob,\n// GetBlobSize, DeleteBlob, and CommitBlob. After commit, PutBlob and\n// CommitBlob can no longer be used. Blob creation can be resumed by\n// obtaining the current blob size with GetBlobSize and appending to the\n// blob via PutBlob.\n//\n// CreateBlob returns a BlobRef for a newly created blob.",
+    doc: "// CreateBlob returns a BlobRef for a newly created blob.",
     inArgs: [],
     outArgs: [{
       name: 'br',
@@ -1706,7 +1727,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'FetchBlob',
-    doc: "// FetchBlob initiates fetching a blob if not locally found. priority\n// controls the network priority of the blob. Higher priority blobs are\n// fetched before the lower priority ones. However an ongoing blob\n// transfer is not interrupted. Status updates are streamed back to the\n// client as fetch is in progress.",
+    doc: "// FetchBlob initiates fetching a blob if not locally found. priority\n// controls the network priority of the blob. Higher priority blobs are\n// fetched before the lower priority ones. However, an ongoing blob\n// transfer is not interrupted. Status updates are streamed back to the\n// client as fetch is in progress.",
     inArgs: [{
       name: 'br',
       doc: "",
@@ -1951,7 +1972,7 @@ Table.prototype._serviceDescription = {
       
     {
     name: 'DeleteRange',
-    doc: "// DeleteRange deletes all rows in the given half-open range [start, limit).\n// If limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Delete prefix perms fully covered by the row range?",
+    doc: "// DeleteRange deletes all rows in the given half-open range [start, limit).\n// If limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Maybe add option to delete prefix perms fully covered by\n// the row range.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",

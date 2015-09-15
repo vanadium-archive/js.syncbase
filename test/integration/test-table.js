@@ -13,7 +13,7 @@ var setupDatabase = testUtil.setupDatabase;
 var setupTable = testUtil.setupTable;
 var uniqueName = testUtil.uniqueName;
 
-//TODO(aghassemi): We fail to bind to Unicode names, investigate.
+// TODO(aghassemi): We fail to bind to Unicode names; investigate.
 //var ROW_KEY = 'چשKEYઑᜰ';
 //var ROW_VAL = '⛓⛸VALϦӪ';
 var ROW_KEY = 'row_key';

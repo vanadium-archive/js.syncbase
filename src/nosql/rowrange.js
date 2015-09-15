@@ -29,7 +29,6 @@ module.exports = {
 function range(start, limit) {
   var startBytes = util.stringToUTF8Bytes(start);
   var limitBytes = util.stringToUTF8Bytes(limit);
-
   return new RowRange(startBytes, limitBytes);
 }
 

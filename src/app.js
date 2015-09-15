@@ -12,12 +12,22 @@ var wireSignature = vdl.App.prototype._serviceDescription;
 
 module.exports = App;
 
+/**
+ * @summary
+ * App represents a collection of Databases.
+ * Private constructor. Use service.app() to get an instance.
+ * @param {string} parentFullName Full name of parent Service.
+ * @param {string} relativeName Relative name for this App.
+ * @constructor
+ * @inner
+ * @memberof {module:syncbase}
+ */
 function App(parentFullName, relativeName) {
   if (!(this instanceof App)) {
     return new App(parentFullName, relativeName);
   }
 
-  util.addNameProperties(this, parentFullName, relativeName);
+  util.addNameProperties(this, parentFullName, relativeName, false);
 
   // TODO(nlacasse): Use the prr module to simplify all the
   // 'Object.defineProperty' calls scattered throughout the project.
@@ -43,7 +53,7 @@ App.prototype.noSqlDatabase = function(relativeName, schema) {
 
 // listDatabases returns of all database names.
 App.prototype.listDatabases = function(ctx, cb) {
-  util.getChildNames(ctx, this.fullName, cb);
+  this._wire(ctx).listDatabases(ctx, cb);
 };
 
 // create creates this app.  If perms is empty, we inherit (copy) the Service

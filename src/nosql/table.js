@@ -8,21 +8,18 @@ var vanadium = require('vanadium');
 var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var Row = require('./row');
 var RowRange = require('./rowrange');
+var util = require('../util');
 
 var prefix = RowRange.prefix;
 
 module.exports = Table;
 
-var util = require('../util');
-
 /**
  * @summary
  * Table represents a collection of Rows.
  * Private constructor. Use database.table() to get an instance.
- * @param {string} parentFullName Full name of Database which contains this
- * Table.
- * @param {string} relativeName Relative name of this Table.  Must not
- * contain slashes.
+ * @param {string} parentFullName Full name of parent Database.
+ * @param {string} relativeName Relative name for this Table.
  * @param {number} schemaVersion Database schema version expected by client.
  * @constructor
  * @inner
@@ -33,7 +30,7 @@ function Table(parentFullName, relativeName, schemaVersion) {
     return new Table(parentFullName, relativeName, schemaVersion);
   }
 
-  util.addNameProperties(this, parentFullName, relativeName);
+  util.addNameProperties(this, parentFullName, relativeName, true);
 
   this.schemaVersion = schemaVersion;
 

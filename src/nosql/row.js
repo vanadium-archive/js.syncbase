@@ -5,30 +5,30 @@
 var vanadium = require('vanadium');
 
 var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
+var util = require('../util');
 
 module.exports = Row;
 
 /**
  * @summary
- * Represents a single row in a Table.
- * Private constructor, use table.row() to get an instance.
+ * Row represents a single row in a Table.
+ * Private constructor. Use table.row() to get an instance.
+ * @param {string} parentFullName Full name of parent Table.
+ * @param {string} key Key for this Row.
  * @param {number} schemaVersion Database schema version expected by client.
- * @inner
  * @constructor
- * @memberof module:syncbase.nosql
+ * @inner
+ * @memberof {module:syncbase.nosql}
  */
 function Row(parentFullName, key, schemaVersion) {
   if (!(this instanceof Row)) {
     return new Row(parentFullName, key, schemaVersion);
   }
 
-  // TODO(aghassemi) We may need to escape the key. Align with Go implementation
-  // when that decision is made.
-  // Also for Database and Table, we throw error if name has a slash.
-  // Should they all behave the same or is row key really different?
-  var fullName = vanadium.naming.join(parentFullName, key);
+  util.addNameProperties(this, parentFullName, key, true);
 
   this.schemaVersion = schemaVersion;
+
   /**
    * The key of this Row.
    * @property name
@@ -36,16 +36,6 @@ function Row(parentFullName, key, schemaVersion) {
    */
   Object.defineProperty(this, 'key', {
     value: key,
-    writable: false,
-    enumerable: true
-  });
-
-  /**
-   * @property name
-   * @type {string}
-   */
-  Object.defineProperty(this, 'fullName', {
-    value: fullName,
     writable: false,
     enumerable: true
   });

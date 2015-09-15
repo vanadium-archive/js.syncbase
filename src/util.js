@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var inherits = require('inherits');
 var vanadium = require('vanadium');
+
+var NAME_SEP = '$';
 
 module.exports = {
   addNameProperties: addNameProperties,
-  getChildNames: getChildNames,
   prefixRangeLimit: prefixRangeLimit,
-  InvalidNameError: InvalidNameError,
-  stringToUTF8Bytes: stringToUTF8Bytes
+  stringToUTF8Bytes: stringToUTF8Bytes,
+  NAME_SEP: NAME_SEP
 };
 
 /**
  * Creates the 'name' and 'fullName' properties on an object.
  * @private
  */
-function addNameProperties(self, parentFullName, relativeName) {
-  if (relativeName.indexOf('/') >= 0) {
-    throw new InvalidNameError(relativeName);
+function addNameProperties(self, parentFullName, relativeName, addNameSep) {
+  var fullName;
+  if (addNameSep) {
+    fullName = vanadium.naming.join(parentFullName, NAME_SEP, relativeName);
+  } else {
+    fullName = vanadium.naming.join(parentFullName, relativeName);
   }
-
-  var fullName = vanadium.naming.join(parentFullName, relativeName);
 
   /**
    * @property _parentFullName
@@ -56,66 +57,22 @@ function addNameProperties(self, parentFullName, relativeName) {
   });
 }
 
-function InvalidNameError(name) {
-  Error.call(this);
-  this.message = 'Invalid name "' + name + '". ' +
-    ' Use vanadium.naming.encodeAsNamePart() to escape.';
-}
-inherits(InvalidNameError, Error);
-
 /**
- * getChildNames returns all names that are children of the parentFullName.
- * @private
- */
-function getChildNames(ctx, parentFullName, cb) {
-  var rt = vanadium.runtimeForContext(ctx);
-  var namespace = rt.getNamespace();
-  var childNames = [];
-
-  var globPattern = vanadium.naming.join(parentFullName, '*');
-
-  var streamErr = null;
-
-  var stream = namespace.glob(ctx, globPattern, function(err) {
-    if (err) {
-      return cb(err);
-    }
-
-    if (streamErr) {
-      return cb(streamErr);
-    }
-
-    cb(null, childNames);
-  }).stream;
-
-  stream.on('data', function(globResult) {
-    var fullName = globResult.name;
-    var name = vanadium.naming.basename(fullName);
-    childNames.push(name);
-  });
-
-  stream.on('error', function(err) {
-    console.error('Stream error: ' + JSON.stringify(err));
-    // Store the first stream error in streamErr.
-    streamErr = streamErr || err.error;
-  });
-}
-
-/**
- * PrefixRangeLimit returns the limit of the row range for the given prefix.
+ * prefixRangeLimit modifies the input bytes to be the limit of the row range
+ * for the given prefix.
+ * TODO(sadovsky): Why do we modify the input bytes, rather than returning a new
+ * byte array?
  * @private
  * @param {Uint8Array} bytes Integer ArrayBuffer to modify.
  */
 function prefixRangeLimit(bytes) {
-  // For a given Uint8Array,
-  // The code below effectively adds 1 to it, then chops off any
-  // trailing \x00 bytes.
-  // If the input string consists entirely of \xff bytes, we would empty out the
-  // buffer
+  // bytes can be thought of as a base-256 number. The code below effectively
+  // adds 1 to this number, then chops off any trailing \x00 bytes. If the input
+  // string consists entirely of \xff bytes, we return an empty string.
   while (bytes.length > 0) {
     var last = bytes.length - 1;
     if (bytes[last] === 255) {
-      bytes = bytes.slice(0, last); // remove trailing \x00
+      bytes = bytes.slice(0, last); // chop off trailing \x00
     } else {
       bytes[last] += 1; // add 1
       return; // no carry

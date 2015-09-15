@@ -5,7 +5,6 @@
 var vanadium = require('vanadium');
 
 var App = require('./app');
-var util = require('./util');
 var vdl = require('./gen-vdl/v.io/v23/services/syncbase');
 
 // TODO(aghassemi): This looks clunky,
@@ -14,6 +13,14 @@ var wireSignature = vdl.Service.prototype._serviceDescription;
 
 module.exports = Service;
 
+/**
+ * @summary
+ * Service represents a collection of Apps.
+ * @param {string} fullName Full Vanadium object name of this Service.
+ * @constructor
+ * @inner
+ * @memberof {module:syncbase}
+ */
 function Service(fullName) {
   if (!(this instanceof Service)) {
     return new Service(fullName);
@@ -48,7 +55,7 @@ Service.prototype.app = function(relativeName) {
 
 // listApps returns a list of all app names.
 Service.prototype.listApps = function(ctx, cb) {
-  util.getChildNames(ctx, this.fullName, cb);
+  this._wire(ctx).listApps(ctx, cb);
 };
 
 Service.prototype.getPermissions = function(ctx, cb) {
