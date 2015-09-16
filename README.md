@@ -1,6 +1,6 @@
 # Syncbase JavaScript Client
 
-This repository defines the JavaScript API for [Syncbase], a structured store
+This repository defines the JavaScript API for Syncbase, a structured store
 that supports peer-to-peer synchronization.
 
 The client APIs defined here work both in [Node.js] and the browser.
@@ -31,9 +31,9 @@ When using [Browserify] or [Node.js] users can gain access to the API with:
 
     var syncbase = require("syncbase");
 
-When run in a browser, sycnbase expects that the [vanadium
-extension](https://v.io/tools/vanadium-chrome-extension.html) will be
-installed.
+When run in a browser, syncbase expects that the [vanadium
+extension](https://github.com/vanadium/docs/blob/master/tools/vanadium-chrome-extension.md)
+will be installed.
 
 ## Bugs and feature requests
 
@@ -42,7 +42,7 @@ Bugs and feature requests should be filed in the
 
 ## Building and testing
 
-GNU Make is used to build and test [Syncbase].
+GNU Make is used to build and test Syncbase.
 
 Build everything:
 
@@ -62,6 +62,5 @@ Remove all build and testing artifacts:
 
     make clean
 
-[Syncbase]: https://v.io/syncbase
 [Node.js]: https://nodejs.org/
 [Browserify]: http://browserify.org/
