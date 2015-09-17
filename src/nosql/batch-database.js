@@ -81,5 +81,14 @@ BatchDatabase.prototype.abort = function(ctx, cb) {
  * @returns {stream} Stream of rows.
  */
 BatchDatabase.prototype.exec = function(ctx, query, cb) {
-  this._db.exec(ctx, query, cb);
+  return this._db.exec(ctx, query, cb);
+};
+
+/**
+ * Gets the ResumeMarker that points to the current end of the event log.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+BatchDatabase.prototype.getResumeMarker = function(ctx, cb) {
+  this._db.getResumeMarker(ctx, cb);
 };

@@ -10,6 +10,7 @@ module.exports = {
   setupTable: setupTable,
 
   assertScanRows: assertScanRows,
+  assertSelectRows: assertSelectRows,
   testGetSetPermissions: testGetSetPermissions,
   uniqueName: uniqueName
 };
@@ -235,6 +236,25 @@ function compareRows(r1, r2) {
   return 0;
 }
 
+function assertRows(err, rows, wantRows, cb) {
+  if (err) {
+    return cb(err);
+  }
+
+  rows = rows || [];
+
+  rows.sort(compareRows);
+  wantRows.sort(compareRows);
+
+  if (!deepEqual(rows, wantRows)) {
+    var error = new Error('Expected rows to be ' + JSON.stringify(wantRows) +
+                      ' but got ' + JSON.stringify(rows));
+    return cb(error);
+  }
+
+  return cb(null);
+}
+
 function assertScanRows(ctx, table, range, wantRows, cb) {
   var stream = table.scan(ctx, range, function(err) {
     if (err) {
@@ -243,21 +263,27 @@ function assertScanRows(ctx, table, range, wantRows, cb) {
   });
 
   streamToArray(stream, function(err, rows) {
-    if (err) {
-      return cb(err);
+    assertRows(err, rows, wantRows, cb);
+  });
+}
+
+function assertSelectRows(ctx, db, table, prefix, wantRows, cb) {
+  var query = 'select k, v from ' + table.name;
+  if (prefix) {
+    query += ' where k like "' + prefix + '%"';
+  }
+  var isHeader = true;
+  var rows = [];
+  var streamErr;
+  db.exec(ctx, query, function(err) {
+    assertRows(streamErr || err, rows, wantRows, cb);
+  }).on('data', function(row) {
+    if (isHeader) {
+      isHeader = false;
+    } else {
+      rows.push({ key: row[0], value: row[1] });
     }
-
-    rows = rows || [];
-
-    rows.sort(compareRows);
-    wantRows.sort(compareRows);
-
-    if (!deepEqual(rows, wantRows)) {
-      var error = new Error('Expected rows to be ' + JSON.stringify(wantRows) +
-                        ' but got ' + JSON.stringify(rows));
-      return cb(error);
-    }
-
-    cb(null);
+  }).on('error', function(err) {
+    streamErr = streamErr || err;
   });
 }

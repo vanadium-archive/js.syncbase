@@ -14,6 +14,7 @@ var ReadOnlyBatchError = nosql.ReadOnlyBatchError;
 
 var testUtil = require('./util');
 var assertScanRows = testUtil.assertScanRows;
+var assertSelectRows = testUtil.assertSelectRows;
 var setupDatabase = testUtil.setupDatabase;
 var setupTable = testUtil.setupTable;
 var uniqueName = testUtil.uniqueName;
@@ -213,7 +214,7 @@ test('concurrent transactions are isolated', function(t) {
   });
 });
 
-test('readonly batches', function(t) {
+test('read-only batches', function(t) {
   setupTable(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -267,8 +268,35 @@ test('readonly batches', function(t) {
     function attemptBatchDeleteRow() {
       batchTable.row(key).delete(ctx, function(err) {
         assertReadOnlyBatchError(err);
-        end();
+        batch.getResumeMarker(ctx, assertBatchResumeMarker);
       });
+    }
+
+    function assertBatchResumeMarker(err, r) {
+      if (err) {
+        return end(err);
+      }
+      t.ok(r, 'should return a resume marker');
+
+      assertBatchScan();
+    }
+
+    var wantRows = [{
+      key: key,
+      value: value
+    }];
+
+    function assertBatchScan() {
+      assertScanRows(ctx, batchTable, range.prefix(''), wantRows,
+        assertBatchSelect);
+    }
+
+    function assertBatchSelect(err) {
+      if (err) {
+        return end(err);
+      }
+
+      assertSelectRows(ctx, batch, batchTable, '', wantRows, end);
     }
 
     function end(err) {
