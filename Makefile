@@ -1,5 +1,5 @@
 SHELL := /bin/bash -euo pipefail
-export PATH := ./go/bin:$(V23_ROOT)/release/go/bin:node_modules/.bin:$(V23_ROOT)/third_party/cout/node/bin:$(PATH)
+export PATH := ./go/bin:$(JIRI_ROOT)/release/go/bin:node_modules/.bin:$(JIRI_ROOT)/third_party/cout/node/bin:$(PATH)
 
 # This target causes any target files to be deleted if the target task fails.
 .DELETE_ON_ERROR:
@@ -50,7 +50,7 @@ BROWSER_OPTS := --browser --launch chrome $(HEADLESS) --log=./tmp/chrome.log
 .PHONY: all
 all:
 
-go/bin: $(shell find $(V23_ROOT) -name "*.go")
+go/bin: $(shell find $(JIRI_ROOT) -name "*.go")
 	v23 go build -a -o $@/principal v.io/x/ref/cmd/principal
 	v23 go build -a -tags wspr -o $@/servicerunner v.io/x/ref/cmd/servicerunner
 	v23 go build -a -o $@/syncbased v.io/x/ref/services/syncbase/syncbased
@@ -62,9 +62,9 @@ gen-vdl:
 node_modules: package.json
 	npm prune
 	npm install
-	# Link Vanadium from V23_ROOT.
+	# Link Vanadium from JIRI_ROOT.
 	rm -rf ./node_modules/vanadium
-	cd "$(V23_ROOT)/release/javascript/core" && npm link
+	cd "$(JIRI_ROOT)/release/javascript/core" && npm link
 	npm link vanadium
 	touch node_modules
 
@@ -99,7 +99,7 @@ test-integration-browser: go/bin lint node_modules
 # the test command so that we can then reference these vars in the Vanadium
 # extension and our prova command.
 .PHONY: test-integration-browser-runner
-test-integration-browser-runner: VANADIUM_JS := $(V23_ROOT)/release/javascript/core
+test-integration-browser-runner: VANADIUM_JS := $(JIRI_ROOT)/release/javascript/core
 test-integration-browser-runner: BROWSER_OPTS := --options="--load-extension=$(VANADIUM_JS)/extension/build-test/,--ignore-certificate-errors,--enable-logging=stderr" $(BROWSER_OPTS)
 test-integration-browser-runner:
 	$(MAKE) -C $(VANADIUM_JS)/extension clean
@@ -145,8 +145,8 @@ serve-docs: docs
 
 .PHONY: deploy-docs-production
 deploy-docs-production: docs
-	make -C $(V23_ROOT)/infrastructure/deploy jsdoc-syncbase-production
+	make -C $(JIRI_ROOT)/infrastructure/deploy jsdoc-syncbase-production
 
 .PHONY: deploy-docs-staging
 deploy-docs-staging: docs
-	make -C $(V23_ROOT)/infrastructure/deploy jsdoc-syncbase-staging
+	make -C $(JIRI_ROOT)/infrastructure/deploy jsdoc-syncbase-staging
