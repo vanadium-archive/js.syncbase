@@ -84,7 +84,7 @@ Service.prototype._serviceDescription = {
       
     {
     name: 'ListApps',
-    doc: "// ListApps returns a list of all App names.",
+    doc: "// ListApps returns a list of all App names.\n// TODO(sadovsky): Maybe switch to streaming RPC.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -238,7 +238,7 @@ App.prototype._serviceDescription = {
       
     {
     name: 'ListDatabases',
-    doc: "// ListDatabases returns a list of all Database names.\n// TODO(kash): Include the database type (NoSQL vs. SQL).",
+    doc: "// ListDatabases returns a list of all Database names.\n// TODO(kash): Include the database type (NoSQL vs. SQL).\n// TODO(sadovsky): Maybe switch to streaming RPC.",
     inArgs: [],
     outArgs: [{
       name: '',

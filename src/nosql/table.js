@@ -95,6 +95,25 @@ Table.prototype.destroy = function(ctx, cb) {
 };
 
 /**
+ * Returns the current permissions for the table.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+Table.prototype.getPermissions = function(ctx, cb) {
+  this._wire(ctx).getPermissions(ctx, this.schemaVersion, cb);
+};
+
+/**
+ * Replaces the current permissions for the table.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {module:vanadium.security.access.Permissions} perms Permissions
+ * @param {function} cb Callback.
+ */
+Table.prototype.setPermissions = function(ctx, perms, cb) {
+  this._wire(ctx).setPermissions(ctx, this.schemaVersion, perms, cb);
+};
+
+/**
  * Creates a row the given primary key in this table.
  * @param {string} key Primary key for the row.
  * @return {module:syncbase.row.Row} Row object.
@@ -195,29 +214,29 @@ Table.prototype.scan = function(ctx, range, cb) {
 };
 
 /**
- * SetPermissions sets the permissions for all current and future rows with
- * the given prefix. If the prefix overlaps with an existing prefix, the
+ * SetPrefixPermissions sets the permissions for all current and future rows
+ * with the given prefix. If the prefix overlaps with an existing prefix, the
  * longest prefix that matches a row applies. For example:
- *     setPermissions(ctx, prefix('a/b'), perms1)
- *     setPermissions(ctx, prefix('a/b/c'), perms2)
+ *     setPerfixPermissions(ctx, prefix('a/b'), perms1)
+ *     setPrefixPermissions(ctx, prefix('a/b/c'), perms2)
  * The permissions for row "a/b/1" are perms1, and the permissions for row
  * "a/b/c/1" are perms2.
  *
- * SetPermissions will fail if called with a prefix that does not match any
- * rows.
+ * SetPrefixPermissions will fail if called with a prefix that does not match
+ * any rows.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {string} prefix Prefix.
- * @param @param {module:vanadium.security.access.Permissions} perms Permissions
+ * @param {module:vanadium.security.access.Permissions} perms Permissions
  * for the rows matching the prefix.
  * @param {function} cb Callback.
  */
-Table.prototype.setPermissions = function(ctx, prefix, perms, cb) {
-  this._wire(ctx).setPermissions(
+Table.prototype.setPrefixPermissions = function(ctx, prefix, perms, cb) {
+  this._wire(ctx).setPrefixPermissions(
         ctx, this.schemaVersion, prefix, perms, cb);
 };
 
 /**
- * GetPermissions returns an array of (prefix, perms) pairs. The array is
+ * GetPrefixPermissions returns an array of (prefix, perms) pairs. The array is
  * sorted from longest prefix to shortest, so element zero is the one that
  * applies to the row with the given key. The last element is always the
  * prefix "" which represents the table's permissions -- the array will always
@@ -226,19 +245,19 @@ Table.prototype.setPermissions = function(ctx, prefix, perms, cb) {
  * @param {string} key Row key to get permissions for.
  * @param {function} cb Callback.
  */
-Table.prototype.getPermissions = function(ctx, key, cb) {
-  this._wire(ctx).getPermissions(ctx, this.schemaVersion, key, cb);
+Table.prototype.getPrefixPermissions = function(ctx, key, cb) {
+  this._wire(ctx).getPrefixPermissions(ctx, this.schemaVersion, key, cb);
 };
 
 /**
- * DeletePermissions deletes the permissions for the specified prefix. Any
+ * DeletePrefixPermissions deletes the permissions for the specified prefix. Any
  * rows covered by this prefix will use the next longest prefix's permissions.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {string} prefix Prefix.
  * @param {function} cb Callback.
  */
-Table.prototype.deletePermissions = function(ctx, prefix, cb) {
-  this._wire(ctx).deletePermissions(
+Table.prototype.deletePrefixPermissions = function(ctx, prefix, cb) {
+  this._wire(ctx).deletePrefixPermissions(
         ctx, this.schemaVersion, prefix, cb);
 };
 

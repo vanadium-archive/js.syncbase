@@ -299,7 +299,7 @@ DatabaseWatcher.prototype.watchGlob = function(ctx, serverCall, req) {
 DatabaseWatcher.prototype._serviceDescription = {
   name: 'DatabaseWatcher',
   pkgPath: 'v.io/v23/services/syncbase/nosql',
-  doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes.",
+  doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the Name\n// field in the form \"<tableName>/$/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all data your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching for changes to the data using the ResumeMarker\n// In this configuration the client will not miss any changes to the data.",
   embeds: [{
       name: 'GlobWatcher',
       pkgPath: 'v.io/v23/services/watch',
@@ -665,7 +665,7 @@ BlobManager.prototype.keepBlob = function(ctx, serverCall, br, rank) {
 BlobManager.prototype._serviceDescription = {
   name: 'BlobManager',
   pkgPath: 'v.io/v23/services/syncbase/nosql',
-  doc: "// BlobManager is the interface for blob operations.",
+  doc: "// BlobManager is the interface for blob operations.\n//\n// Description of API for resumable blob creation (append-only):\n// - Up until commit, a BlobRef may be used with PutBlob, GetBlobSize,\n//   DeleteBlob, and CommitBlob. Blob creation may be resumed by obtaining the\n//   current blob size via GetBlobSize and appending to the blob via PutBlob.\n// - After commit, a blob is immutable, at which point PutBlob and CommitBlob\n//   may no longer be used.\n// - All other methods (GetBlob, FetchBlob, PinBlob, etc.) may only be used\n//   after commit.",
   embeds: [],
   methods: [
     
@@ -1156,7 +1156,7 @@ Database.prototype._serviceDescription = {
     {
       name: 'DatabaseWatcher',
       pkgPath: 'v.io/v23/services/syncbase/nosql',
-      doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the\n// Name field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// The DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all information your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching changes to the data using the ResumeMarker\n// In this configuration the client doesn't miss any changes."
+      doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the Name\n// field in the form \"<tableName>/$/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all data your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching for changes to the data using the ResumeMarker\n// In this configuration the client will not miss any changes to the data."
     },
     {
       name: 'SyncGroupManager',
@@ -1166,7 +1166,7 @@ Database.prototype._serviceDescription = {
     {
       name: 'BlobManager',
       pkgPath: 'v.io/v23/services/syncbase/nosql',
-      doc: "// BlobManager is the interface for blob operations."
+      doc: "// BlobManager is the interface for blob operations.\n//\n// Description of API for resumable blob creation (append-only):\n// - Up until commit, a BlobRef may be used with PutBlob, GetBlobSize,\n//   DeleteBlob, and CommitBlob. Blob creation may be resumed by obtaining the\n//   current blob size via GetBlobSize and appending to the blob via PutBlob.\n// - After commit, a blob is immutable, at which point PutBlob and CommitBlob\n//   may no longer be used.\n// - All other methods (GetBlob, FetchBlob, PinBlob, etc.) may only be used\n//   after commit."
     },
     {
       name: 'SchemaManager',
@@ -1242,7 +1242,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'ListTables',
-    doc: "// ListTables returns a list of all Table names.",
+    doc: "// ListTables returns a list of all Table names.\n// TODO(sadovsky): Maybe switch to streaming RPC.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -1283,7 +1283,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'BeginBatch',
-    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.\n// TODO(sadovsky): make BatchOptions optional",
+    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.\n// TODO(sadovsky): Maybe make BatchOptions optional.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
@@ -1878,6 +1878,16 @@ Table.prototype.exists = function(ctx, serverCall, schemaVersion) {
 };
     
       
+Table.prototype.getPermissions = function(ctx, serverCall, schemaVersion) {
+  throw new Error('Method GetPermissions not implemented');
+};
+    
+      
+Table.prototype.setPermissions = function(ctx, serverCall, schemaVersion, perms) {
+  throw new Error('Method SetPermissions not implemented');
+};
+    
+      
 Table.prototype.deleteRange = function(ctx, serverCall, schemaVersion, start, limit) {
   throw new Error('Method DeleteRange not implemented');
 };
@@ -1888,18 +1898,18 @@ Table.prototype.scan = function(ctx, serverCall, schemaVersion, start, limit) {
 };
     
       
-Table.prototype.getPermissions = function(ctx, serverCall, schemaVersion, key) {
-  throw new Error('Method GetPermissions not implemented');
+Table.prototype.getPrefixPermissions = function(ctx, serverCall, schemaVersion, key) {
+  throw new Error('Method GetPrefixPermissions not implemented');
 };
     
       
-Table.prototype.setPermissions = function(ctx, serverCall, schemaVersion, prefix, perms) {
-  throw new Error('Method SetPermissions not implemented');
+Table.prototype.setPrefixPermissions = function(ctx, serverCall, schemaVersion, prefix, perms) {
+  throw new Error('Method SetPrefixPermissions not implemented');
 };
     
       
-Table.prototype.deletePermissions = function(ctx, serverCall, schemaVersion, prefix) {
-  throw new Error('Method DeletePermissions not implemented');
+Table.prototype.deletePrefixPermissions = function(ctx, serverCall, schemaVersion, prefix) {
+  throw new Error('Method DeletePrefixPermissions not implemented');
 };
      
 
@@ -1971,6 +1981,48 @@ Table.prototype._serviceDescription = {
     
       
     {
+    name: 'GetPermissions',
+    doc: "// GetPermissions returns the current Permissions for the Table.",
+    inArgs: [{
+      name: 'schemaVersion',
+      doc: "",
+      type: vdl.types.INT32
+    },
+    ],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: new access.Permissions()._type
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'SetPermissions',
+    doc: "// SetPermissions replaces the current Permissions for the Table.",
+    inArgs: [{
+      name: 'schemaVersion',
+      doc: "",
+      type: vdl.types.INT32
+    },
+    {
+      name: 'perms',
+      doc: "",
+      type: new access.Permissions()._type
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
     name: 'DeleteRange',
     doc: "// DeleteRange deletes all rows in the given half-open range [start, limit).\n// If limit is \"\", all rows with keys >= start are included.\n// TODO(sadovsky): Maybe add option to delete prefix perms fully covered by\n// the row range.",
     inArgs: [{
@@ -2027,8 +2079,8 @@ Table.prototype._serviceDescription = {
     
       
     {
-    name: 'GetPermissions',
-    doc: "// GetPermissions returns an array of (prefix, perms) pairs. The array is\n// sorted from longest prefix to shortest, so element zero is the one that\n// applies to the row with the given key. The last element is always the\n// prefix \"\" which represents the table's permissions -- the array will always\n// have at least one element.",
+    name: 'GetPrefixPermissions',
+    doc: "// GetPrefixPermissions returns an array of (prefix, perms) pairs. The array is\n// sorted from longest prefix to shortest, so element zero is the one that\n// applies to the row with the given key. The last element is always the\n// prefix \"\" which represents the table's permissions -- the array will always\n// have at least one element.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
@@ -2053,8 +2105,8 @@ Table.prototype._serviceDescription = {
     
       
     {
-    name: 'SetPermissions',
-    doc: "// SetPermissions sets the permissions for all current and future rows with\n// the given prefix. If the prefix overlaps with an existing prefix, the\n// longest prefix that matches a row applies. For example:\n//     SetPermissions(ctx, Prefix(\"a/b\"), perms1)\n//     SetPermissions(ctx, Prefix(\"a/b/c\"), perms2)\n// The permissions for row \"a/b/1\" are perms1, and the permissions for row\n// \"a/b/c/1\" are perms2.",
+    name: 'SetPrefixPermissions',
+    doc: "// SetPrefixPermissions sets the permissions for all current and future rows with\n// the given prefix. If the prefix overlaps with an existing prefix, the\n// longest prefix that matches a row applies. For example:\n//     SetPrefixPermissions(ctx, Prefix(\"a/b\"), perms1)\n//     SetPrefixPermissions(ctx, Prefix(\"a/b/c\"), perms2)\n// The permissions for row \"a/b/1\" are perms1, and the permissions for row\n// \"a/b/c/1\" are perms2.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
@@ -2079,8 +2131,8 @@ Table.prototype._serviceDescription = {
     
       
     {
-    name: 'DeletePermissions',
-    doc: "// DeletePermissions deletes the permissions for the specified prefix. Any\n// rows covered by this prefix will use the next longest prefix's permissions\n// (see the array returned by GetPermissions).",
+    name: 'DeletePrefixPermissions',
+    doc: "// DeletePrefixPermissions deletes the permissions for the specified prefix. Any\n// rows covered by this prefix will use the next longest prefix's permissions\n// (see the array returned by GetPrefixPermissions).",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
