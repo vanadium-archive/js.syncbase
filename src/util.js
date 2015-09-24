@@ -4,27 +4,21 @@
 
 var vanadium = require('vanadium');
 
-var NAME_SEP = '$';
-
 module.exports = {
   addNameProperties: addNameProperties,
+  listChildren: listChildren,
   prefixRangeLimit: prefixRangeLimit,
   stringToUTF8Bytes: stringToUTF8Bytes,
-  NAME_SEP: NAME_SEP
+  escape: escape,
+  unescape: unescape
 };
 
 /**
- * Creates the 'name' and 'fullName' properties on an object.
+ * Creates public 'name' and 'fullName' properties on an object, as well as a
+ * private '_parentFullName' property.
  * @private
  */
-function addNameProperties(self, parentFullName, relativeName, addNameSep) {
-  var fullName;
-  if (addNameSep) {
-    fullName = vanadium.naming.join(parentFullName, NAME_SEP, relativeName);
-  } else {
-    fullName = vanadium.naming.join(parentFullName, relativeName);
-  }
-
+function addNameProperties(self, parentFullName, name, fullName) {
   /**
    * @property _parentFullName
    * @private
@@ -41,7 +35,7 @@ function addNameProperties(self, parentFullName, relativeName, addNameSep) {
    * @type {string}
    */
   Object.defineProperty(self, 'name', {
-    value: relativeName,
+    value: name,
     writable: false,
     enumerable: true
   });
@@ -54,6 +48,42 @@ function addNameProperties(self, parentFullName, relativeName, addNameSep) {
     value: fullName,
     writable: false,
     enumerable: true
+  });
+}
+
+/**
+ * listChildren returns the relative names of all children of parentFullName.
+ * @private
+ */
+function listChildren(ctx, parentFullName, cb) {
+  var rt = vanadium.runtimeForContext(ctx);
+  var globPattern = vanadium.naming.join(parentFullName, '*');
+
+  var childNames = [];
+  var streamErr = null;
+  var stream = rt.getNamespace().glob(ctx, globPattern, function(err) {
+    if (err) {
+      return cb(err);
+    }
+    if (streamErr) {
+      return cb(streamErr);
+    }
+    cb(null, childNames);
+  }).stream;
+
+  stream.on('data', function(globResult) {
+    var fullName = globResult.name;
+    var escName = vanadium.naming.basename(fullName);
+    // Component names within object names are always escaped. See comment in
+    // server/nosql/dispatcher.go for explanation.
+    // If unescape throws an exception, there's a bug in the Syncbase server.
+    // Glob should return names with escaped components.
+    childNames.push(unescape(escName));
+  });
+
+  stream.on('error', function(err) {
+    console.error('Stream error: ' + JSON.stringify(err));
+    streamErr = streamErr || err.error;
   });
 }
 
@@ -96,4 +126,28 @@ function stringToUTF8Bytes(str) {
   }
 
   return bytes;
+}
+
+/**
+ * escape escapes a component name for use in a Syncbase object name. In
+ * particular, it replaces bytes "%" and "/" with the "%" character followed by
+ * the byte's two-digit hex code. Clients using the client library need not
+ * escape names themselves; the client library does so on their behalf.
+ * @param {string} s String to escape.
+ * @return {string} Escaped string.
+ */
+function escape(s) {
+  return s
+    .replace(/%/g, '%25')
+    .replace(/\//g, '%2F');
+}
+
+/**
+ * unescape applies the inverse of escape. Throws exception if the given string
+ * is not a valid escaped string.
+ * @param {string} s String to unescape.
+ * @return {string} Unescaped string.
+ */
+function unescape(s) {
+  return decodeURIComponent(s);
 }

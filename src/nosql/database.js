@@ -36,12 +36,18 @@ module.exports = Database;
  * @inner
  * @memberof {module:syncbase.nosql}
  */
-function Database(parentFullName, relativeName, schema) {
+function Database(parentFullName, relativeName, batchSuffix, schema) {
   if (!(this instanceof Database)) {
     return new Database(parentFullName, relativeName);
   }
 
-  util.addNameProperties(this, parentFullName, relativeName, true);
+  // Escape relativeName so that any forward slashes get dropped, thus ensuring
+  // that the server will interpret fullName as referring to a database object.
+  // Note that the server will still reject this name if util.ValidDatabaseName
+  // returns false.
+  var fullName = vanadium.naming.join(
+    parentFullName, util.escape(relativeName) + batchSuffix);
+  util.addNameProperties(this, parentFullName, relativeName, fullName);
 
   Object.defineProperty(this, 'schema', {
     enumerable: false,
@@ -179,7 +185,7 @@ Database.prototype.table = function(relativeName) {
  * @param {function} cb Callback.
  */
 Database.prototype.listTables = function(ctx, cb) {
-  this._wire(ctx).listTables(ctx, cb);
+  util.listChildren(ctx, this.fullName, cb);
 };
 
 /**
@@ -217,7 +223,7 @@ Database.prototype._tableWire = function(ctx, relativeName) {
  */
 Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
   var globReq = new watchVdl.GlobRequest({
-    pattern: vanadium.naming.join(tableName, util.NAME_SEP, prefix + '*'),
+    pattern: vanadium.naming.join(tableName, prefix + '*'),
     resumeMarker: resumeMarker
   });
 
@@ -236,11 +242,8 @@ Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
         return cb(new Error('invalid change state ' + change.state));
     }
 
-    // NOTE(sadovsky): We call stripBasename twice to convert "<table>/$/<row>"
-    // to "<table>".
     var wc = new watch.WatchChange({
-      tableName: vanadium.naming.stripBasename(
-        vanadium.naming.stripBasename(change.name)),
+      tableName: vanadium.naming.stripBasename(change.name),
       rowName: vanadium.naming.basename(change.name),
       changeType: changeType,
       valueBytes: changeType === 'put' ? change.value.value : null,
@@ -253,11 +256,10 @@ Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
 
   var stream = this._wire(ctx).watchGlob(ctx, globReq, cb).stream;
 
-  // TODO(sadovsky): Our JS watch test times out after 20s when pattern is
-  // "<table>/<prefix>*", i.e. when it's missing the "/$/" separator. That's
-  // strange, because the server should immediately return an RPC error (since
-  // util.ParseTableRowPair returns an error). Does the JS watch test not check
-  // for this error?
+  // TODO(sadovsky): Our JS watch test times out after 20s when globReq is
+  // invalid. That's strange, because the server should immediately return an
+  // RPC error (since util.ParseTableRowPair returns an error). Does the JS
+  // watch test not check for this error?
   var watchChangeStream = stream.pipe(watchChangeEncoder);
   stream.on('error', function(err) {
     watchChangeStream.emit('error', err);
@@ -324,16 +326,12 @@ Database.prototype.getPermissions = function(ctx, cb) {
 Database.prototype.beginBatch = function(ctx, opts, cb) {
   var self = this;
   this._wire(ctx).beginBatch(ctx, this.schemaVersion, opts,
-    function(err, relativeName) {
+    function(err, batchSuffix) {
       if (err) {
         return cb(err);
       }
-
-      // The relativeName returned from the beginBatch() call above is different
-      // than the relativeName of the current database. We must create a new
-      // Database with this new relativeName, and then create a BatchDatabase
-      // from that new Database.
-      var db = new Database(self._parentFullName, relativeName);
+      var db = new Database(self._parentFullName, self.name, batchSuffix,
+                            self.schema);
       return cb(null, new BatchDatabase(db));
     });
 };

@@ -30,7 +30,13 @@ function Table(parentFullName, relativeName, schemaVersion) {
     return new Table(parentFullName, relativeName, schemaVersion);
   }
 
-  util.addNameProperties(this, parentFullName, relativeName, true);
+  // Escape relativeName so that any forward slashes get dropped, thus ensuring
+  // that the server will interpret fullName as referring to a table object.
+  // Note that the server will still reject this name if util.ValidTableName
+  // returns false.
+  var fullName = vanadium.naming.join(
+    parentFullName, util.escape(relativeName));
+  util.addNameProperties(this, parentFullName, relativeName, fullName);
 
   this.schemaVersion = schemaVersion;
 

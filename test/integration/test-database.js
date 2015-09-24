@@ -42,7 +42,7 @@ test('app.noSqlDatabase(name) returns a database with correct name',
     db.name = 'foo';
     t.equal(db.name, dbName, 'Setting the name has no effect.');
 
-    var expectedFullName = naming.join(o.app.fullName, '$', dbName);
+    var expectedFullName = naming.join(o.app.fullName, dbName);
     t.equal(db.fullName, expectedFullName, 'Database has correct fullName.');
 
     db.fullName = 'bar';
@@ -71,21 +71,6 @@ test('app.noSqlDatabase(name, schema) returns a database with correct schema',
     t.ok(db instanceof Database, 'database is a Database object.');
     t.equal(db.schema, schema, 'database has correct schema.');
     t.equal(db.schemaVersion, version, 'database has correct schemaVersion');
-
-    o.teardown(t.end);
-  });
-});
-
-test('app.noSqlDatabase with slashes in the name', function(t) {
-  setupApp(t, function(err, o) {
-    if (err) {
-      return t.end(err);
-    }
-
-    var dbName = 'bad/name';
-    t.doesNotThrow(function() {
-      o.app.noSqlDatabase(dbName);
-    }, 'should throw');
 
     o.teardown(t.end);
   });
@@ -238,7 +223,7 @@ test('db.table() returns a table', function(t) {
     t.ok(table, 'table is created.');
     t.ok(table instanceof Table, 'table is a Table object.');
     t.equal(table.name, tableName, 'table has the correct name.');
-    t.equal(table.fullName, vanadium.naming.join(db.fullName, '$', tableName),
+    t.equal(table.fullName, vanadium.naming.join(db.fullName, tableName),
       'table has the correct fullName.');
 
     o.teardown(t.end);

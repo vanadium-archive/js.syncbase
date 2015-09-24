@@ -5,6 +5,7 @@
 var vanadium = require('vanadium');
 
 var App = require('./app');
+var util = require('./util');
 var vdl = require('./gen-vdl/v.io/v23/services/syncbase');
 
 // TODO(aghassemi): This looks clunky,
@@ -55,7 +56,7 @@ Service.prototype.app = function(relativeName) {
 
 // listApps returns a list of all app names.
 Service.prototype.listApps = function(ctx, cb) {
-  this._wire(ctx).listApps(ctx, cb);
+  util.listChildren(ctx, this.fullName, cb);
 };
 
 Service.prototype.getPermissions = function(ctx, cb) {

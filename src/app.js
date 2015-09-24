@@ -27,7 +27,9 @@ function App(parentFullName, relativeName) {
     return new App(parentFullName, relativeName);
   }
 
-  util.addNameProperties(this, parentFullName, relativeName, false);
+  var fullName = vanadium.naming.join(
+    parentFullName, util.escape(relativeName));
+  util.addNameProperties(this, parentFullName, relativeName, fullName);
 
   // TODO(nlacasse): Use the prr module to simplify all the
   // 'Object.defineProperty' calls scattered throughout the project.
@@ -48,12 +50,12 @@ function App(parentFullName, relativeName) {
 // must not contain slashes. schema can be null or undefined only if a schema
 // was never set for the database in the first place.
 App.prototype.noSqlDatabase = function(relativeName, schema) {
-  return new Database(this.fullName, relativeName, schema);
+  return new Database(this.fullName, relativeName, '', schema);
 };
 
 // listDatabases returns of all database names.
 App.prototype.listDatabases = function(ctx, cb) {
-  this._wire(ctx).listDatabases(ctx, cb);
+  util.listChildren(ctx, this.fullName, cb);
 };
 
 // create creates this app.  If perms is empty, we inherit (copy) the Service

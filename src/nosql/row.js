@@ -25,7 +25,10 @@ function Row(parentFullName, key, schemaVersion) {
     return new Row(parentFullName, key, schemaVersion);
   }
 
-  util.addNameProperties(this, parentFullName, key, true);
+  // Note, we immediately unescape row keys on the server side. See comment in
+  // server/nosql/dispatcher.go for explanation.
+  var fullName = vanadium.naming.join(parentFullName, util.escape(key));
+  util.addNameProperties(this, parentFullName, key, fullName);
 
   this.schemaVersion = schemaVersion;
 
