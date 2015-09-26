@@ -20,11 +20,6 @@ module.exports = {};
 
 
 // Types:
-var _type1 = new vdl.Type();
-_type1.kind = vdl.kind.LIST;
-_type1.name = "";
-_type1.elem = vdl.types.STRING;
-_type1.freeze();
 
 
 
@@ -53,11 +48,6 @@ module.exports.Service = Service;
 
     
       
-Service.prototype.listApps = function(ctx, serverCall) {
-  throw new Error('Method ListApps not implemented');
-};
-    
-      
 Service.prototype.setPermissions = function(ctx, serverCall, perms, version) {
   throw new Error('Method SetPermissions not implemented');
 };
@@ -80,22 +70,6 @@ Service.prototype._serviceDescription = {
     },
     ],
   methods: [
-    
-      
-    {
-    name: 'ListApps',
-    doc: "// ListApps returns a list of all App names.\n// TODO(sadovsky): Maybe switch to streaming RPC.",
-    inArgs: [],
-    outArgs: [{
-      name: '',
-      doc: "",
-      type: _type1
-    },
-    ],
-    inStream: null,
-    outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
-  },
     
       
     {
@@ -164,11 +138,6 @@ App.prototype.exists = function(ctx, serverCall) {
 };
     
       
-App.prototype.listDatabases = function(ctx, serverCall) {
-  throw new Error('Method ListDatabases not implemented');
-};
-    
-      
 App.prototype.setPermissions = function(ctx, serverCall, perms, version) {
   throw new Error('Method SetPermissions not implemented');
 };
@@ -232,23 +201,7 @@ App.prototype._serviceDescription = {
     ],
     inStream: null,
     outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
-  },
-    
-      
-    {
-    name: 'ListDatabases',
-    doc: "// ListDatabases returns a list of all Database names.\n// TODO(kash): Include the database type (NoSQL vs. SQL).\n// TODO(sadovsky): Maybe switch to streaming RPC.",
-    inArgs: [],
-    outArgs: [{
-      name: '',
-      doc: "",
-      type: _type1
-    },
-    ],
-    inStream: null,
-    outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+    tags: [canonicalize.reduce(new access.Tag("Resolve", true), new access.Tag()._type), ]
   },
     
       

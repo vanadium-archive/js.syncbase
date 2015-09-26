@@ -16,7 +16,7 @@ var uniqueName = testUtil.uniqueName;
 // TODO(aghassemi): We fail to bind to Unicode names; investigate.
 //var ROW_KEY = 'چשKEYઑᜰ';
 //var ROW_VAL = '⛓⛸VALϦӪ';
-var ROW_KEY = 'row_key';
+var ROW_KEY = 'row_key/a^b';  // symbols are okay
 var ROW_VAL = 'row value';
 
 test('table.create() creates a table', function(t) {
@@ -346,8 +346,7 @@ function testDeletingRowsByPrefix(t, range) {
   });
 }
 
-//TODO(aghassemi) Skipped test.
-//Set permission for prefix != "" is not implemented.
+// TODO(aghassemi) Enable this test.
 test.skip('Getting/Setting permissions on rows', function(t) {
   setupTable(t, function(err, o) {
     if (err) {

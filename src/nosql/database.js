@@ -185,7 +185,9 @@ Database.prototype.table = function(relativeName) {
  * @param {function} cb Callback.
  */
 Database.prototype.listTables = function(ctx, cb) {
-  util.listChildren(ctx, this.fullName, cb);
+  // See comment in v.io/v23/services/syncbase/nosql/service.vdl for why we
+  // can't implement listTables using Glob (via util.listChildren).
+  this._wire(ctx).listTables(ctx, cb);
 };
 
 /**

@@ -299,7 +299,7 @@ DatabaseWatcher.prototype.watchGlob = function(ctx, serverCall, req) {
 DatabaseWatcher.prototype._serviceDescription = {
   name: 'DatabaseWatcher',
   pkgPath: 'v.io/v23/services/syncbase/nosql',
-  doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the Name\n// field in the form \"<tableName>/$/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all data your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching for changes to the data using the ResumeMarker\n// In this configuration the client will not miss any changes to the data.",
+  doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the Name\n// field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all data your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching for changes to the data using the ResumeMarker\n// In this configuration the client will not miss any changes to the data.",
   embeds: [{
       name: 'GlobWatcher',
       pkgPath: 'v.io/v23/services/watch',
@@ -1147,7 +1147,7 @@ Database.prototype.startConflictResolver = function(ctx, serverCall) {
 Database.prototype._serviceDescription = {
   name: 'Database',
   pkgPath: 'v.io/v23/services/syncbase/nosql',
-  doc: "// Database represents a collection of Tables. Batches, queries, sync, watch,\n// etc. all operate at the Database level.\n// Database.Glob operates over Table names.\n// Param schemaVersion is the version number that the client expects the database\n// to be at. To disable schema version checking, pass -1.\n//\n// TODO(sadovsky): Add Watch method.",
+  doc: "// Database represents a collection of Tables. Batches, queries, sync, watch,\n// etc. all operate at the Database level.\n// Database.Glob operates over Table names.\n// Param schemaVersion is the version number that the client expects the\n// database to be at. To disable schema version checking, pass -1.",
   embeds: [{
       name: 'Object',
       pkgPath: 'v.io/v23/services/permissions',
@@ -1156,7 +1156,7 @@ Database.prototype._serviceDescription = {
     {
       name: 'DatabaseWatcher',
       pkgPath: 'v.io/v23/services/syncbase/nosql',
-      doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/$/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the Name\n// field in the form \"<tableName>/$/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all data your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching for changes to the data using the ResumeMarker\n// In this configuration the client will not miss any changes to the data."
+      doc: "// DatabaseWatcher allows a client to watch for updates to the database. For\n// each watch request, the client will receive a reliable stream of watch events\n// without re-ordering. See watch.GlobWatcher for a detailed explanation of the\n// behavior.\n// TODO(rogulenko): Currently the only supported watch patterns are\n// \"<tableName>/<rowPrefix>*\". Consider changing that.\n//\n// The watching is done by starting a streaming RPC. The argument to the RPC\n// contains the ResumeMarker that points to a particular place in the database\n// event log. The result stream consists of a never-ending sequence of Change\n// messages (until the call fails or is canceled). Each Change contains the Name\n// field in the form \"<tableName>/<rowKey>\" and the Value field of the\n// StoreChange type. If the client has no access to a row specified in a change,\n// that change is excluded from the result stream.\n//\n// DatabaseWatcher is designed to be used in the following way:\n// 1) begin a read-only batch\n// 2) read all data your app needs\n// 3) read the ResumeMarker\n// 4) abort the batch\n// 5) start watching for changes to the data using the ResumeMarker\n// In this configuration the client will not miss any changes to the data."
     },
     {
       name: 'SyncGroupManager',
@@ -1236,13 +1236,13 @@ Database.prototype._serviceDescription = {
     ],
     inStream: null,
     outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+    tags: [canonicalize.reduce(new access.Tag("Resolve", true), new access.Tag()._type), ]
   },
     
       
     {
     name: 'ListTables',
-    doc: "// ListTables returns a list of all Table names.\n// TODO(sadovsky): Maybe switch to streaming RPC.",
+    doc: "// ListTables returns a list of all Table names.\n// This method exists on Database but not on Service or App because for the\n// latter we can simply use glob, while for the former glob fails on\n// BatchDatabase since we encode the batch id in the BatchDatabase object\n// name. More specifically, the glob client library appears to have two odd\n// behaviors:\n// 1) It checks Resolve access on every component along the path (by doing a\n//    Dispatcher.Lookup), whereas this doesn't happen for other RPCs.\n// 2) It does a Glob(<prefix>/*) for every prefix path, and only proceeds to\n//    the next path component if that component appeared in its parent's Glob\n//    results. This is inefficient in general, and broken for us since\n//    Glob(\"app/*\") does not return batch database names like \"a/d##bId\".\n// TODO(sadovsky): Maybe switch to streaming RPC.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -1283,7 +1283,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'BeginBatch',
-    doc: "// BeginBatch creates a new batch. It returns an App-relative name for a\n// Database handle bound to this batch. If this Database is already bound to a\n// batch, BeginBatch() will fail with ErrBoundToBatch. Concurrency semantics\n// are documented in model.go.\n// TODO(sadovsky): Maybe make BatchOptions optional.",
+    doc: "// BeginBatch creates a new batch. It returns a \"batch suffix\" string to\n// append to the object name of this Database, yielding an object name for the\n// Database bound to the created batch. (For example, if this Database is\n// named \"/path/to/db\" and BeginBatch returns \"##abc\", the client should\n// construct batch Database object name \"/path/to/db##abc\".) If this Database\n// is already bound to a batch, BeginBatch() will fail with ErrBoundToBatch.\n// Concurrency semantics are documented in model.go.\n// TODO(sadovsky): Maybe make BatchOptions optional.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
@@ -1976,7 +1976,7 @@ Table.prototype._serviceDescription = {
     ],
     inStream: null,
     outStream: null,
-    tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
+    tags: [canonicalize.reduce(new access.Tag("Resolve", true), new access.Tag()._type), ]
   },
     
       
@@ -2191,7 +2191,7 @@ Row.prototype._serviceDescription = {
       
     {
     name: 'Exists',
-    doc: "// Exists returns true only if this Row exists. Insufficient permissions\n// cause Exists to return false instead of an error.\n// TODO(ivanpi): Exists may fail with an error if higher levels of hierarchy\n// do not exist.",
+    doc: "// Exists returns true only if this Row exists. Insufficient permissions\n// cause Exists to return false instead of an error.\n// Note, Exists on Row requires read permissions, unlike higher levels of\n// hierarchy which require resolve, because Row existence usually carries\n// more information.\n// TODO(ivanpi): Exists may fail with an error if higher levels of hierarchy\n// do not exist.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",

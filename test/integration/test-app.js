@@ -49,7 +49,9 @@ test('Creating and listing apps', function(t) {
     var appNames = [
       uniqueName('app'),
       uniqueName('app'),
-      uniqueName('app')
+      uniqueName('app'),
+      uniqueName('app/b'),  // symbols are okay
+      uniqueName('dev.v.io/a/admin@myapp.com'),
     ];
 
     async.waterfall([
@@ -58,7 +60,7 @@ test('Creating and listing apps', function(t) {
         o.service.app(appName).exists(o.ctx, cb);
       }),
       function(existsArray, cb) {
-        t.deepEqual(existsArray, [false, false, false],
+        t.deepEqual(existsArray, [false, false, false, false, false],
           'exists: no apps exist');
         cb(null);
       },
@@ -81,7 +83,7 @@ test('Creating and listing apps', function(t) {
         o.service.app(appName).exists(o.ctx, cb);
       }),
       function(existsArray, cb) {
-        t.deepEqual(existsArray, [true, true, true],
+        t.deepEqual(existsArray, [true, true, true, true, true],
           'exists: all apps exist');
         cb(null);
       },

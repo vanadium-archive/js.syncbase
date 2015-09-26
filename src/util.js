@@ -137,9 +137,7 @@ function stringToUTF8Bytes(str) {
  * @return {string} Escaped string.
  */
 function escape(s) {
-  return s
-    .replace(/%/g, '%25')
-    .replace(/\//g, '%2F');
+  return vanadium.naming.encodeAsNameElement(s);
 }
 
 /**
@@ -149,5 +147,5 @@ function escape(s) {
  * @return {string} Unescaped string.
  */
 function unescape(s) {
-  return decodeURIComponent(s);
+  return vanadium.naming.decodeFromNameElement(s);
 }
