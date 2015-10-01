@@ -23,7 +23,7 @@
     "run-parallel": "~1.1.1",
     "stream-array": "~1.1.0",
     "stream-to-array": "~2.0.2",
-    "tap-xunit": "~1.1.1",
+    "tap-xunit": "~1.2.1",
     "which": "~1.1.1",
     "xtend": "~4.0.0"
   },
