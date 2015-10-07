@@ -51,13 +51,13 @@ BROWSER_OPTS := --browser --launch chrome $(HEADLESS) --log=./tmp/chrome.log
 all:
 
 go/bin: $(shell find $(JIRI_ROOT) -name "*.go")
-	v23 go build -a -o $@/principal v.io/x/ref/cmd/principal
-	v23 go build -a -tags wspr -o $@/servicerunner v.io/x/ref/cmd/servicerunner
-	v23 go build -a -o $@/syncbased v.io/x/ref/services/syncbase/syncbased
+	jiri go build -a -o $@/principal v.io/x/ref/cmd/principal
+	jiri go build -a -tags wspr -o $@/servicerunner v.io/x/ref/cmd/servicerunner
+	jiri go build -a -o $@/syncbased v.io/x/ref/services/syncbase/syncbased
 
 .PHONY: gen-vdl
 gen-vdl:
-	v23 run vdl generate --lang=javascript --js-out-dir=src/gen-vdl v.io/v23/services/syncbase/...
+	jiri run vdl generate --lang=javascript --js-out-dir=src/gen-vdl v.io/v23/services/syncbase/...
 
 node_modules: package.json
 	npm prune

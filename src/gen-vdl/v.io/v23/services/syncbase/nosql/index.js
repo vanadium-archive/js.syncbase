@@ -22,6 +22,7 @@ module.exports = {};
 
 // Types:
 var _type1 = new vdl.Type();
+var _type10 = new vdl.Type();
 var _type2 = new vdl.Type();
 var _type3 = new vdl.Type();
 var _type4 = new vdl.Type();
@@ -51,37 +52,41 @@ var _typeScanOp = new vdl.Type();
 var _typeSchemaMetadata = new vdl.Type();
 var _typeStoreChange = new vdl.Type();
 var _typeSyncGroupMemberInfo = new vdl.Type();
+var _typeSyncGroupPrefix = new vdl.Type();
 var _typeSyncGroupSpec = new vdl.Type();
 var _typeValue = new vdl.Type();
 var _typeValueSelection = new vdl.Type();
 _type1.kind = vdl.kind.LIST;
 _type1.name = "";
 _type1.elem = vdl.types.STRING;
-_type2.kind = vdl.kind.MAP;
+_type10.kind = vdl.kind.LIST;
+_type10.name = "";
+_type10.elem = _typePrefixPermissions;
+_type2.kind = vdl.kind.LIST;
 _type2.name = "";
-_type2.elem = _typeSyncGroupMemberInfo;
-_type2.key = vdl.types.STRING;
-_type3.kind = vdl.kind.LIST;
+_type2.elem = _typeSyncGroupPrefix;
+_type3.kind = vdl.kind.MAP;
 _type3.name = "";
-_type3.elem = vdl.types.BYTE;
+_type3.elem = _typeSyncGroupMemberInfo;
+_type3.key = vdl.types.STRING;
 _type4.kind = vdl.kind.LIST;
 _type4.name = "";
-_type4.elem = _typeCrRule;
-_type5.kind = vdl.kind.OPTIONAL;
+_type4.elem = vdl.types.BYTE;
+_type5.kind = vdl.kind.LIST;
 _type5.name = "";
-_type5.elem = _typeValue;
-_type6.kind = vdl.kind.LIST;
+_type5.elem = _typeCrRule;
+_type6.kind = vdl.kind.OPTIONAL;
 _type6.name = "";
-_type6.elem = vdl.types.UINT16;
-_type7.kind = vdl.kind.OPTIONAL;
+_type6.elem = _typeValue;
+_type7.kind = vdl.kind.LIST;
 _type7.name = "";
-_type7.elem = _typeSchemaMetadata;
-_type8.kind = vdl.kind.LIST;
+_type7.elem = vdl.types.UINT16;
+_type8.kind = vdl.kind.OPTIONAL;
 _type8.name = "";
-_type8.elem = vdl.types.ANY;
+_type8.elem = _typeSchemaMetadata;
 _type9.kind = vdl.kind.LIST;
 _type9.name = "";
-_type9.elem = _typePrefixPermissions;
+_type9.elem = vdl.types.ANY;
 _typeBatchInfo.kind = vdl.kind.STRUCT;
 _typeBatchInfo.name = "v.io/v23/services/syncbase/nosql.BatchInfo";
 _typeBatchInfo.fields = [{name: "Id", type: vdl.types.UINT16}, {name: "Hint", type: vdl.types.STRING}, {name: "Source", type: _typeBatchSource}];
@@ -107,13 +112,13 @@ _typeConflictInfo.name = "v.io/v23/services/syncbase/nosql.ConflictInfo";
 _typeConflictInfo.fields = [{name: "Data", type: _typeConflictData}, {name: "Continued", type: vdl.types.BOOL}];
 _typeCrPolicy.kind = vdl.kind.STRUCT;
 _typeCrPolicy.name = "v.io/v23/services/syncbase/nosql.CrPolicy";
-_typeCrPolicy.fields = [{name: "Rules", type: _type4}];
+_typeCrPolicy.fields = [{name: "Rules", type: _type5}];
 _typeCrRule.kind = vdl.kind.STRUCT;
 _typeCrRule.name = "v.io/v23/services/syncbase/nosql.CrRule";
 _typeCrRule.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "KeyPrefix", type: vdl.types.STRING}, {name: "Type", type: vdl.types.STRING}, {name: "Resolver", type: _typeResolverType}];
 _typeKeyValue.kind = vdl.kind.STRUCT;
 _typeKeyValue.name = "v.io/v23/services/syncbase/nosql.KeyValue";
-_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type3}];
+_typeKeyValue.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Value", type: _type4}];
 _typeOperation.kind = vdl.kind.UNION;
 _typeOperation.name = "v.io/v23/services/syncbase/nosql.Operation";
 _typeOperation.fields = [{name: "Read", type: _typeRowOp}, {name: "Write", type: _typeRowOp}, {name: "Scan", type: _typeScanOp}];
@@ -122,16 +127,16 @@ _typePrefixPermissions.name = "v.io/v23/services/syncbase/nosql.PrefixPermission
 _typePrefixPermissions.fields = [{name: "Prefix", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}];
 _typeResolutionInfo.kind = vdl.kind.STRUCT;
 _typeResolutionInfo.name = "v.io/v23/services/syncbase/nosql.ResolutionInfo";
-_typeResolutionInfo.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Selection", type: _typeValueSelection}, {name: "Result", type: _type5}, {name: "Continued", type: vdl.types.BOOL}];
+_typeResolutionInfo.fields = [{name: "Key", type: vdl.types.STRING}, {name: "Selection", type: _typeValueSelection}, {name: "Result", type: _type6}, {name: "Continued", type: vdl.types.BOOL}];
 _typeResolverType.kind = vdl.kind.ENUM;
 _typeResolverType.name = "v.io/v23/services/syncbase/nosql.ResolverType";
 _typeResolverType.labels = ["LastWins", "AppResolves", "Defer"];
 _typeRowInfo.kind = vdl.kind.STRUCT;
 _typeRowInfo.name = "v.io/v23/services/syncbase/nosql.RowInfo";
-_typeRowInfo.fields = [{name: "Op", type: _typeOperation}, {name: "BatchIds", type: _type6}];
+_typeRowInfo.fields = [{name: "Op", type: _typeOperation}, {name: "BatchIds", type: _type7}];
 _typeRowOp.kind = vdl.kind.STRUCT;
 _typeRowOp.name = "v.io/v23/services/syncbase/nosql.RowOp";
-_typeRowOp.fields = [{name: "Key", type: vdl.types.STRING}, {name: "LocalValue", type: _type5}, {name: "RemoteValue", type: _type5}, {name: "AncestorValue", type: _type5}];
+_typeRowOp.fields = [{name: "Key", type: vdl.types.STRING}, {name: "LocalValue", type: _type6}, {name: "RemoteValue", type: _type6}, {name: "AncestorValue", type: _type6}];
 _typeScanOp.kind = vdl.kind.STRUCT;
 _typeScanOp.name = "v.io/v23/services/syncbase/nosql.ScanOp";
 _typeScanOp.fields = [{name: "Start", type: vdl.types.STRING}, {name: "Limit", type: vdl.types.STRING}];
@@ -140,20 +145,24 @@ _typeSchemaMetadata.name = "v.io/v23/services/syncbase/nosql.SchemaMetadata";
 _typeSchemaMetadata.fields = [{name: "Version", type: vdl.types.INT32}, {name: "Policy", type: _typeCrPolicy}];
 _typeStoreChange.kind = vdl.kind.STRUCT;
 _typeStoreChange.name = "v.io/v23/services/syncbase/nosql.StoreChange";
-_typeStoreChange.fields = [{name: "Value", type: _type3}, {name: "FromSync", type: vdl.types.BOOL}];
+_typeStoreChange.fields = [{name: "Value", type: _type4}, {name: "FromSync", type: vdl.types.BOOL}];
 _typeSyncGroupMemberInfo.kind = vdl.kind.STRUCT;
 _typeSyncGroupMemberInfo.name = "v.io/v23/services/syncbase/nosql.SyncGroupMemberInfo";
 _typeSyncGroupMemberInfo.fields = [{name: "SyncPriority", type: vdl.types.BYTE}];
+_typeSyncGroupPrefix.kind = vdl.kind.STRUCT;
+_typeSyncGroupPrefix.name = "v.io/v23/services/syncbase/nosql.SyncGroupPrefix";
+_typeSyncGroupPrefix.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "RowPrefix", type: vdl.types.STRING}];
 _typeSyncGroupSpec.kind = vdl.kind.STRUCT;
 _typeSyncGroupSpec.name = "v.io/v23/services/syncbase/nosql.SyncGroupSpec";
-_typeSyncGroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type1}, {name: "MountTables", type: _type1}, {name: "IsPrivate", type: vdl.types.BOOL}];
+_typeSyncGroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type2}, {name: "MountTables", type: _type1}, {name: "IsPrivate", type: vdl.types.BOOL}];
 _typeValue.kind = vdl.kind.STRUCT;
 _typeValue.name = "v.io/v23/services/syncbase/nosql.Value";
-_typeValue.fields = [{name: "Bytes", type: _type3}, {name: "WriteTs", type: vdl.types.INT64}];
+_typeValue.fields = [{name: "Bytes", type: _type4}, {name: "WriteTs", type: vdl.types.INT64}];
 _typeValueSelection.kind = vdl.kind.ENUM;
 _typeValueSelection.name = "v.io/v23/services/syncbase/nosql.ValueSelection";
 _typeValueSelection.labels = ["Local", "Remote", "Other"];
 _type1.freeze();
+_type10.freeze();
 _type2.freeze();
 _type3.freeze();
 _type4.freeze();
@@ -183,6 +192,7 @@ _typeScanOp.freeze();
 _typeSchemaMetadata.freeze();
 _typeStoreChange.freeze();
 _typeSyncGroupMemberInfo.freeze();
+_typeSyncGroupPrefix.freeze();
 _typeSyncGroupSpec.freeze();
 _typeValue.freeze();
 _typeValueSelection.freeze();
@@ -219,6 +229,7 @@ module.exports.ScanOp = (vdl.registry.lookupOrCreateConstructor(_typeScanOp));
 module.exports.SchemaMetadata = (vdl.registry.lookupOrCreateConstructor(_typeSchemaMetadata));
 module.exports.StoreChange = (vdl.registry.lookupOrCreateConstructor(_typeStoreChange));
 module.exports.SyncGroupMemberInfo = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupMemberInfo));
+module.exports.SyncGroupPrefix = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupPrefix));
 module.exports.SyncGroupSpec = (vdl.registry.lookupOrCreateConstructor(_typeSyncGroupSpec));
 module.exports.Value = (vdl.registry.lookupOrCreateConstructor(_typeValue));
 module.exports.ValueSelection = {
@@ -593,7 +604,7 @@ SyncGroupManager.prototype._serviceDescription = {
     outArgs: [{
       name: 'members',
       doc: "",
-      type: _type2
+      type: _type3
     },
     ],
     inStream: null,
@@ -699,7 +710,7 @@ BlobManager.prototype._serviceDescription = {
     inStream: {
       name: '',
       doc: '',
-      type: _type3
+      type: _type4
     },
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
@@ -778,7 +789,7 @@ BlobManager.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _type3
+      type: _type4
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -1188,7 +1199,7 @@ Database.prototype._serviceDescription = {
     inArgs: [{
       name: 'metadata',
       doc: "",
-      type: _type7
+      type: _type8
     },
     {
       name: 'perms',
@@ -1275,7 +1286,7 @@ Database.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _type8
+      type: _type9
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -1602,7 +1613,7 @@ Database.prototype._serviceDescription = {
     outArgs: [{
       name: 'members',
       doc: "",
-      type: _type2
+      type: _type3
     },
     ],
     inStream: null,
@@ -1640,7 +1651,7 @@ Database.prototype._serviceDescription = {
     inStream: {
       name: '',
       doc: '',
-      type: _type3
+      type: _type4
     },
     outStream: null,
     tags: [canonicalize.reduce(new access.Tag("Write", true), new access.Tag()._type), ]
@@ -1719,7 +1730,7 @@ Database.prototype._serviceDescription = {
     outStream: {
       name: '',
       doc: '',
-      type: _type3
+      type: _type4
     },
     tags: [canonicalize.reduce(new access.Tag("Read", true), new access.Tag()._type), ]
   },
@@ -2033,12 +2044,12 @@ Table.prototype._serviceDescription = {
     {
       name: 'start',
       doc: "",
-      type: _type3
+      type: _type4
     },
     {
       name: 'limit',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     outArgs: [],
@@ -2059,12 +2070,12 @@ Table.prototype._serviceDescription = {
     {
       name: 'start',
       doc: "",
-      type: _type3
+      type: _type4
     },
     {
       name: 'limit',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     outArgs: [],
@@ -2095,7 +2106,7 @@ Table.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type9
+      type: _type10
     },
     ],
     inStream: null,
@@ -2222,7 +2233,7 @@ Row.prototype._serviceDescription = {
     outArgs: [{
       name: '',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     inStream: null,
@@ -2242,7 +2253,7 @@ Row.prototype._serviceDescription = {
     {
       name: 'value',
       doc: "",
-      type: _type3
+      type: _type4
     },
     ],
     outArgs: [],
