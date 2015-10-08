@@ -108,7 +108,6 @@ SyncGroup.prototype.eject = function(ctx, member, cb) {
 };
 
 /**
- *
  * Gets the SyncGroup spec. version allows for atomic read-modify-write of the
  * spec - see comment for setSpec.
  *
