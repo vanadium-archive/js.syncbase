@@ -6,16 +6,8 @@ that supports peer-to-peer synchronization.
 The client APIs defined here work both in [Node.js] and the browser.
 
 ## Install
-Since Vanadium is currently hosted in private repositories, you would need to
-[setup SSH keys for Github]
-(https://help.github.com/articles/generating-ssh-keys/)
-first and then use npm to install directly from GitHub:
 
-    npm install --save git+ssh://git@github.com:vanadium/js.syncbase.git
-
-currently `vanadium.js` needs to be installed manually as well:
-
-    npm install --save git+ssh://git@github.com:vanadium/js.git
+    npm install --save vanadium/js.syncbase
 
 ## Usage
 
