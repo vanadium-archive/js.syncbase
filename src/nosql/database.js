@@ -17,7 +17,7 @@ var BatchDatabase = require('./batch-database');
 // Silence jshint's error about redefining 'Blob'.
 var Blob = require('./blob');
 /* jshint +W079 */
-var SyncGroup = require('./syncgroup');
+var Syncgroup = require('./syncgroup');
 var Table = require('./table');
 var util = require('../util');
 var watch = require('./watch');
@@ -339,21 +339,21 @@ Database.prototype.beginBatch = function(ctx, opts, cb) {
 };
 
 /**
- * Gets a handle to the SyncGroup with the given name.
+ * Gets a handle to the syncgroup with the given name.
  *
- * @param {string} name SyncGroup name.
+ * @param {string} name Syncgroup name.
  */
-Database.prototype.syncGroup = function(name) {
-  return new SyncGroup(this, name);
+Database.prototype.syncgroup = function(name) {
+  return new Syncgroup(this, name);
 };
 
 /**
- * Gets the global names of all SyncGroups attached to this database.
+ * Gets the global names of all syncgroups attached to this database.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {function} cb Callback.
  */
-Database.prototype.getSyncGroupNames = function(ctx, cb) {
-  this._wire(ctx).getSyncGroupNames(ctx, cb);
+Database.prototype.getSyncgroupNames = function(ctx, cb) {
+  this._wire(ctx).getSyncgroupNames(ctx, cb);
 };
 
 /**

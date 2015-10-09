@@ -24,8 +24,8 @@ module.exports = {
   runInBatch: runInBatch,
   Schema: Schema,
   SchemaMetadata: vdl.SchemaMetadata,
-  SyncGroupMemberInfo: vdl.SyncGroupMemberInfo,
-  SyncGroupPrefix: vdl.SyncGroupPrefix,
-  SyncGroupSpec: vdl.SyncGroupSpec,
+  SyncgroupMemberInfo: vdl.SyncgroupMemberInfo,
+  SyncgroupPrefix: vdl.SyncgroupPrefix,
+  SyncgroupSpec: vdl.SyncgroupSpec,
   WatchChange: watch.WatchChange
 };

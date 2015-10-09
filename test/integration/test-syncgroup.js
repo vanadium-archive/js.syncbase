@@ -9,21 +9,21 @@ var test = require('prova');
 var syncbase = require('../..');
 var nosql = syncbase.nosql;
 var syncbaseSuffix = syncbase.syncbaseSuffix;
-var SyncGroup = require('../../src/nosql/syncgroup');
+var Syncgroup = require('../../src/nosql/syncgroup');
 var verror = require('vanadium').verror;
 
 var testUtil = require('./util');
 var setupDatabase = testUtil.setupDatabase;
-var setupSyncGroup = testUtil.setupSyncGroup;
+var setupSyncgroup = testUtil.setupSyncgroup;
 var uniqueName = testUtil.uniqueName;
 
 // TODO(nlacasse): Where does this magic number 8 come from? It's in
 // syncgroup_test.go.
-var myInfo = new nosql.SyncGroupMemberInfo({
+var myInfo = new nosql.SyncgroupMemberInfo({
   syncPriority: 8
 });
 
-test('db.syncGroup returns a SyncGroup with name', function(t) {
+test('db.syncgroup returns a syncgroup with name', function(t) {
   setupDatabase(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -32,8 +32,8 @@ test('db.syncGroup returns a SyncGroup with name', function(t) {
     var db = o.database;
 
     var sgName = uniqueName('syncgroup');
-    var sg = db.syncGroup(sgName);
-    t.ok(sg instanceof SyncGroup, 'syncgroup is instanceof SyncGroup');
+    var sg = db.syncgroup(sgName);
+    t.ok(sg instanceof Syncgroup, 'syncgroup is instanceof Syncgroup');
     t.equal(sg.name, sgName, 'syncgroup has correct name');
     o.teardown(t.end);
   });
@@ -48,10 +48,10 @@ test('syncgroup.create with empty spec', function(t) {
     var db = o.database;
     var ctx = o.ctx;
 
-    var spec = new nosql.SyncGroupSpec();
+    var spec = new nosql.SyncgroupSpec();
     var name = uniqueName('syncgroup');
 
-    db.syncGroup(name).create(ctx, spec, myInfo, function(err) {
+    db.syncgroup(name).create(ctx, spec, myInfo, function(err) {
       t.ok(err, 'should error');
       t.ok(err instanceof verror.BadArgError, 'err is BadArgError');
       o.teardown(t.end);
@@ -62,7 +62,7 @@ test('syncgroup.create with empty spec', function(t) {
 test('syncgroup.create with valid spec', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncGroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
   ];
 
   setupDatabase(t, function(err, o) {
@@ -79,13 +79,13 @@ test('syncgroup.create with valid spec', function(t) {
                            syncbaseSuffix,
                            uniqueName('syncgroup'));
 
-    var spec = new nosql.SyncGroupSpec({
+    var spec = new nosql.SyncgroupSpec({
       description: 'test syncgroup ' + name,
       perms: perms,
       prefixes: prefixes
     });
 
-    db.syncGroup(name).create(ctx, spec, myInfo, function(err) {
+    db.syncgroup(name).create(ctx, spec, myInfo, function(err) {
       t.error(err, 'should not error');
       o.teardown(t.end);
     });
@@ -95,13 +95,13 @@ test('syncgroup.create with valid spec', function(t) {
 test('creating a nested syncgroup', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncGroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
   ];
   var prefixes2 = [
-    new nosql.SyncGroupPrefix({tableName: 't1', rowPrefix: 'foobar'})
+    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foobar'})
   ];
 
-  setupSyncGroup(t, perms, prefixes, function(err, o) {
+  setupSyncgroup(t, perms, prefixes, function(err, o) {
     if (err) {
       return t.end(err);
     }
@@ -115,13 +115,13 @@ test('creating a nested syncgroup', function(t) {
                            syncbaseSuffix,
                            uniqueName('syncgroup'));
 
-    var spec = new nosql.SyncGroupSpec({
+    var spec = new nosql.SyncgroupSpec({
       description: 'another syncgroup named ' + name,
       perms: perms,
       prefixes: prefixes2
     });
 
-    var sg2 = db.syncGroup(name);
+    var sg2 = db.syncgroup(name);
     sg2.create(ctx, spec, myInfo, function(err) {
       t.error(err, 'should not error');
       o.teardown(t.end);
@@ -132,13 +132,13 @@ test('creating a nested syncgroup', function(t) {
 test('creating a syncgroup that already exists', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncGroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
   ];
   var prefixes2 = [
-    new nosql.SyncGroupPrefix({tableName: 'another', rowPrefix: 'prefix'})
+    new nosql.SyncgroupPrefix({tableName: 'another', rowPrefix: 'prefix'})
   ];
 
-  setupSyncGroup(t, perms, prefixes, function(err, o) {
+  setupSyncgroup(t, perms, prefixes, function(err, o) {
     if (err) {
       return t.end(err);
     }
@@ -148,13 +148,13 @@ test('creating a syncgroup that already exists', function(t) {
 
     var name = o.syncgroup.name;
 
-    var spec = new nosql.SyncGroupSpec({
+    var spec = new nosql.SyncgroupSpec({
       description: 'another syncgroup named ' + name,
       perms: perms,
       prefixes: prefixes2
     });
 
-    var sg2 = db.syncGroup(name);
+    var sg2 = db.syncgroup(name);
     sg2.create(ctx, spec, myInfo, function(err) {
       t.ok(err, 'should error');
       t.ok(err instanceof verror.ExistError, 'err is ExistError');
@@ -170,10 +170,10 @@ test('syncgroup.join succeeds if user has Read access', function(t) {
     }]
   ]);
   var prefixes = [
-    new nosql.SyncGroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
   ];
 
-  setupSyncGroup(t, perms, prefixes, function(err, o) {
+  setupSyncgroup(t, perms, prefixes, function(err, o) {
     if (err) {
       return t.end(err);
     }
@@ -192,10 +192,10 @@ test('syncgroup.join fails if user does not have Read access', function(t) {
     }]
   ]);
   var prefixes = [
-    new nosql.SyncGroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
   ];
 
-  setupSyncGroup(t, perms, prefixes, function(err, o) {
+  setupSyncgroup(t, perms, prefixes, function(err, o) {
     if (err) {
       return t.end(err);
     }
@@ -212,8 +212,8 @@ test('syncgroup.join fails if user does not have Read access', function(t) {
 });
 
 // TODO(nlacasse): Enable this test once Syncbase server implements
-// Database.GetSyncGroupNames.
-test.skip('db.getSyncGroupNames returns the correct names', function(t) {
+// Database.GetSyncgroupNames.
+test.skip('db.getSyncgroupNames returns the correct names', function(t) {
   setupDatabase(t, function(err, o) {
     if (err) {
       return t.end(err);
@@ -234,29 +234,29 @@ test.skip('db.getSyncGroupNames returns the correct names', function(t) {
                          name);
     });
 
-    createSyncGroups();
+    createSyncgroups();
 
-    function createSyncGroups() {
+    function createSyncgroups() {
       async.forEach(fullNames, function(fullName, cb) {
-        var spec = new nosql.SyncGroupSpec({
+        var spec = new nosql.SyncgroupSpec({
           description: 'syncgroup named ' + fullName,
-          prefixes: [new nosql.SyncGroupPrefix({tableName: '', rowPrefix: ''})]
+          prefixes: [new nosql.SyncgroupPrefix({tableName: '', rowPrefix: ''})]
         });
 
-        db.syncGroup(fullName).create(ctx, spec, myInfo, cb);
-      }, getSyncGroupNames);
+        db.syncgroup(fullName).create(ctx, spec, myInfo, cb);
+      }, getSyncgroupNames);
     }
 
-    function getSyncGroupNames(err) {
+    function getSyncgroupNames(err) {
       if (err) {
         t.error(err);
         o.teardown(t.end);
       }
 
-      db.getSyncGroupNames(ctx, assertSyncGroupNames);
+      db.getSyncgroupNames(ctx, assertSyncgroupNames);
     }
 
-    function assertSyncGroupNames(err, gotNames) {
+    function assertSyncgroupNames(err, gotNames) {
       if (err) {
         t.error(err);
         return o.teardown(t.end);
@@ -273,22 +273,22 @@ test.skip('db.getSyncGroupNames returns the correct names', function(t) {
 test('syncgroup.get/setSpec', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncGroupPrefix({tableName: 'biz', rowPrefix: 'bazz'})
+    new nosql.SyncgroupPrefix({tableName: 'biz', rowPrefix: 'bazz'})
   ];
 
   var firstVersion;
 
-  var newSpec = new nosql.SyncGroupSpec({
+  var newSpec = new nosql.SyncgroupSpec({
     description: 'new spec',
     prefixes: prefixes
   });
 
-  var newSpec2 = new nosql.SyncGroupSpec({
+  var newSpec2 = new nosql.SyncgroupSpec({
     description: 'another new spec',
     prefixes: prefixes
   });
 
-  setupSyncGroup(t, perms, prefixes, function(err, o) {
+  setupSyncgroup(t, perms, prefixes, function(err, o) {
     if (err) {
       return t.end(err);
     }

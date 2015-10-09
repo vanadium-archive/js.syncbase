@@ -6,7 +6,7 @@ module.exports = {
   setupApp: setupApp,
   setupDatabase: setupDatabase,
   setupService: setupService,
-  setupSyncGroup: setupSyncGroup,
+  setupSyncgroup: setupSyncgroup,
   setupTable: setupTable,
 
   assertScanRows: assertScanRows,
@@ -102,8 +102,8 @@ function setupDatabase(t, cb) {
   });
 }
 
-// Initializes Vanadium runtime and creats an App, Database and SyncGroup.
-function setupSyncGroup(t, perms, prefixes, cb) {
+// Initializes Vanadium runtime and creats an App, Database and Syncgroup.
+function setupSyncgroup(t, perms, prefixes, cb) {
   setupDatabase(t, function(err, o) {
     if (err) {
       return cb(err);
@@ -116,17 +116,17 @@ function setupSyncGroup(t, perms, prefixes, cb) {
 
     // TODO(nlacasse): Where does this magic number 8 come from? It's in
     // syncgroup_test.go.
-    var myInfo = new syncbase.nosql.SyncGroupMemberInfo({
+    var myInfo = new syncbase.nosql.SyncgroupMemberInfo({
       syncPriority: 8
     });
 
-    var spec = new syncbase.nosql.SyncGroupSpec({
+    var spec = new syncbase.nosql.SyncgroupSpec({
       description: 'test syncgroup ' + fullSgName,
       perms: perms,
       prefixes: prefixes
     });
 
-    var sg = o.database.syncGroup(fullSgName);
+    var sg = o.database.syncgroup(fullSgName);
     sg.create(o.ctx, spec, myInfo, function(err) {
       if (err) {
         o.rt.close(t.error);
