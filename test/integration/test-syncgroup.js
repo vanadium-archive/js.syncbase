@@ -62,7 +62,7 @@ test('syncgroup.create with empty spec', function(t) {
 test('syncgroup.create with valid spec', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.TableRow({tableName: 't1', row: 'foo'})
   ];
 
   setupDatabase(t, function(err, o) {
@@ -95,10 +95,10 @@ test('syncgroup.create with valid spec', function(t) {
 test('creating a nested syncgroup', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.TableRow({tableName: 't1', row: 'foo'})
   ];
   var prefixes2 = [
-    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foobar'})
+    new nosql.TableRow({tableName: 't1', row: 'foobar'})
   ];
 
   setupSyncgroup(t, perms, prefixes, function(err, o) {
@@ -132,10 +132,10 @@ test('creating a nested syncgroup', function(t) {
 test('creating a syncgroup that already exists', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.TableRow({tableName: 't1', row: 'foo'})
   ];
   var prefixes2 = [
-    new nosql.SyncgroupPrefix({tableName: 'another', rowPrefix: 'prefix'})
+    new nosql.TableRow({tableName: 'another', row: 'prefix'})
   ];
 
   setupSyncgroup(t, perms, prefixes, function(err, o) {
@@ -170,7 +170,7 @@ test('syncgroup.join succeeds if user has Read access', function(t) {
     }]
   ]);
   var prefixes = [
-    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.TableRow({tableName: 't1', row: 'foo'})
   ];
 
   setupSyncgroup(t, perms, prefixes, function(err, o) {
@@ -192,7 +192,7 @@ test('syncgroup.join fails if user does not have Read access', function(t) {
     }]
   ]);
   var prefixes = [
-    new nosql.SyncgroupPrefix({tableName: 't1', rowPrefix: 'foo'})
+    new nosql.TableRow({tableName: 't1', row: 'foo'})
   ];
 
   setupSyncgroup(t, perms, prefixes, function(err, o) {
@@ -240,7 +240,7 @@ test.skip('db.getSyncgroupNames returns the correct names', function(t) {
       async.forEach(fullNames, function(fullName, cb) {
         var spec = new nosql.SyncgroupSpec({
           description: 'syncgroup named ' + fullName,
-          prefixes: [new nosql.SyncgroupPrefix({tableName: '', rowPrefix: ''})]
+          prefixes: [new nosql.TableRow({tableName: '', row: ''})]
         });
 
         db.syncgroup(fullName).create(ctx, spec, myInfo, cb);
@@ -273,7 +273,7 @@ test.skip('db.getSyncgroupNames returns the correct names', function(t) {
 test('syncgroup.get/setSpec', function(t) {
   var perms = {};
   var prefixes = [
-    new nosql.SyncgroupPrefix({tableName: 'biz', rowPrefix: 'bazz'})
+    new nosql.TableRow({tableName: 'biz', row: 'bazz'})
   ];
 
   var firstVersion;

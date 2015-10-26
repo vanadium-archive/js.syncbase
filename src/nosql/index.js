@@ -25,7 +25,7 @@ module.exports = {
   Schema: Schema,
   SchemaMetadata: vdl.SchemaMetadata,
   SyncgroupMemberInfo: vdl.SyncgroupMemberInfo,
-  SyncgroupPrefix: vdl.SyncgroupPrefix,
+  TableRow: vdl.TableRow,
   SyncgroupSpec: vdl.SyncgroupSpec,
   WatchChange: watch.WatchChange
 };

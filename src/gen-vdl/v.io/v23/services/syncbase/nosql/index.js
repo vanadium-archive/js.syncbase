@@ -52,8 +52,8 @@ var _typeScanOp = new vdl.Type();
 var _typeSchemaMetadata = new vdl.Type();
 var _typeStoreChange = new vdl.Type();
 var _typeSyncgroupMemberInfo = new vdl.Type();
-var _typeSyncgroupPrefix = new vdl.Type();
 var _typeSyncgroupSpec = new vdl.Type();
+var _typeTableRow = new vdl.Type();
 var _typeValue = new vdl.Type();
 var _typeValueSelection = new vdl.Type();
 _type1.kind = vdl.kind.LIST;
@@ -64,7 +64,7 @@ _type10.name = "";
 _type10.elem = _typePrefixPermissions;
 _type2.kind = vdl.kind.LIST;
 _type2.name = "";
-_type2.elem = _typeSyncgroupPrefix;
+_type2.elem = _typeTableRow;
 _type3.kind = vdl.kind.MAP;
 _type3.name = "";
 _type3.elem = _typeSyncgroupMemberInfo;
@@ -80,7 +80,7 @@ _type6.name = "";
 _type6.elem = _typeValue;
 _type7.kind = vdl.kind.LIST;
 _type7.name = "";
-_type7.elem = vdl.types.UINT16;
+_type7.elem = vdl.types.UINT64;
 _type8.kind = vdl.kind.OPTIONAL;
 _type8.name = "";
 _type8.elem = _typeSchemaMetadata;
@@ -89,7 +89,7 @@ _type9.name = "";
 _type9.elem = vdl.types.ANY;
 _typeBatchInfo.kind = vdl.kind.STRUCT;
 _typeBatchInfo.name = "v.io/v23/services/syncbase/nosql.BatchInfo";
-_typeBatchInfo.fields = [{name: "Id", type: vdl.types.UINT16}, {name: "Hint", type: vdl.types.STRING}, {name: "Source", type: _typeBatchSource}];
+_typeBatchInfo.fields = [{name: "Id", type: vdl.types.UINT64}, {name: "Hint", type: vdl.types.STRING}, {name: "Source", type: _typeBatchSource}];
 _typeBatchOptions.kind = vdl.kind.STRUCT;
 _typeBatchOptions.name = "v.io/v23/services/syncbase/nosql.BatchOptions";
 _typeBatchOptions.fields = [{name: "Hint", type: vdl.types.STRING}, {name: "ReadOnly", type: vdl.types.BOOL}];
@@ -149,12 +149,12 @@ _typeStoreChange.fields = [{name: "Value", type: _type4}, {name: "FromSync", typ
 _typeSyncgroupMemberInfo.kind = vdl.kind.STRUCT;
 _typeSyncgroupMemberInfo.name = "v.io/v23/services/syncbase/nosql.SyncgroupMemberInfo";
 _typeSyncgroupMemberInfo.fields = [{name: "SyncPriority", type: vdl.types.BYTE}];
-_typeSyncgroupPrefix.kind = vdl.kind.STRUCT;
-_typeSyncgroupPrefix.name = "v.io/v23/services/syncbase/nosql.SyncgroupPrefix";
-_typeSyncgroupPrefix.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "RowPrefix", type: vdl.types.STRING}];
 _typeSyncgroupSpec.kind = vdl.kind.STRUCT;
 _typeSyncgroupSpec.name = "v.io/v23/services/syncbase/nosql.SyncgroupSpec";
 _typeSyncgroupSpec.fields = [{name: "Description", type: vdl.types.STRING}, {name: "Perms", type: new access.Permissions()._type}, {name: "Prefixes", type: _type2}, {name: "MountTables", type: _type1}, {name: "IsPrivate", type: vdl.types.BOOL}];
+_typeTableRow.kind = vdl.kind.STRUCT;
+_typeTableRow.name = "v.io/v23/services/syncbase/nosql.TableRow";
+_typeTableRow.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "Row", type: vdl.types.STRING}];
 _typeValue.kind = vdl.kind.STRUCT;
 _typeValue.name = "v.io/v23/services/syncbase/nosql.Value";
 _typeValue.fields = [{name: "Bytes", type: _type4}, {name: "WriteTs", type: vdl.types.INT64}];
@@ -192,8 +192,8 @@ _typeScanOp.freeze();
 _typeSchemaMetadata.freeze();
 _typeStoreChange.freeze();
 _typeSyncgroupMemberInfo.freeze();
-_typeSyncgroupPrefix.freeze();
 _typeSyncgroupSpec.freeze();
+_typeTableRow.freeze();
 _typeValue.freeze();
 _typeValueSelection.freeze();
 module.exports.BatchInfo = (vdl.registry.lookupOrCreateConstructor(_typeBatchInfo));
@@ -229,8 +229,8 @@ module.exports.ScanOp = (vdl.registry.lookupOrCreateConstructor(_typeScanOp));
 module.exports.SchemaMetadata = (vdl.registry.lookupOrCreateConstructor(_typeSchemaMetadata));
 module.exports.StoreChange = (vdl.registry.lookupOrCreateConstructor(_typeStoreChange));
 module.exports.SyncgroupMemberInfo = (vdl.registry.lookupOrCreateConstructor(_typeSyncgroupMemberInfo));
-module.exports.SyncgroupPrefix = (vdl.registry.lookupOrCreateConstructor(_typeSyncgroupPrefix));
 module.exports.SyncgroupSpec = (vdl.registry.lookupOrCreateConstructor(_typeSyncgroupSpec));
+module.exports.TableRow = (vdl.registry.lookupOrCreateConstructor(_typeTableRow));
 module.exports.Value = (vdl.registry.lookupOrCreateConstructor(_typeValue));
 module.exports.ValueSelection = {
   LOCAL: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Local', true), _typeValueSelection),
@@ -414,14 +414,14 @@ SyncgroupManager.prototype.getSyncgroupMembers = function(ctx, serverCall, sgNam
 SyncgroupManager.prototype._serviceDescription = {
   name: 'SyncgroupManager',
   pkgPath: 'v.io/v23/services/syncbase/nosql',
-  doc: "// SyncgroupManager is the interface for Syncgroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method.",
+  doc: "// SyncgroupManager is the interface for syncgroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method.",
   embeds: [],
   methods: [
     
       
     {
     name: 'GetSyncgroupNames',
-    doc: "// GetSyncgroupNames returns the global names of all Syncgroups attached to\n// this database.",
+    doc: "// GetSyncgroupNames returns the global names of all syncgroups attached to\n// this database.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -437,7 +437,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'CreateSyncgroup',
-    doc: "// CreateSyncgroup creates a new Syncgroup with the given spec.\n//\n// Requires: Client must have at least Read access on the Database; prefix ACL\n// must exist at each Syncgroup prefix; Client must have at least Read access\n// on each of these prefix ACLs.",
+    doc: "// CreateSyncgroup creates a new syncgroup with the given spec.\n//\n// Requires: Client must have at least Read access on the Database; prefix ACL\n// must exist at each syncgroup prefix; Client must have at least Read access\n// on each of these prefix ACLs.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -463,7 +463,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'JoinSyncgroup',
-    doc: "// JoinSyncgroup joins the Syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// Syncgroup ACL.",
+    doc: "// JoinSyncgroup joins the syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -489,7 +489,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'LeaveSyncgroup',
-    doc: "// LeaveSyncgroup leaves the Syncgroup. Previously synced data will continue\n// to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
+    doc: "// LeaveSyncgroup leaves the syncgroup. Previously synced data will continue\n// to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -505,7 +505,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'DestroySyncgroup',
-    doc: "// DestroySyncgroup destroys the Syncgroup. Previously synced data will\n// continue to be available to all members.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the Syncgroup ACL.",
+    doc: "// DestroySyncgroup destroys the syncgroup. Previously synced data will\n// continue to be available to all members.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -521,7 +521,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'EjectFromSyncgroup',
-    doc: "// EjectFromSyncgroup ejects a member from the Syncgroup. The ejected member\n// will not be able to sync further, but will retain any data it has already\n// synced.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the Syncgroup ACL.",
+    doc: "// EjectFromSyncgroup ejects a member from the syncgroup. The ejected member\n// will not be able to sync further, but will retain any data it has already\n// synced.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -542,7 +542,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'GetSyncgroupSpec',
-    doc: "// GetSyncgroupSpec gets the Syncgroup spec. version allows for atomic\n// read-modify-write of the spec - see comment for SetSyncgroupSpec.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// Syncgroup ACL.",
+    doc: "// GetSyncgroupSpec gets the syncgroup spec. version allows for atomic\n// read-modify-write of the spec - see comment for SetSyncgroupSpec.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -568,7 +568,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'SetSyncgroupSpec',
-    doc: "// SetSyncgroupSpec sets the Syncgroup spec. version may be either empty or\n// the value from a previous Get. If not empty, Set will only succeed if the\n// current version matches the specified one.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the Syncgroup ACL.",
+    doc: "// SetSyncgroupSpec sets the syncgroup spec. version may be either empty or\n// the value from a previous Get. If not empty, Set will only succeed if the\n// current version matches the specified one.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -594,7 +594,7 @@ SyncgroupManager.prototype._serviceDescription = {
       
     {
     name: 'GetSyncgroupMembers',
-    doc: "// GetSyncgroupMembers gets the info objects for members of the Syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// Syncgroup ACL.",
+    doc: "// GetSyncgroupMembers gets the info objects for members of the syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1172,7 +1172,7 @@ Database.prototype._serviceDescription = {
     {
       name: 'SyncgroupManager',
       pkgPath: 'v.io/v23/services/syncbase/nosql',
-      doc: "// SyncgroupManager is the interface for Syncgroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method."
+      doc: "// SyncgroupManager is the interface for syncgroup operations.\n// TODO(hpucha): Add blessings to create/join and add a refresh method."
     },
     {
       name: 'BlobManager',
@@ -1430,7 +1430,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'GetSyncgroupNames',
-    doc: "// GetSyncgroupNames returns the global names of all Syncgroups attached to\n// this database.",
+    doc: "// GetSyncgroupNames returns the global names of all syncgroups attached to\n// this database.",
     inArgs: [],
     outArgs: [{
       name: '',
@@ -1446,7 +1446,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'CreateSyncgroup',
-    doc: "// CreateSyncgroup creates a new Syncgroup with the given spec.\n//\n// Requires: Client must have at least Read access on the Database; prefix ACL\n// must exist at each Syncgroup prefix; Client must have at least Read access\n// on each of these prefix ACLs.",
+    doc: "// CreateSyncgroup creates a new syncgroup with the given spec.\n//\n// Requires: Client must have at least Read access on the Database; prefix ACL\n// must exist at each syncgroup prefix; Client must have at least Read access\n// on each of these prefix ACLs.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1472,7 +1472,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'JoinSyncgroup',
-    doc: "// JoinSyncgroup joins the Syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// Syncgroup ACL.",
+    doc: "// JoinSyncgroup joins the syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1498,7 +1498,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'LeaveSyncgroup',
-    doc: "// LeaveSyncgroup leaves the Syncgroup. Previously synced data will continue\n// to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
+    doc: "// LeaveSyncgroup leaves the syncgroup. Previously synced data will continue\n// to be available.\n//\n// Requires: Client must have at least Read access on the Database.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1514,7 +1514,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'DestroySyncgroup',
-    doc: "// DestroySyncgroup destroys the Syncgroup. Previously synced data will\n// continue to be available to all members.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the Syncgroup ACL.",
+    doc: "// DestroySyncgroup destroys the syncgroup. Previously synced data will\n// continue to be available to all members.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1530,7 +1530,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'EjectFromSyncgroup',
-    doc: "// EjectFromSyncgroup ejects a member from the Syncgroup. The ejected member\n// will not be able to sync further, but will retain any data it has already\n// synced.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the Syncgroup ACL.",
+    doc: "// EjectFromSyncgroup ejects a member from the syncgroup. The ejected member\n// will not be able to sync further, but will retain any data it has already\n// synced.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1551,7 +1551,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'GetSyncgroupSpec',
-    doc: "// GetSyncgroupSpec gets the Syncgroup spec. version allows for atomic\n// read-modify-write of the spec - see comment for SetSyncgroupSpec.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// Syncgroup ACL.",
+    doc: "// GetSyncgroupSpec gets the syncgroup spec. version allows for atomic\n// read-modify-write of the spec - see comment for SetSyncgroupSpec.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1577,7 +1577,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'SetSyncgroupSpec',
-    doc: "// SetSyncgroupSpec sets the Syncgroup spec. version may be either empty or\n// the value from a previous Get. If not empty, Set will only succeed if the\n// current version matches the specified one.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the Syncgroup ACL.",
+    doc: "// SetSyncgroupSpec sets the syncgroup spec. version may be either empty or\n// the value from a previous Get. If not empty, Set will only succeed if the\n// current version matches the specified one.\n//\n// Requires: Client must have at least Read access on the Database, and must\n// have Admin access on the syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
@@ -1603,7 +1603,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'GetSyncgroupMembers',
-    doc: "// GetSyncgroupMembers gets the info objects for members of the Syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// Syncgroup ACL.",
+    doc: "// GetSyncgroupMembers gets the info objects for members of the syncgroup.\n//\n// Requires: Client must have at least Read access on the Database and on the\n// syncgroup ACL.",
     inArgs: [{
       name: 'sgName',
       doc: "",
