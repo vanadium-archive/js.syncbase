@@ -1,6 +1,6 @@
 SHELL := /bin/bash -euo pipefail
 
-NODE_DIR := $(shell jiri v23-profile env --profile=nodejs V23_TARGET_INSTALLATION_DIR=)
+NODE_DIR := $(shell jiri v23-profile list --info Target.InstallationDir nodejs)
 export PATH := ./go/bin:$(JIRI_ROOT)/release/go/bin:node_modules/.bin:$(NODE_DIR)/bin:$(PATH)
 
 # This target causes any target files to be deleted if the target task fails.
