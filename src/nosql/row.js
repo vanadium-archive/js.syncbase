@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+var inherits = require('inherits');
 var vanadium = require('vanadium');
 
 var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var util = require('../util');
 
+inherits(Row, util.NamedResource);
 module.exports = Row;
 
 /**
- * @summary
  * Row represents a single row in a Table.
  * Private constructor. Use table.row() to get an instance.
  * @param {string} parentFullName Full name of parent Table.
@@ -28,7 +29,7 @@ function Row(parentFullName, key, schemaVersion) {
   // Note, we immediately unescape row keys on the server side. See comment in
   // server/nosql/dispatcher.go for explanation.
   var fullName = vanadium.naming.join(parentFullName, util.escape(key));
-  util.addNameProperties(this, parentFullName, key, fullName);
+  util.NamedResource.call(this, parentFullName, key, fullName);
 
   this.schemaVersion = schemaVersion;
 

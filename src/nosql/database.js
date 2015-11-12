@@ -2,89 +2,43 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+var inherits = require('inherits');
 var through2 = require('through2');
 var vanadium = require('vanadium');
-// TODO(nlacasse): We should expose unwrap and other type-util methods on the
-// vanadium.vdl object.
-var unwrap = require('vanadium/src/vdl/type-util').unwrap;
+
 var verror = vanadium.verror;
 
-var nosqlVdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var watchVdl = require('../gen-vdl/v.io/v23/services/watch');
 
-var BatchDatabase = require('./batch-database');
+var AbstractDatabase = require('./abstract-database');
+var BatchDatabase = require('./batch').BatchDatabase;
 /* jshint -W079 */
 // Silence jshint's error about redefining 'Blob'.
 var Blob = require('./blob');
 /* jshint +W079 */
 var Syncgroup = require('./syncgroup');
-var Table = require('./table');
-var util = require('../util');
 var watch = require('./watch');
 
+inherits(Database, AbstractDatabase);
 module.exports = Database;
 
 /**
- * @summary
- * Database represents a collection of Tables. Batches, queries, sync, watch,
- * etc. all operate at the Database level.
+ * Database is a collection of Tables. Batches, queries, sync, watch, etc. all
+ * operate at the Database level.
  * Private constructor. Use app.noSqlDatabase() to get an instance.
  * @param {string} parentFullName Full name of parent App.
  * @param {string} relativeName Relative name for this Database.
- * @param {number} schemaVersion Database schema version expected by client.
+ * @param {number} schema Database schema expected by client.
  * @constructor
  * @inner
  * @memberof {module:syncbase.nosql}
  */
-function Database(parentFullName, relativeName, batchSuffix, schema) {
+function Database(parentFullName, relativeName, schema) {
   if (!(this instanceof Database)) {
-    return new Database(parentFullName, relativeName);
+    return new Database(parentFullName, relativeName, schema);
   }
-
-  // Escape relativeName so that any forward slashes get dropped, thus ensuring
-  // that the server will interpret fullName as referring to a database object.
-  // Note that the server will still reject this name if util.ValidDatabaseName
-  // returns false.
-  var fullName = vanadium.naming.join(
-    parentFullName, util.escape(relativeName) + batchSuffix);
-  util.addNameProperties(this, parentFullName, relativeName, fullName);
-
-  Object.defineProperty(this, 'schema', {
-    enumerable: false,
-    value: schema,
-    writable: false
-  });
-
-  Object.defineProperty(this, 'schemaVersion', {
-    enumerable: false,
-    value: schema ? schema.metadata.version : -1,
-    writable: false
-  });
-
-  /**
-   * Caches the database wire object.
-   * @private
-   */
-  Object.defineProperty(this, '_wireObj', {
-    enumerable: false,
-    value: null,
-    writable: true
-  });
+  AbstractDatabase.call(this, parentFullName, relativeName, '', schema);
 }
-
-/**
- * @private
- */
-Database.prototype._wire = function(ctx) {
-  if (this._wireObj) {
-    return this._wireObj;
-  }
-  var client = vanadium.runtimeForContext(ctx).getClient();
-  var signature = [nosqlVdl.Database.prototype._serviceDescription];
-
-  this._wireObj = client.bindWithSignature(this.fullName, signature);
-  return this._wireObj;
-};
 
 /**
  * Creates this Database.
@@ -123,82 +77,26 @@ Database.prototype.exists = function(ctx, cb) {
 };
 
 /**
- * Executes a syncQL query.
- *
- * Returns a stream of rows.  The first row contains an array of headers (i.e.
- * column names).  Subsequent rows contain an array of values for each row that
- * matches the query.  The number of values returned in each row will match the
- * size of the headers array.
- * Concurrency semantics: It is legal to perform writes concurrently with
- * Exec. The returned stream reads from a consistent snapshot taken at the
- * time of the RPC, and will not reflect subsequent writes to keys not yet
- * reached by the stream.
- *
- * NOTE(nlacasse): The Go client library returns the headers seperately from
- * the stream.  We could potentially do something similar in JavaScript, by
- * pulling the headers off the stream and passing them to the callback.
- * However, by Vanadium JS convention the callback gets called at the *end* of
- * the RPC, so a developer would have to wait for the stream to finish before
- * seeing what the headers are, which is not ideal.  We also cannot return the
- * headers directly because reading from the stream is async.
- *
- * TODO(nlacasse): Syncbase queries don't work on values that were put without
- * type information.  When JavaScript encodes values with no type infomation,
- * it uses "vdl.Value" for the type.  Presumably, syncbase does not know how to
- * decode such objects, so queries that involve inspecting the object or its
- * type don't work.
- *
+ * Replaces the current Permissions for the Database.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {string} query Query string.
+ * @param {module:vanadium.security.access.Permissions} perms Permissions for
+ * the database.
+ * @param {string} version Version of the current Permissions object which will
+ * be overwritten. If empty, SetPermissions will perform an unconditional
+ * update.
  * @param {function} cb Callback.
- * @returns {stream} Stream of rows.
  */
-Database.prototype.exec = function(ctx, query, cb) {
-  var streamUnwrapper = through2({
-    objectMode: true
-  }, function(res, enc, cb) {
-    return cb(null, res.map(unwrap));
-  });
-
-  var stream = this._wire(ctx).exec(ctx, this.schemaVersion, query, cb).stream;
-
-  var decodedStream = stream.pipe(streamUnwrapper);
-  stream.on('error', function(err) {
-    decodedStream.emit('error', err);
-  });
-
-  return decodedStream;
+Database.prototype.setPermissions = function(ctx, perms, version, cb) {
+  this._wire(ctx).setPermissions(ctx, perms, version, cb);
 };
 
 /**
- * Returns the Table with the given name.
- * @param {string} relativeName Table name.  Must not contain slashes.
- * @return {module:syncbase.table.Table} Table object.
- */
-Database.prototype.table = function(relativeName) {
-  return new Table(this.fullName, relativeName, this.schemaVersion);
-};
-
-/**
- * Returns a list of all Table names.
+ * Returns the current Permissions for the Database.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {function} cb Callback.
  */
-Database.prototype.listTables = function(ctx, cb) {
-  // See comment in v.io/v23/services/syncbase/nosql/service.vdl for why we
-  // can't implement listTables using Glob (via util.listChildren).
-  this._wire(ctx).listTables(ctx, cb);
-};
-
-/**
- * @private
- */
-Database.prototype._tableWire = function(ctx, relativeName) {
-  var client = vanadium.runtimeForContext(ctx).newClient();
-  var signature = [nosqlVdl.Table.prototype._serviceDescription];
-
-  var fullTableName = vanadium.naming.join(this.fullName, relativeName);
-  return client.bindWithSignature(fullTableName, signature);
+Database.prototype.getPermissions = function(ctx, cb) {
+  this._wire(ctx).getPermissions(ctx, cb);
 };
 
 /**
@@ -271,38 +169,6 @@ Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
 };
 
 /**
- * Gets the ResumeMarker that points to the current end of the event log.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {function} cb Callback.
- */
-Database.prototype.getResumeMarker = function(ctx, cb) {
-  this._wire(ctx).getResumeMarker(ctx, cb);
-};
-
-/**
- * Replaces the current Permissions for the Database.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {module:vanadium.security.access.Permissions} perms Permissions for
- * the database.
- * @param {string} version Version of the current Permissions object which will
- * be overwritten. If empty, SetPermissions will perform an unconditional
- * update.
- * @param {function} cb Callback.
- */
-Database.prototype.setPermissions = function(ctx, perms, version, cb) {
-  this._wire(ctx).setPermissions(ctx, perms, version, cb);
-};
-
-/**
- * Returns the current Permissions for the Database.
- * @param {module:vanadium.context.Context} ctx Vanadium context.
- * @param {function} cb Callback.
- */
-Database.prototype.getPermissions = function(ctx, cb) {
-  this._wire(ctx).getPermissions(ctx, cb);
-};
-
-/**
  * Creates a new batch. Instead of calling this function directly, clients are
  * encouraged to use the RunInBatch() helper function, which detects "concurrent
  * batch" errors and handles retries internally.
@@ -332,9 +198,8 @@ Database.prototype.beginBatch = function(ctx, opts, cb) {
       if (err) {
         return cb(err);
       }
-      var db = new Database(self._parentFullName, self.name, batchSuffix,
-                            self.schema);
-      return cb(null, new BatchDatabase(db));
+      return cb(null, new BatchDatabase(
+        self._parentFullName, self.name, batchSuffix, self.schema));
     });
 };
 
@@ -466,7 +331,6 @@ Database.prototype._setSchemaMetadata = function(ctx, metadata, cb) {
 /**
  * Returns a handle to the blob with the given blobRef.
  * @param {module:syncbase.nosql.BlobRef} blobRef BlobRef of blob to get.
- *
  */
 Database.prototype.blob = function(blobRef) {
   return new Blob(this, blobRef);
@@ -476,7 +340,6 @@ Database.prototype.blob = function(blobRef) {
  * Creates a new blob.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {function} cb Callback.
- *
  */
 Database.prototype.createBlob = function(ctx, cb) {
   var self = this;

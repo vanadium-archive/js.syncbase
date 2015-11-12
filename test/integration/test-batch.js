@@ -5,7 +5,7 @@
 var async = require('async');
 var test = require('prova');
 
-var BatchDatabase = require('../../src/nosql/batch-database');
+var BatchDatabase = require('../../src/nosql/batch').BatchDatabase;
 
 var nosql = require('../..').nosql;
 var BatchOptions = nosql.BatchOptions;
@@ -32,8 +32,8 @@ test('db.beginBatch creates a BatchDatabase with name', function(t) {
       }
 
       t.ok(batch instanceof BatchDatabase, 'batch is a BatchDatabase');
-      t.notEqual(batch.name, o.database.name,
-                 'batch has different name than database');
+      t.equal(batch.name, o.database.name,
+              'batch name should match database name');
       t.notEqual(batch.fullName, o.database.fullName,
                  'batch has different fullName than database');
 

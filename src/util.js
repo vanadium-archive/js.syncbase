@@ -5,7 +5,7 @@
 var vanadium = require('vanadium');
 
 module.exports = {
-  addNameProperties: addNameProperties,
+  NamedResource: NamedResource,
   listChildren: listChildren,
   prefixRangeLimit: prefixRangeLimit,
   stringToUTF8Bytes: stringToUTF8Bytes,
@@ -14,17 +14,22 @@ module.exports = {
 };
 
 /**
- * Creates public 'name' and 'fullName' properties on an object, as well as a
- * private '_parentFullName' property.
- * @private
+ * NamedResource is a base class for Syncbase layers with names.
+ * @param {string} parentFullName Full name of parent layer.
+ * @param {string} name Relative name for this layer.
+ * @param {string} fullName Full name for this layer.
  */
-function addNameProperties(self, parentFullName, name, fullName) {
+function NamedResource(parentFullName, name, fullName) {
+  if (!(this instanceof NamedResource)) {
+    return new NamedResource(parentFullName, name, fullName);
+  }
+
   /**
    * @property _parentFullName
    * @private
    * @type {string}
    */
-  Object.defineProperty(self, '_parentFullName', {
+  Object.defineProperty(this, '_parentFullName', {
     value: parentFullName,
     writable: false,
     enumerable: false
@@ -34,7 +39,7 @@ function addNameProperties(self, parentFullName, name, fullName) {
    * @property name
    * @type {string}
    */
-  Object.defineProperty(self, 'name', {
+  Object.defineProperty(this, 'name', {
     value: name,
     writable: false,
     enumerable: true
@@ -44,7 +49,7 @@ function addNameProperties(self, parentFullName, name, fullName) {
    * @property fullName
    * @type {string}
    */
-  Object.defineProperty(self, 'fullName', {
+  Object.defineProperty(this, 'fullName', {
     value: fullName,
     writable: false,
     enumerable: true

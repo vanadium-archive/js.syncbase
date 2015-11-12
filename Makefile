@@ -128,18 +128,16 @@ endif
 DOCSTRAP_LOC:= node_modules/ink-docstrap
 JS_SRC_FILES = $(shell find src -name "*.js" | sed 's/ /\\ /')
 docs: $(JS_SRC_FILES) ../core/jsdocs/docstrap-template/compiled/site.vanadium.css | node_modules
-	# Copy our compiled style template
+	# Copy our compiled style template.
 	cp -f ../core/jsdocs/docstrap-template/compiled/site.vanadium.css ${DOCSTRAP_LOC}/template/static/styles
 
-	# Build the docs
+	# Build the docs.
 	jsdoc $^ --readme ./jsdocs/index.md --configure ./jsdocs/conf.json --template ${DOCSTRAP_LOC}/template --destination $@
 
-	# Copy favicon
+	# Copy favicon.
 	cp -f ../core/jsdocs/favicon.ico $@
 
-# serve-docs
-#
-# Serve the docs at http://localhost:8020.
+# Serves the docs at http://localhost:8020.
 serve-docs: docs
 	static docs -p 8020
 

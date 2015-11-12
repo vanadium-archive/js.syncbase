@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+var inherits = require('inherits');
 var vanadium = require('vanadium');
 
 var Database = require('./nosql/database');
@@ -10,10 +11,10 @@ var vdl = require('./gen-vdl/v.io/v23/services/syncbase');
 
 var wireSignature = vdl.App.prototype._serviceDescription;
 
+inherits(App, util.NamedResource);
 module.exports = App;
 
 /**
- * @summary
  * App represents a collection of Databases.
  * Private constructor. Use service.app() to get an instance.
  * @param {string} parentFullName Full name of parent Service.
@@ -29,7 +30,7 @@ function App(parentFullName, relativeName) {
 
   var fullName = vanadium.naming.join(
     parentFullName, util.escape(relativeName));
-  util.addNameProperties(this, parentFullName, relativeName, fullName);
+  util.NamedResource.call(this, parentFullName, relativeName, fullName);
 
   // TODO(nlacasse): Use the prr module to simplify all the
   // 'Object.defineProperty' calls scattered throughout the project.
@@ -50,7 +51,7 @@ function App(parentFullName, relativeName) {
 // must not contain slashes. schema can be null or undefined only if a schema
 // was never set for the database in the first place.
 App.prototype.noSqlDatabase = function(relativeName, schema) {
-  return new Database(this.fullName, relativeName, '', schema);
+  return new Database(this.fullName, relativeName, schema);
 };
 
 // listDatabases returns of all database names.

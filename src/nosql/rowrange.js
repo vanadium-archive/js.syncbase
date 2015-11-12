@@ -5,7 +5,6 @@
 var util = require('../util');
 
 /**
- * @summary
  * Provides utility methods to create different rowranges.
  * @namespace
  * @name rowrange
@@ -33,7 +32,7 @@ function range(start, limit) {
 }
 
 /**
- * Creates a range that only matches items of the given prefix.
+ * Creates a range that only matches rows with the given prefix.
  * @param {string} prefix Prefix.
  * @return {module:syncbase.nosql~Range} A Range object covering the prefix.
  * inherits from {@link module:syncbase.nosql~RowRange}
@@ -58,7 +57,6 @@ function singleRow(row) {
 }
 
 /*
- * @summary
  * Represents a range of row values.
  * Private constructor. Use one of the utility methods such as
  * {@link module:syncbase.nosql.rowrange#rowrange},

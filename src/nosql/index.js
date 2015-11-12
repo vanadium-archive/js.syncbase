@@ -3,13 +3,12 @@
 // license that can be found in the LICENSE file.
 
 var rowrange = require('./rowrange');
-var runInBatch = require('./batch');
+var runInBatch = require('./batch').runInBatch;
 var Schema = require('./schema');
 var vdl = require('../gen-vdl/v.io/v23/services/syncbase/nosql');
 var watch = require('./watch');
 
 /**
- * @summary
  * Defines the client API for the NoSQL part of Syncbase.
  * @namespace
  * @name nosql

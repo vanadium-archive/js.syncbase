@@ -2,10 +2,58 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-module.exports = runInBatch;
+var inherits = require('inherits');
+
+var AbstractDatabase = require('./abstract-database');
+
+inherits(BatchDatabase, AbstractDatabase);
+module.exports = {
+  BatchDatabase: BatchDatabase,
+  runInBatch: runInBatch
+};
 
 /**
- * @summary
+ * BatchDatabase is a handle to a set of reads and writes to the database that
+ * should be considered an atomic unit. See database.beginBatch() for
+ * concurrency semantics.
+ * Private constructor. Use database.beginBatch() to get a BatchDatabase.
+ * @param {string} parentFullName Full name of parent App.
+ * @param {string} relativeName Relative name for this Database.
+ * @param {string} batchSuffix Suffix for this BatchDatabase.
+ * @param {number} schema Database schema expected by client.
+ * @constructor
+ * @inner
+ * @memberof {module:syncbase.nosql}
+ */
+function BatchDatabase(parentFullName, relativeName, batchSuffix, schema) {
+  if (!(this instanceof BatchDatabase)) {
+    return new BatchDatabase(parentFullName, relativeName, batchSuffix, schema);
+  }
+  AbstractDatabase.call(this, parentFullName, relativeName, batchSuffix,
+                        schema);
+}
+
+/**
+ * Persists the pending changes to the database.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+BatchDatabase.prototype.commit = function(ctx, cb) {
+  this._wire(ctx).commit(ctx, this.schemaVersion, cb);
+};
+
+/**
+ * Notifies the server that any pending changes can be discarded.  It is not
+ * strictly required, but it may allow the server to release locks or other
+ * resources sooner than if it was not called.
+ * @param {module:vanadium.context.Context} ctx Vanadium context.
+ * @param {function} cb Callback.
+ */
+BatchDatabase.prototype.abort = function(ctx, cb) {
+  this._wire(ctx).abort(ctx, this.schemaVersion, cb);
+};
+
+/**
  * runInBatch runs a function with a newly created batch. If the function
  * errors, the batch is aborted. If the function succeeds, the batch is
  * committed.
@@ -41,6 +89,7 @@ function runInBatch(ctx, db, opts, fn, cb) {
 
   function retryLoop(i) {
     attempt(function(err) {
+      // TODO(sadovsky): Only retry if err is ErrConcurrentTransaction.
       if (err && i < 2) {
         retryLoop(i + 1);
       } else {

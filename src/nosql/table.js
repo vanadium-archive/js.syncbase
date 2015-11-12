@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+var inherits = require('inherits');
 var through2 = require('through2');
 var vanadium = require('vanadium');
 
@@ -12,10 +13,10 @@ var util = require('../util');
 
 var prefix = RowRange.prefix;
 
+inherits(Table, util.NamedResource);
 module.exports = Table;
 
 /**
- * @summary
  * Table represents a collection of Rows.
  * Private constructor. Use database.table() to get an instance.
  * @param {string} parentFullName Full name of parent Database.
@@ -36,7 +37,7 @@ function Table(parentFullName, relativeName, schemaVersion) {
   // returns false.
   var fullName = vanadium.naming.join(
     parentFullName, util.escape(relativeName));
-  util.addNameProperties(this, parentFullName, relativeName, fullName);
+  util.NamedResource.call(this, parentFullName, relativeName, fullName);
 
   this.schemaVersion = schemaVersion;
 

@@ -9,14 +9,13 @@ var util = require('./util');
 var vdl = require('./gen-vdl/v.io/v23/services/syncbase');
 
 // TODO(aghassemi): This looks clunky,
-// https://github.com/vanadium/issues/issues/499 to deal with it.
+// See https://github.com/vanadium/issues/issues/499.
 var wireSignature = vdl.Service.prototype._serviceDescription;
 
 module.exports = Service;
 
 /**
- * @summary
- * Service represents a collection of Apps.
+ * Service represents a collection of apps.
  * @param {string} fullName Full Vanadium object name of this Service.
  * @constructor
  * @inner
