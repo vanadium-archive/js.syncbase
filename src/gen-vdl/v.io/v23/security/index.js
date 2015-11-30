@@ -263,7 +263,7 @@ module.exports.publicKeyThirdPartyCaveatParam = (vdl.registry.lookupOrCreateCons
 
   module.exports.AllPrincipals = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeBlessingPattern))("...", true), _typeBlessingPattern);
 
-  module.exports.ChainSeparator = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(vdl.types.STRING))("/", true), vdl.types.STRING);
+  module.exports.ChainSeparator = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(vdl.types.STRING))(":", true), vdl.types.STRING);
 
   module.exports.SHA1Hash = canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeHash))("SHA1", true), _typeHash);
 
@@ -329,7 +329,7 @@ module.exports.ConstCaveatValidationError = makeError('v.io/v23/security.ConstCa
 
 
 module.exports.ExpiryCaveatValidationError = makeError('v.io/v23/security.ExpiryCaveatValidation', actions.NO_RETRY, {
-  'en': '{1:}{2:} now({4}) is after expiry({3})',
+  'en': '{1:}{2:} now({3}) is after expiry({4})',
 }, [
   new time.Time()._type,
   new time.Time()._type,

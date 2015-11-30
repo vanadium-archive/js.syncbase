@@ -12,6 +12,7 @@ var canonicalize = require('vanadium').vdl.canonicalize;
 
 
 
+var time = require('./../../vdlroot/time');
 var access = require('./../../security/access');
 var permissions = require('./../permissions');
 
@@ -20,6 +21,12 @@ module.exports = {};
 
 
 // Types:
+var _typeDebugUpdateClockOpts = new vdl.Type();
+_typeDebugUpdateClockOpts.kind = vdl.kind.STRUCT;
+_typeDebugUpdateClockOpts.name = "v.io/v23/services/syncbase.DebugUpdateClockOpts";
+_typeDebugUpdateClockOpts.fields = [{name: "NtpHost", type: vdl.types.STRING}, {name: "Now", type: new time.Time()._type}, {name: "ElapsedTime", type: new time.Duration()._type}, {name: "DoNtpUpdate", type: vdl.types.BOOL}, {name: "DoLocalUpdate", type: vdl.types.BOOL}, {name: "StartClockD", type: vdl.types.BOOL}];
+_typeDebugUpdateClockOpts.freeze();
+module.exports.DebugUpdateClockOpts = (vdl.registry.lookupOrCreateConstructor(_typeDebugUpdateClockOpts));
 
 
 
@@ -48,6 +55,16 @@ module.exports.Service = Service;
 
     
       
+Service.prototype.debugUpdateClock = function(ctx, serverCall, uco) {
+  throw new Error('Method DebugUpdateClock not implemented');
+};
+    
+      
+Service.prototype.debugNow = function(ctx, serverCall) {
+  throw new Error('Method DebugNow not implemented');
+};
+    
+      
 Service.prototype.setPermissions = function(ctx, serverCall, perms, version) {
   throw new Error('Method SetPermissions not implemented');
 };
@@ -70,6 +87,38 @@ Service.prototype._serviceDescription = {
     },
     ],
   methods: [
+    
+      
+    {
+    name: 'DebugUpdateClock',
+    doc: "// DebugUpdateClock updates various bits of Syncbase virtual clock and clock\n// daemon state based on the specified options.\n// Requires --debug flag to be set (in addition to Admin check).\n// Users of this function typically specify --debug-do-not-start-clockd when\n// starting Syncbase so that they can configure the virtual clock before the\n// daemon starts mucking with it.",
+    inArgs: [{
+      name: 'uco',
+      doc: "",
+      type: _typeDebugUpdateClockOpts
+    },
+    ],
+    outArgs: [],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
+  },
+    
+      
+    {
+    name: 'DebugNow',
+    doc: "// DebugNow returns the current time per the Syncbase clock.\n// Requires --debug flag to be set (in addition to Admin check).",
+    inArgs: [],
+    outArgs: [{
+      name: '',
+      doc: "",
+      type: new time.Time()._type
+    },
+    ],
+    inStream: null,
+    outStream: null,
+    tags: [canonicalize.reduce(new access.Tag("Admin", true), new access.Tag()._type), ]
+  },
     
       
     {
@@ -248,6 +297,8 @@ App.prototype._serviceDescription = {
      
   ]
 };
+
+   
 
    
  
