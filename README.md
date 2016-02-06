@@ -24,7 +24,7 @@ When using [Browserify] or [Node.js] users can gain access to the API with:
     var syncbase = require("syncbase");
 
 When run in a browser, syncbase expects that the [vanadium
-extension](https://github.com/vanadium/docs/blob/master/tools/vanadium-chrome-extension.md)
+extension](https://vanadium.github.io/tools/vanadium-chrome-extension.html)
 will be installed.
 
 ## Bugs and feature requests
