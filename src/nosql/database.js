@@ -223,23 +223,15 @@ Database.prototype.getSyncgroupNames = function(ctx, cb) {
 
 /**
  * Compares the current schema version of the database with the schema version
- * provided while creating this database handle. If the current database schema
- * version is lower, then schema.updater is called. If schema.updater is
- * successful this method stores the new schema metadata in database.
+ * provided while creating this database handle and updates the schema metadata
+ * if required.
  *
- * It is important not to access or modify the database until upgradeIfOutdated
- * has called its callback.
- *
- * TODO(nlacasse): Consider locking the database in some way so that the
- * upgrader function can access it, but all other attempts fail immediately
- * with a helpful error.
- *
- * Note: schema can be nil, in which case this method skips schema check and
+ * Note: schema can be nil, in which case this method should not be called and
  * the caller is responsible for maintaining schema sanity.
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {function} cb Callback.
  */
-Database.prototype.upgradeIfOutdated = function(ctx, cb) {
+Database.prototype.updateSchemaMetadata = function(ctx, cb) {
   var self = this;
   if (!self.schema) {
     return process.nextTick(function() {
@@ -283,26 +275,12 @@ Database.prototype.upgradeIfOutdated = function(ctx, cb) {
       return cb(null, false);
     }
 
-    // Call the Upgrader provided by the app to upgrade the schema.
-    //
-    // TODO(nlacasse,jlodhia): disable sync before running Upgrader and
-    // reenable once Upgrader is finished.
-    //
-    // TODO(nlacasse,jlodhia): prevent other processes (local/remote) from
-    // accessing the database while upgrade is in progress.
-    self.schema.upgrader(self, currMeta.version, self.schema.metadata.version,
-        function(err) {
+    // Update the schema metadata in db to the latest version.
+    self._setSchemaMetadata(ctx, self.schema.metadata, function(err) {
       if (err) {
         return cb(err);
       }
-
-      // Update the schema metadata in db to the latest version.
-      self._setSchemaMetadata(ctx, self.schema.metadata, function(err) {
-        if (err) {
-          return cb(err);
-        }
-        cb(null, true);
-      });
+      cb(null, true);
     });
   });
 };

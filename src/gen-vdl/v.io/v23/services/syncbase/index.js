@@ -21,12 +21,12 @@ module.exports = {};
 
 
 // Types:
-var _typeDebugUpdateClockOpts = new vdl.Type();
-_typeDebugUpdateClockOpts.kind = vdl.kind.STRUCT;
-_typeDebugUpdateClockOpts.name = "v.io/v23/services/syncbase.DebugUpdateClockOpts";
-_typeDebugUpdateClockOpts.fields = [{name: "NtpHost", type: vdl.types.STRING}, {name: "Now", type: new time.Time()._type}, {name: "ElapsedTime", type: new time.Duration()._type}, {name: "DoNtpUpdate", type: vdl.types.BOOL}, {name: "DoLocalUpdate", type: vdl.types.BOOL}, {name: "StartClockD", type: vdl.types.BOOL}];
-_typeDebugUpdateClockOpts.freeze();
-module.exports.DebugUpdateClockOpts = (vdl.registry.lookupOrCreateConstructor(_typeDebugUpdateClockOpts));
+var _typeDevModeUpdateVClockOpts = new vdl.Type();
+_typeDevModeUpdateVClockOpts.kind = vdl.kind.STRUCT;
+_typeDevModeUpdateVClockOpts.name = "v.io/v23/services/syncbase.DevModeUpdateVClockOpts";
+_typeDevModeUpdateVClockOpts.fields = [{name: "NtpHost", type: vdl.types.STRING}, {name: "Now", type: new time.Time()._type}, {name: "ElapsedTime", type: new time.Duration()._type}, {name: "DoNtpUpdate", type: vdl.types.BOOL}, {name: "DoLocalUpdate", type: vdl.types.BOOL}];
+_typeDevModeUpdateVClockOpts.freeze();
+module.exports.DevModeUpdateVClockOpts = (vdl.registry.lookupOrCreateConstructor(_typeDevModeUpdateVClockOpts));
 
 
 
@@ -37,10 +37,29 @@ module.exports.DebugUpdateClockOpts = (vdl.registry.lookupOrCreateConstructor(_t
 
 // Errors:
 
+module.exports.NotInDevModeError = makeError('v.io/v23/services/syncbase.NotInDevMode', actions.NO_RETRY, {
+  'en': '{1:}{2:} not running with --dev=true',
+}, [
+]);
+
+
 module.exports.InvalidNameError = makeError('v.io/v23/services/syncbase.InvalidName', actions.NO_RETRY, {
   'en': '{1:}{2:} invalid name: {3}',
 }, [
   vdl.types.STRING,
+]);
+
+
+module.exports.CorruptDatabaseError = makeError('v.io/v23/services/syncbase.CorruptDatabase', actions.NO_RETRY, {
+  'en': '{1:}{2:} database corrupt, moved to {3}; client must create a new database',
+}, [
+  vdl.types.STRING,
+]);
+
+
+module.exports.UnknownBatchError = makeError('v.io/v23/services/syncbase.UnknownBatch', actions.NO_RETRY, {
+  'en': '{1:}{2:} unknown batch, perhaps the server restarted',
+}, [
 ]);
 
 
@@ -55,13 +74,13 @@ module.exports.Service = Service;
 
     
       
-Service.prototype.debugUpdateClock = function(ctx, serverCall, uco) {
-  throw new Error('Method DebugUpdateClock not implemented');
+Service.prototype.devModeUpdateVClock = function(ctx, serverCall, uco) {
+  throw new Error('Method DevModeUpdateVClock not implemented');
 };
     
       
-Service.prototype.debugNow = function(ctx, serverCall) {
-  throw new Error('Method DebugNow not implemented');
+Service.prototype.devModeGetTime = function(ctx, serverCall) {
+  throw new Error('Method DevModeGetTime not implemented');
 };
     
       
@@ -90,12 +109,12 @@ Service.prototype._serviceDescription = {
     
       
     {
-    name: 'DebugUpdateClock',
-    doc: "// DebugUpdateClock updates various bits of Syncbase virtual clock and clock\n// daemon state based on the specified options.\n// Requires --debug flag to be set (in addition to Admin check).\n// Users of this function typically specify --debug-do-not-start-clockd when\n// starting Syncbase so that they can configure the virtual clock before the\n// daemon starts mucking with it.",
+    name: 'DevModeUpdateVClock',
+    doc: "// DevModeUpdateVClock updates various bits of Syncbase virtual clock and clock\n// daemon state based on the specified options.\n// Requires --dev flag to be set (in addition to Admin check).",
     inArgs: [{
       name: 'uco',
       doc: "",
-      type: _typeDebugUpdateClockOpts
+      type: _typeDevModeUpdateVClockOpts
     },
     ],
     outArgs: [],
@@ -106,8 +125,8 @@ Service.prototype._serviceDescription = {
     
       
     {
-    name: 'DebugNow',
-    doc: "// DebugNow returns the current time per the Syncbase clock.\n// Requires --debug flag to be set (in addition to Admin check).",
+    name: 'DevModeGetTime',
+    doc: "// DevModeGetTime returns the current time per the Syncbase clock.\n// Requires --dev flag to be set (in addition to Admin check).",
     inArgs: [],
     outArgs: [{
       name: '',

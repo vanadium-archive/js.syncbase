@@ -61,8 +61,7 @@ test('app.noSqlDatabase(name, schema) returns a database with correct schema',
 
     var version = 123;
     var md = new SchemaMetadata({version: version});
-    var updater = function() {};
-    var schema = new Schema(md, updater);
+    var schema = new Schema(md);
 
     var dbName = uniqueName('db');
     var db = o.app.noSqlDatabase(dbName, schema);

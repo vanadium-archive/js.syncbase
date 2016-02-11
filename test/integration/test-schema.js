@@ -24,30 +24,20 @@ test('schema check', function(t) {
 
     var dbName = uniqueName('db');
 
-    var upgraderCallCount = 0;
-    var upgrader = function(db, oldVer, newVer, cb) {
-      upgraderCallCount++;
-      process.nextTick(function() {
-        cb(null);
-      });
-    };
-
     var version = 123;
     var md = new SchemaMetadata({version: version});
-    var schema = new Schema(md, upgrader);
+    var schema = new Schema(md);
 
     var otherDb, otherSchema, newVersion;
 
     var db = app.noSqlDatabase(dbName, schema);
 
     async.waterfall([
-      // Verify that calling Upgrade on a non existing database does not throw
-      // errors.
-      db.upgradeIfOutdated.bind(db, ctx),
+      // Verify that calling updateSchemaMetadata on a non existing database
+      // does not throw errors.
+      db.updateSchemaMetadata.bind(db, ctx),
       function(upgraded, cb) {
-        t.equal(upgraded, false, 'upgradeIfOutdated should return false');
-        t.equal(upgraderCallCount, 0,
-                'upgrader function should not have been called');
+        t.equal(upgraded, false, 'updateSchemaMetadata should return false');
         cb(null);
       },
 
@@ -65,28 +55,18 @@ test('schema check', function(t) {
         cb(null);
       },
 
-      // Make redundant call to Upgrade to verify that it is a no-op
-      db.upgradeIfOutdated.bind(db, ctx),
-      function(res, cb) {
-        t.notOk(res, 'upgradeIfOutdated should not return true');
-        t.equal(upgraderCallCount, 0,
-                'upgrader function should not have been called');
-        cb(null);
-      },
-
       // Try to make a new database object for the same database but with an
       // incremented schema version.
       function(cb) {
         newVersion = version + 1;
         var otherMd = new SchemaMetadata({version: newVersion});
-        otherSchema = new Schema(otherMd, upgrader);
+        otherSchema = new Schema(otherMd);
         otherDb = app.noSqlDatabase(dbName, otherSchema);
-        otherDb.upgradeIfOutdated(ctx, cb);
+        otherDb.updateSchemaMetadata(ctx, cb);
       },
 
       function(res, cb) {
-        t.ok(res, 'otherDb.upgradeIfOutdated expected to return true');
-        t.equal(upgraderCallCount, 1, 'upgrader should have been called once');
+        t.ok(res, 'otherDb.updateSchemaMetadata expected to return true');
         cb(null);
       },
 

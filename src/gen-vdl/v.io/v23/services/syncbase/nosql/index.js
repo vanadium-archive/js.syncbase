@@ -12,6 +12,7 @@ var canonicalize = require('vanadium').vdl.canonicalize;
 
 
 
+var time = require('./../../../vdlroot/time');
 var access = require('./../../../security/access');
 var permissions = require('./../../permissions');
 var watch = require('./../../watch');
@@ -56,6 +57,7 @@ var _typeSyncgroupSpec = new vdl.Type();
 var _typeTableRow = new vdl.Type();
 var _typeValue = new vdl.Type();
 var _typeValueSelection = new vdl.Type();
+var _typeValueState = new vdl.Type();
 _type1.kind = vdl.kind.LIST;
 _type1.name = "";
 _type1.elem = vdl.types.STRING;
@@ -157,10 +159,13 @@ _typeTableRow.name = "v.io/v23/services/syncbase/nosql.TableRow";
 _typeTableRow.fields = [{name: "TableName", type: vdl.types.STRING}, {name: "Row", type: vdl.types.STRING}];
 _typeValue.kind = vdl.kind.STRUCT;
 _typeValue.name = "v.io/v23/services/syncbase/nosql.Value";
-_typeValue.fields = [{name: "Bytes", type: _type4}, {name: "WriteTs", type: vdl.types.INT64}];
+_typeValue.fields = [{name: "State", type: _typeValueState}, {name: "Bytes", type: _type4}, {name: "WriteTs", type: new time.Time()._type}];
 _typeValueSelection.kind = vdl.kind.ENUM;
 _typeValueSelection.name = "v.io/v23/services/syncbase/nosql.ValueSelection";
 _typeValueSelection.labels = ["Local", "Remote", "Other"];
+_typeValueState.kind = vdl.kind.ENUM;
+_typeValueState.name = "v.io/v23/services/syncbase/nosql.ValueState";
+_typeValueState.labels = ["Exists", "NoExists", "Deleted", "Unknown"];
 _type1.freeze();
 _type10.freeze();
 _type2.freeze();
@@ -196,6 +201,7 @@ _typeSyncgroupSpec.freeze();
 _typeTableRow.freeze();
 _typeValue.freeze();
 _typeValueSelection.freeze();
+_typeValueState.freeze();
 module.exports.BatchInfo = (vdl.registry.lookupOrCreateConstructor(_typeBatchInfo));
 module.exports.BatchOptions = (vdl.registry.lookupOrCreateConstructor(_typeBatchOptions));
 module.exports.BatchSource = {
@@ -236,6 +242,12 @@ module.exports.ValueSelection = {
   LOCAL: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Local', true), _typeValueSelection),
   REMOTE: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Remote', true), _typeValueSelection),
   OTHER: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueSelection))('Other', true), _typeValueSelection),
+};
+module.exports.ValueState = {
+  EXISTS: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueState))('Exists', true), _typeValueState),
+  NO_EXISTS: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueState))('NoExists', true), _typeValueState),
+  DELETED: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueState))('Deleted', true), _typeValueState),
+  UNKNOWN: canonicalize.reduce(new (vdl.registry.lookupOrCreateConstructor(_typeValueState))('Unknown', true), _typeValueState),
 };
 
 
@@ -281,6 +293,12 @@ module.exports.SchemaVersionMismatchError = makeError('v.io/v23/services/syncbas
 
 module.exports.BlobNotCommittedError = makeError('v.io/v23/services/syncbase/nosql.BlobNotCommitted', actions.NO_RETRY, {
   'en': '{1:}{2:} blob is not yet committed',
+}, [
+]);
+
+
+module.exports.SyncgroupJoinFailedError = makeError('v.io/v23/services/syncbase/nosql.SyncgroupJoinFailed', actions.NO_RETRY, {
+  'en': '{1:}{2:} syncgroup join failed',
 }, [
 ]);
 
@@ -1269,7 +1287,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'Exec',
-    doc: "// Exec executes a syncQL query and returns all results as specified by in the\n// query's select clause. Concurrency semantics are documented in model.go.",
+    doc: "// Exec executes a syncQL query and returns all results as specified by in the\n// query's select/delete statement. Concurrency semantics are documented in model.go.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
@@ -1294,7 +1312,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'BeginBatch',
-    doc: "// BeginBatch creates a new batch. It returns a \"batch suffix\" string to\n// append to the object name of this Database, yielding an object name for the\n// Database bound to the created batch. (For example, if this Database is\n// named \"/path/to/db\" and BeginBatch returns \"##abc\", the client should\n// construct batch Database object name \"/path/to/db##abc\".) If this Database\n// is already bound to a batch, BeginBatch() will fail with ErrBoundToBatch.\n// Concurrency semantics are documented in model.go.\n// TODO(sadovsky): Maybe make BatchOptions optional.",
+    doc: "// BeginBatch creates a new batch. It returns a \"batch suffix\" string to\n// append to the object name of this Database, yielding an object name for the\n// Database bound to the created batch. (For example, if this Database is\n// named \"/path/to/db\" and BeginBatch returns \"##abc\", the client should\n// construct batch Database object name \"/path/to/db##abc\".) If this Database\n// is already bound to a batch, BeginBatch() will fail with ErrBoundToBatch.\n// Concurrency semantics are documented in model.go.\n// TODO(sadovsky): Maybe make BatchOptions optional. Also, rename it to 'opts'\n// everywhere now that v.io/i/912 is resolved.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
