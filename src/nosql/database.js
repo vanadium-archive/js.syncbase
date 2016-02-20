@@ -103,25 +103,26 @@ Database.prototype.getPermissions = function(ctx, cb) {
  * Watches for updates to the database. For each watch request, the client will
  * receive a reliable stream of watch events without re-ordering.
  *
- * This method is designed to be used in the following way:
- * 1) begin a read-only batch
- * 2) read all information your app needs
- * 3) read the ResumeMarker
- * 4) abort the batch
- * 5) start watching for changes to the data using the ResumeMarker
- *
- * In this configuration the client doesn't miss any changes.
+ * If the ResumeMarker is not provided, the stream will begin with a change
+ * batch containing the initial state. Otherwise, the stream will contain only
+ * changes since the provided ResumeMarker.
  *
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {string} table Name of table to watch.
  * @param {string} prefix Prefix of keys to watch.
- * @param {module:syncbase.nosql.watch.ResumeMarker} resumeMarker ResumeMarker
- * to resume watching from.
+ * @param {module:syncbase.nosql.watch.ResumeMarker} [resumeMarker] ResumeMarker
+ * to resume watching from. If not provided, watch stream begins with a batch
+ * containing the initial state.
  * @param {function} [cb] Optional callback that will be called after watch RPC
  * finishes.
  * @returns {stream} Stream of WatchChange objects.
  */
 Database.prototype.watch = function(ctx, tableName, prefix, resumeMarker, cb) {
+  if (typeof cb === 'undefined' && typeof resumeMarker === 'function') {
+    cb = resumeMarker;
+    resumeMarker = undefined;
+  }
+
   var globReq = new watchVdl.GlobRequest({
     pattern: vanadium.naming.join(tableName, prefix + '*'),
     resumeMarker: resumeMarker

@@ -99,6 +99,10 @@ test('basic client watch', function(t) {
         assertWatch.bind(null, t, ctx, db, table.name, row2Prefix,
                          resumeMarkers[2], allExpectedChanges.slice(2)),
 
+        // Undefined resume marker - include initial state.
+        assertWatch.bind(null, t, ctx, db, table.name, row2Prefix,
+                         undefined, allExpectedChanges.slice(2)),
+
         assertWatch.bind(null, t, ctx, db, table.name, row1Prefix,
                          resumeMarkers[0], allExpectedChanges.slice(0,2)),
         assertWatch.bind(null, t, ctx, db, table.name, row1Prefix,
@@ -114,7 +118,9 @@ test('basic client watch', function(t) {
 function assertWatch(t, ctx, db, tableName, rowPrefix, resumeMarker,
                      expectedWatchChanges, cb) {
   var cctx = ctx.withCancel();
-  var stream = db.watch(ctx, tableName, rowPrefix, resumeMarker);
+  var stream = resumeMarker === undefined ?
+    db.watch(ctx, tableName, rowPrefix) :
+    db.watch(ctx, tableName, rowPrefix, resumeMarker);
 
   async.timesSeries(expectedWatchChanges.length, function(i, next) {
     stream.once('data', function(gotWatchChange) {
