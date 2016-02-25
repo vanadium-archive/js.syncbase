@@ -414,6 +414,22 @@ test('database.exec', function(t) {
           ['Moe', moe],
         ]
       },
+      {
+        q: 'select k, v from %s where k = ? or v.Age = ?',
+        paramValues: [
+          'Moe',
+          38,
+        ],
+        paramTypes: [
+          vdl.types.STRING,
+          vdl.types.INT32,
+        ],
+        want: [
+          ['k', 'v'],
+          ['Homer', homer],
+          ['Moe', moe],
+        ]
+      },
     ];
 
     putPeople();
@@ -443,7 +459,9 @@ test('database.exec', function(t) {
       }
 
       async.forEachSeries(testCases, function(testCase, cb) {
-        assertExec(format(testCase.q, table.name), testCase.want, cb);
+        assertExec(format(testCase.q, table.name),
+                   testCase.paramValues, testCase.paramTypes,
+                   testCase.want, cb);
       }, end);
     }
 
@@ -453,11 +471,14 @@ test('database.exec', function(t) {
     }
 
     // Assert that query 'q' returns the rows in 'want'.
-    function assertExec(q, want, cb) {
-      var stream = db.exec(ctx, q, function(err) {
+    function assertExec(q, paramValues, paramTypes, want, cb) {
+      var testCb = function(err) {
         t.error(err);
         cb();
-      });
+      };
+      var stream = paramValues === undefined ?
+        db.exec(ctx, q, testCb) :
+        db.exec(ctx, q, paramValues, paramTypes, testCb);
       stream.on('error', t.error);
       toArray(stream, function(err, got) {
         t.error(err);

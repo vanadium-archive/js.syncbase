@@ -111,6 +111,11 @@ AbstractDatabase.prototype.listTables = function(ctx, cb) {
 /**
  * Executes a syncQL query.
  *
+ * If the query is parameterized, paramValues must contain a value for each '?'
+ * placeholder in the query. If there are no placeholders, paramValues must be
+ * empty or omitted. paramTypes should be provided in addition to paramValues
+ * for paramValue elements that lack VOM types, including JS primitives.
+ *
  * Returns a stream of rows.  The first row contains an array of headers (i.e.
  * column names).  Subsequent rows contain an array of values for each row that
  * matches the query.  The number of values returned in each row will match the
@@ -120,7 +125,7 @@ AbstractDatabase.prototype.listTables = function(ctx, cb) {
  * time of the RPC, and will not reflect subsequent writes to keys not yet
  * reached by the stream.
  *
- * NOTE(nlacasse): The Go client library returns the headers seperately from
+ * NOTE(nlacasse): The Go client library returns the headers separately from
  * the stream.  We could potentially do something similar in JavaScript, by
  * pulling the headers off the stream and passing them to the callback.
  * However, by Vanadium JS convention the callback gets called at the *end* of
@@ -136,17 +141,47 @@ AbstractDatabase.prototype.listTables = function(ctx, cb) {
  *
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {string} query Query string.
+ * @param {Object[]} [paramValues] Query parameters, one per '?' placeholder in
+ * the query.
+ * @param {module:vanadium.vdl.Type[]} [paramTypes] Query parameter types, one
+ * per value in paramValues. Not required if paramValues are VDL typed or if
+ * values being queried are JSValues.
  * @param {function} cb Callback.
  * @returns {stream} Stream of rows.
  */
-AbstractDatabase.prototype.exec = function(ctx, query, cb) {
+AbstractDatabase.prototype.exec = function(ctx, query, paramValues, paramTypes,
+                                           cb) {
+  if (typeof cb === 'undefined' && typeof paramValues === 'function') {
+    cb = paramValues;
+    paramValues = undefined;
+    paramTypes = undefined;
+  }
+  if (typeof cb === 'undefined' && typeof paramTypes === 'function') {
+    cb = paramTypes;
+    paramTypes = undefined;
+  }
+
+  var params;
+  if (typeof paramValues !== 'undefined') {
+    paramTypes = paramTypes || [];
+    try {
+      params = paramValues.map(function(param, i) {
+        var type = paramTypes[i] || vanadium.vdl.types.ANY;
+        return vanadium.vdl.canonicalize.value(param, type);
+      });
+    } catch (e) {
+      return cb(e);
+    }
+  }
+
   var streamUnwrapper = through2({
     objectMode: true
   }, function(res, enc, cb) {
     return cb(null, res.map(unwrap));
   });
 
-  var stream = this._wire(ctx).exec(ctx, this.schemaVersion, query, cb).stream;
+  var stream = this._wire(ctx).exec(ctx, this.schemaVersion,
+                                    query, params, cb).stream;
 
   var decodedStream = stream.pipe(streamUnwrapper);
   stream.on('error', function(err) {

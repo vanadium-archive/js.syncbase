@@ -1022,7 +1022,7 @@ Database.prototype.listTables = function(ctx, serverCall) {
 };
     
       
-Database.prototype.exec = function(ctx, serverCall, schemaVersion, query) {
+Database.prototype.exec = function(ctx, serverCall, schemaVersion, query, params) {
   throw new Error('Method Exec not implemented');
 };
     
@@ -1297,7 +1297,7 @@ Database.prototype._serviceDescription = {
       
     {
     name: 'Exec',
-    doc: "// Exec executes a syncQL query and returns all results as specified by in the\n// query's select/delete statement. Concurrency semantics are documented in model.go.",
+    doc: "// Exec executes a syncQL query with positional parameters and returns all\n// results as specified by the query's select/delete statement.\n// Concurrency semantics are documented in model.go.",
     inArgs: [{
       name: 'schemaVersion',
       doc: "",
@@ -1307,6 +1307,11 @@ Database.prototype._serviceDescription = {
       name: 'query',
       doc: "",
       type: vdl.types.STRING
+    },
+    {
+      name: 'params',
+      doc: "",
+      type: _type9
     },
     ],
     outArgs: [],
