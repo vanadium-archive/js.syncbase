@@ -95,3 +95,22 @@ test('runInBatch does not abort if commit fails', function(t) {
     t.end();
   });
 });
+
+test('runInBatch works with readonly batches', function(t) {
+  var ctx = {};
+  var db = new MockDb(true);
+
+  function willSucceed(db, cb) {
+    cb(null);
+  }
+
+  runInBatch(ctx, db, {readOnly: true}, willSucceed, function(err) {
+    t.notok(err, 'runInBatch should not return an error');
+
+    t.ok(db.batchDb, 'batch db is created');
+    t.notok(db.batchDb.commitCalled, 'batchDb.commit() was not called');
+    t.ok(db.batchDb.abortCalled, 'batchDb.abort() was called');
+
+    t.end();
+  });
+});

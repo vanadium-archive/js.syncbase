@@ -56,7 +56,7 @@ BatchDatabase.prototype.abort = function(ctx, cb) {
 /**
  * runInBatch runs a function with a newly created batch. If the function
  * errors, the batch is aborted. If the function succeeds, the batch is
- * committed.
+ * committed. A readonly batch is aborted either way.
  *
  * @param {module:vanadium.context.Context} ctx Vanadium context.
  * @param {module:syncbase.database.Database} db Database.
@@ -73,7 +73,7 @@ function runInBatch(ctx, db, opts, fn, cb) {
         return cb(err);
       }
       fn(batchDb, function(err) {
-        if (err) {
+        if (err || opts.readOnly) {
           return batchDb.abort(ctx, function() {
             return cb(err);  // return fn error, not abort error
           });
